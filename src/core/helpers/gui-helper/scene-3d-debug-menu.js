@@ -109,7 +109,7 @@ export default class Scene3DDebugMenu {
 
     orbitControls.enableDamping = true;
     orbitControls.dampingFactor = 0.07;
-    orbitControls.rotateSpeed = 0.5;
+    // orbitControls.rotateSpeed = 0.5;
     orbitControls.panSpeed = 0.5;
 
     if (!this._isAssetsLoaded) {
