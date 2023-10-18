@@ -26,6 +26,15 @@ export default class ObstaclesController extends THREE.Group {
     return this._obstaclesMap;
   }
 
+  debugChangedHelper() {
+    for (let i = 0; i < this._obstacles.length; i++) {
+      const obstacle = this._obstacles[i];
+      const positionHelper = this._positionHelpers[i];
+      positionHelper.debugChangedHelper();
+      positionHelper.setPosition(obstacle.getPosition());
+    }
+  }
+
   _initMap() {
     this._obstaclesMap = [];
     const currentLevel = GAME_FIELD_CONFIG.currentLevel;

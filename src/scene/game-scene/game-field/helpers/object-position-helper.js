@@ -24,6 +24,10 @@ export default class ObjectPositionHelper extends THREE.Group {
   }
 
   setPosition(position) {
+    if (!GAME_FIELD_CONFIG.helpers) {
+      return;
+    }
+
     const cellSize = GAME_FIELD_CONFIG.cellSize;
     const currentLevel = GAME_FIELD_CONFIG.currentLevel;
     const fieldConfig = LEVEL_CONFIG[currentLevel].field;
@@ -33,12 +37,24 @@ export default class ObjectPositionHelper extends THREE.Group {
     this.position.set(x, 0.005, z);
   }
 
+  debugChangedHelper() {
+    if (!this._view) {
+      this._initView();
+    }
+
+    this.visible = GAME_FIELD_CONFIG.helpers;
+  }
+
   _init() {
     this._initView();
     this.hide();
   }
 
   _initView() {
+    if (!GAME_FIELD_CONFIG.helpers) {
+      return;
+    }
+
     const size = GAME_FIELD_CONFIG.cellSize;
     const geometry = new THREE.PlaneGeometry(size, size);
     const material = new THREE.MeshToonMaterial({ color: this._config.color });

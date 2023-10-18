@@ -1,7 +1,7 @@
 const GAME_FIELD_CONFIG = {
   cellSize: 1,
   gravity: 9.8,
-  helpers: false, // TODO: make
+  helpers: false,
   currentLevel: null,
 }
 

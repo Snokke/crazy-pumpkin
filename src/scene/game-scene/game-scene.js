@@ -77,6 +77,7 @@ export default class GameScene extends THREE.Group {
     this._gameDebug.events.on('fpsMeterChanged', () => this.events.post('fpsMeterChanged'));
     this._gameDebug.events.on('orbitControlsChanged', () => this._onOrbitControlsChanged());
     this._gameDebug.events.on('audioEnabledChanged', () => this.events.post('onSoundsEnabledChanged'));
+    this._gameDebug.events.on('helpersChanged', () => this._gameField.onHelpersChanged());
   }
 
   _onOrbitControlsChanged() {

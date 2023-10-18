@@ -3,6 +3,7 @@ import GUIHelper from '../../core/helpers/gui-helper/gui-helper';
 import { MessageDispatcher } from 'black-engine';
 import DEBUG_CONFIG from '../../core/configs/debug-config';
 import { SOUNDS_CONFIG } from '../../core/configs/sounds-config';
+import { GAME_FIELD_CONFIG } from './game-field/data/game-field-config';
 
 export default class GameDebug extends THREE.Group {
   constructor() {
@@ -21,6 +22,7 @@ export default class GameDebug extends THREE.Group {
 
   _init() {
     this._initGeneralFolder();
+    this._initGameFolder();
   }
 
   _initGeneralFolder() {
@@ -56,5 +58,20 @@ export default class GameDebug extends THREE.Group {
     }).on('change', () => {
       this.events.post('masterVolumeChanged');
     });
+  }
+
+  _initGameFolder() {
+    const gameFolder = GUIHelper.getGui().addFolder({
+      title: 'Game',
+      expanded: true,
+    });
+    
+    gameFolder.addInput(GAME_FIELD_CONFIG, 'helpers', {
+      label: 'Helpers',
+    }).on('change', () => {
+      this.events.post('helpersChanged');
+    });
+
+    gameFolder.addSeparator();
   }
 }

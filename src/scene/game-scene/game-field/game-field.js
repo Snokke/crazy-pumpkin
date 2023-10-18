@@ -2,13 +2,13 @@ import * as THREE from 'three';
 import Player from './player/player';
 import EnemiesController from './enemies/enemies-controller';
 import { GAME_FIELD_CONFIG, GAME_OBJECT_TYPE, GAME_STATE_TYPE } from './data/game-field-config';
-import Utils from '../../../core/helpers/utils';
 import { BUTTONS_CONFIG, BUTTON_TYPE } from './data/keyboard-config';
 import ObstaclesController from './obstacle/obstacles-controller';
 import { LEVEL_CONFIG, LEVEL_TYPE } from './data/level-config';
 import { deepCopyArray } from '../../../core/helpers/helpers';
 import { PLAYER_ACTIONS, PLAYER_ACTION_TO_DIRECTION, PLAYER_CONVERT_JUMP_IN_PLACE } from './player/data/player-data';
 import ObjectPositionHelper from './helpers/object-position-helper';
+import GameFieldView from './game-field-view';
 
 export default class GameField extends THREE.Group {
   constructor() {
@@ -18,7 +18,6 @@ export default class GameField extends THREE.Group {
     this._enemiesController = null;
     this._obstaclesController = null;
     this._fieldView = null;
-    this._fieldHelper = null;
 
     this._playerActions = null;
     this._gameObjectsMap = null;
@@ -38,8 +37,7 @@ export default class GameField extends THREE.Group {
     this._gameState = GAME_STATE_TYPE.Idle;
     GAME_FIELD_CONFIG.currentLevel = level;
 
-    this._initFiledView();
-    this._initFieldHelper();
+    this._fieldView.init(); 
     this._initPlayerForLevel();
     this._obstaclesController.createObstacles(level);
 
@@ -50,9 +48,16 @@ export default class GameField extends THREE.Group {
     this._gameState = GAME_STATE_TYPE.Active;
   }
 
+  onHelpersChanged() {
+    this._fieldView.debugChangedHelper();
+    this._player.debugChangedHelper();
+    this._playerPositionHelper.debugChangedHelper();
+    this._playerPositionHelper.setPosition(this._player.getPosition());
+    this._obstaclesController.debugChangedHelper();
+  }
+
   _removeLevelObjects() {
-    this.remove(this._fieldView);
-    this.remove(this._fieldHelper);
+    this._fieldView.removeObjects();
   }
 
   _initPlayerForLevel() {
@@ -77,12 +82,18 @@ export default class GameField extends THREE.Group {
     this._initEnemiesController();
     this._initObstaclesController();
     this._initPlayerPositionHelper();
+    this._initFiledView();
     this._initKeyboardEvents();
 
     this._initSignals();
 
     this.initLevel(LEVEL_TYPE.Level001);
     this.startGame();
+
+    // setTimeout(() => {
+    //   this.initLevel(LEVEL_TYPE.Level002);
+    //   this.startGame();
+    // }, 2000);
   }
 
   _initPlayer() {
@@ -104,42 +115,13 @@ export default class GameField extends THREE.Group {
   }
 
   _initObstaclesController() {
-    const obstaclesController = this._obstaclesController = new ObstaclesController;
+    const obstaclesController = this._obstaclesController = new ObstaclesController();
     this.add(obstaclesController);
   }
 
   _initFiledView() {
-    const currentLevel = GAME_FIELD_CONFIG.currentLevel;
-    const fieldConfig = LEVEL_CONFIG[currentLevel].field;
-
-    const planeGeometry = new THREE.PlaneGeometry(fieldConfig.columns * GAME_FIELD_CONFIG.cellSize, fieldConfig.rows * GAME_FIELD_CONFIG.cellSize);
-    const planeMaterial = new THREE.MeshToonMaterial({ color: 0xaaaaaa });
-    const fieldView = this._fieldView = new THREE.Mesh(planeGeometry, planeMaterial);
+    const fieldView = this._fieldView = new GameFieldView();
     this.add(fieldView);
-
-    fieldView.rotation.x = -Math.PI / 2;
-    fieldView.receiveShadow = true;
-  }
-
-  _initFieldHelper() {
-    const currentLevel = GAME_FIELD_CONFIG.currentLevel;
-    const fieldConfig = LEVEL_CONFIG[currentLevel].field;
-
-    const columnsSize = fieldConfig.columns * GAME_FIELD_CONFIG.cellSize;
-    const rowsSize = fieldConfig.rows * GAME_FIELD_CONFIG.cellSize;
-
-    const geometry = new THREE.PlaneGeometry(columnsSize, rowsSize, fieldConfig.columns, fieldConfig.rows);
-    Utils.toQuads(geometry);
-
-    const material = new THREE.LineBasicMaterial({
-      color: 0x00ff00,
-    });
-
-    const fieldHelper = this._fieldHelper = new THREE.LineSegments(geometry, material);
-    this.add(fieldHelper);
-
-    fieldHelper.rotation.x = Math.PI / 2;
-    fieldHelper.position.y = 0.01;
   }
 
   _initPlayerPositionHelper() {

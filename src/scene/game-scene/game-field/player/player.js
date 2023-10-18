@@ -13,6 +13,7 @@ export default class Player extends THREE.Group {
     this.events = new MessageDispatcher();
 
     this._view = null;
+    this._arrowHelper = null;
     this._currentPosition = { row: 0, column: 0 };
     this._newPosition = { row: 0, column: 0 };
     this._jumpSpeed = 0;
@@ -120,6 +121,14 @@ export default class Player extends THREE.Group {
   hide() {
     this.visible = false;
     this._reset();
+  }
+
+  debugChangedHelper() {
+    if (GAME_FIELD_CONFIG.helpers && !this._fieldHelper) {
+      this._initHelpers();
+    }
+
+    this._arrowHelper.visible = GAME_FIELD_CONFIG.helpers;
   }
 
   _calculateCurrentPosition() {
@@ -427,11 +436,15 @@ export default class Player extends THREE.Group {
   }
 
   _initHelpers() {
+    if (!GAME_FIELD_CONFIG.helpers) {
+      return;
+    }
+
     this._initDirectionHelper();
   }
 
   _initDirectionHelper() {
-    const arrowHelper = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, 0), 1, 0xff0000);
+    const arrowHelper = this._arrowHelper = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, 0), 1, 0xff0000);
     this._view.add(arrowHelper);
   }
 
