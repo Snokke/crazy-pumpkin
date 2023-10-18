@@ -1,7 +1,8 @@
 const DEBUG_CONFIG = {
-  fpsMeter: false,
+  fpsMeter: true,
   rendererStats: false,
   orbitControls: true,
+  axesHelper: false,
 };
 
 export default DEBUG_CONFIG;

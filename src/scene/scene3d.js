@@ -22,25 +22,15 @@ export default class Scene3D extends THREE.Group {
     this._gameScene.update(dt);
   }
 
-  onPointerMove(x, y) {
-    this._gameScene.onPointerMove(x, y);
-  }
+  onPointerMove(x, y) { }
 
-  onPointerDown(x, y) {
-    this._gameScene.onPointerDown(x, y);
-  }
+  onPointerDown(x, y) { }
 
-  onPointerUp(x, y) {
-    this._gameScene.onPointerUp(x, y);
-  }
+  onPointerUp(x, y) { }
 
-  onPointerLeave() {
-    this._gameScene.onPointerLeave();
-  }
+  onPointerLeave() { }
 
-  onWheelScroll(delta) {
-    this._gameScene.onWheelScroll(delta);
-  }
+  onWheelScroll(delta) { }
 
   onSoundChanged() {
     this._gameScene.onSoundChanged();

@@ -8,6 +8,7 @@ import Loader from './loader';
 import Scene3DDebugMenu from './helpers/gui-helper/scene-3d-debug-menu';
 import { GLOBAL_LIGHT_CONFIG } from './configs/global-light-config';
 import isMobile from 'ismobilejs';
+import DEBUG_CONFIG from './configs/debug-config';
 
 export default class BaseScene {
   constructor() {
@@ -78,6 +79,7 @@ export default class BaseScene {
     this._initRenderer();
     this._initCamera();
     this._initLights();
+    this._initAxesHelper();
     this._initLoadingOverlay();
     this._initOnResize();
     this._initAudioListener();
@@ -110,8 +112,8 @@ export default class BaseScene {
     // renderer.toneMapping = THREE.ACESFilmicToneMapping;
     // renderer.toneMappingExposure = 1;
 
-    // renderer.shadowMap.enabled = true;
-    // renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   }
 
   _initCamera() {
@@ -127,9 +129,34 @@ export default class BaseScene {
       this._scene.add(ambientLight);
     }
 
-    // const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    // directionalLight.position.set(0, 5, 5);
-    // this._scene.add(directionalLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(0, 5, 5);
+    this._scene.add(directionalLight);
+
+    directionalLight.castShadow = true;
+
+    directionalLight.shadow.mapSize.width = 1024;
+    directionalLight.shadow.mapSize.height = 1024;
+
+    directionalLight.shadow.camera.near = 0.5;
+    directionalLight.shadow.camera.far = 50;
+
+    directionalLight.shadow.camera.left = -10;
+    directionalLight.shadow.camera.right = 10;
+    directionalLight.shadow.camera.top = 10;
+    directionalLight.shadow.camera.bottom = -10;
+
+    // directionalLight.shadow.bias = 0.0001;
+
+    // const directionalLightCameraHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
+    // this._scene.add(directionalLightCameraHelper);
+  }
+
+  _initAxesHelper() {
+    if (DEBUG_CONFIG.axesHelper) {
+      const axesHelper = new THREE.AxesHelper(5);
+      this._scene.add(axesHelper);
+    }
   }
 
   _initLoadingOverlay() {

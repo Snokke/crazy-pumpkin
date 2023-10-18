@@ -3,6 +3,8 @@ import GameDebug from './game-debug';
 import { MessageDispatcher } from 'black-engine';
 import SCENE_CONFIG from '../../core/configs/scene-config';
 import DEBUG_CONFIG from '../../core/configs/debug-config';
+import GameField from './game-field/game-field';
+import CameraController from './camera-controller/camera-controller';
 
 export default class GameScene extends THREE.Group {
   constructor(data) {
@@ -13,6 +15,7 @@ export default class GameScene extends THREE.Group {
     this._data = data;
 
     this._gameDebug = null;
+    this._gameField = null;
 
     this._isSoundPlayed = false;
 
@@ -24,22 +27,7 @@ export default class GameScene extends THREE.Group {
       dt = 0.1;
     }
 
-  }
-
-  onPointerMove(x, y) {
-
-  }
-
-  onPointerDown(x, y) {
-
-  }
-
-  onPointerUp(x, y) {
-
-  }
-
-  onWheelScroll(delta) {
-
+    this._gameField.update(dt);
   }
 
   onSoundChanged() {
@@ -49,13 +37,10 @@ export default class GameScene extends THREE.Group {
   _init() {
     this._initGameDebug();
     this._initEmptySound();
+    this._initCameraController();
+    this._initGameField();
 
     this._initSignals();
-
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
-    const cube = new THREE.Mesh(geometry, material);
-    this.add(cube);
   }
 
   _initGameDebug() {
@@ -76,6 +61,16 @@ export default class GameScene extends THREE.Group {
         this._isSoundPlayed = true;
       });
     }
+  }
+
+  _initCameraController() {
+    const cameraController = this._cameraController = new CameraController(this._data.camera);
+    this.add(cameraController);
+  }
+
+  _initGameField() {
+    const gameField = this._gameField = new GameField();
+    this.add(gameField);
   }
 
   _initSignals() {
