@@ -1,4 +1,4 @@
-import { DIRECTION } from "../../data/game-field-config"
+import { DIRECTION } from "../../data/game-data"
 
 const PLAYER_STATE = {
   Idle: 'IDLE',

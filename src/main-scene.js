@@ -33,13 +33,14 @@ export default class MainScene {
   }
 
   _initSignals() {
-    this._ui.on('onPointerMove', (msg, x, y) => this._scene3D.onPointerMove(x, y));
-    this._ui.on('onPointerDown', (msg, x, y) => this._scene3D.onPointerDown(x, y));
-    this._ui.on('onPointerUp', (msg, x, y) => this._scene3D.onPointerUp(x, y));
-    this._ui.on('onWheelScroll', (msg, delta) => this._scene3D.onWheelScroll(delta));
     this._ui.on('onSoundChanged', () => this._scene3D.onSoundChanged());
+    this._ui.on('onStartGame', () => this._scene3D.onStartGame());
+    this._ui.on('onRestartGame', () => this._scene3D.onRestartGame());
 
     this._scene3D.events.on('fpsMeterChanged', () => this.events.post('fpsMeterChanged'));
     this._scene3D.events.on('onSoundsEnabledChanged', () => this._ui.updateSoundIcon());
+    this._scene3D.events.on('gameOver', () => this._ui.onGameOver());
+    this._scene3D.events.on('scoreChanged', (msg, score) => this._ui.onScoreChanged(score));
+    this._scene3D.events.on('gameplayStarted', () => this._ui.onGameplayStarted());
   }
 }

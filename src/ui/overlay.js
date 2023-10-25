@@ -26,25 +26,8 @@ export default class Overlay extends DisplayObject {
   }
 
   _initSignals() {
-    this._view.on('pointerDown', (msg, pointer) => {
-      if (pointer.button === 0) {
-        this.post('onPointerDown', pointer.x, pointer.y);
-      }
-    });
-
-    this._view.on('pointerUp', (msg, pointer) => {
-      if (pointer.button === 0) {
-        this.post('onPointerUp', pointer.x, pointer.y);
-      }
-    });
-
     this._view.on('pointerMove', (msg, pointer) => {
       this.post('onPointerMove', pointer.x, pointer.y);
-    });
-
-    Black.engine.containerElement.addEventListener("wheel", event => {
-      const delta = Math.sign(event.deltaY);
-      this.post('onWheelScroll', delta);
     });
   }
 

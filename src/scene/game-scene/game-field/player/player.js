@@ -1,10 +1,12 @@
 import * as THREE from 'three';
 import TWEEN from 'three/addons/libs/tween.module.js';
-import { DIRECTION, GAME_FIELD_CONFIG } from '../data/game-field-config';
 import { MessageDispatcher } from 'black-engine';
 import { PLAYER_ACTIONS, PLAYER_JUMP_STATE, PLAYER_STATE } from './data/player-data';
 import { PLAYER_CONFIG } from './data/player-config';
 import { LEVEL_CONFIG } from '../data/level-config';
+import { DIRECTION, ROTATION_BY_DIRECTION } from '../data/game-data';
+import { GAME_CONFIG } from '../data/game-config';
+import { GLOBAL_VARIABLES } from '../data/global-variables';
 
 export default class Player extends THREE.Group {
   constructor() {
@@ -36,7 +38,7 @@ export default class Player extends THREE.Group {
     this._nextAction = null;
     this._isNextActionAllowed = false;
 
-    this._rotationByDirection = null;
+    this._isBodyActive = true;
     this._currentDirection = DIRECTION.Up;
 
     this._init();
@@ -49,7 +51,7 @@ export default class Player extends THREE.Group {
 
     if (position.row !== this._currentPosition.row || position.column !== this._currentPosition.column) {
       const previousPosition = this._currentPosition;
-      this._currentPosition = position;
+      this._currentPosition = GLOBAL_VARIABLES.playerPosition = position;
       this.events.post('positionChanged', this._currentPosition, previousPosition);
     }
   }
@@ -94,11 +96,11 @@ export default class Player extends THREE.Group {
   }
 
   setPosition(position) {
-    this._currentPosition = position;
+    this._currentPosition = GLOBAL_VARIABLES.playerPosition = position;
     this._newPosition = position;
 
-    const cellSize = GAME_FIELD_CONFIG.cellSize;
-    const currentLevel = GAME_FIELD_CONFIG.currentLevel;
+    const cellSize = GAME_CONFIG.cellSize;
+    const currentLevel = GLOBAL_VARIABLES.currentLevel;
     const fieldConfig = LEVEL_CONFIG[currentLevel].field;
     this._view.position.x = (-fieldConfig.columns * cellSize * 0.5 + cellSize * 0.5) + this._currentPosition.column * cellSize;
     this._view.position.z = (-fieldConfig.rows * cellSize * 0.5 + cellSize * 0.5) + this._currentPosition.row * cellSize;
@@ -110,30 +112,62 @@ export default class Player extends THREE.Group {
 
   setDirection(direction) {
     this._currentDirection = direction;
-    this._view.rotation.y = this._rotationByDirection[direction];
+    this._view.rotation.y = ROTATION_BY_DIRECTION[direction];
   }
 
   show() {
     this.visible = true;
-    this._startIdleAnimation();
   }
 
   hide() {
     this.visible = false;
-    this._reset();
+  }
+
+  showIntro() {
+    this.show();
+    this._view.position.y = 8;
+
+    new TWEEN.Tween(this._view.position)
+      .to({ y: PLAYER_CONFIG.halfHeight }, 600)
+      .easing(TWEEN.Easing.Cubic.In)
+      .start()
+      .onComplete(() => {
+        const squeezeTween = this._squeezeOnGround(0.6, 50, TWEEN.Easing.Sinusoidal.Out);
+        squeezeTween.positionTween.onComplete(() => {
+          this._startIdleAnimation(true);
+          this.events.post('introFinished');
+        });
+      });
   }
 
   debugChangedHelper() {
-    if (GAME_FIELD_CONFIG.helpers && !this._fieldHelper) {
+    if (GAME_CONFIG.helpers && !this._fieldHelper) {
       this._initHelpers();
     }
 
-    this._arrowHelper.visible = GAME_FIELD_CONFIG.helpers;
+    this._arrowHelper.visible = GAME_CONFIG.helpers;
+  }
+
+  getBodyState() {
+    return this._isBodyActive;
+  }
+
+  reset() {
+    this._resetAllTweens();
+    this._stopIdleAnimation();
+    this._setJumpState(PLAYER_JUMP_STATE.None);
+    this._state = PLAYER_STATE.Idle;
+    this._currentDirection = DIRECTION.Up;
+    this._view.scale.set(1, 1, 1);
+    this._view.position.y = PLAYER_CONFIG.halfHeight;
+    this._jumpSpeed = 0;
+    this._nextAction = null;
+    this._isNextActionAllowed = false;
   }
 
   _calculateCurrentPosition() {
-    const cellSize = GAME_FIELD_CONFIG.cellSize;
-    const currentLevel = GAME_FIELD_CONFIG.currentLevel;
+    const cellSize = GAME_CONFIG.cellSize;
+    const currentLevel = GLOBAL_VARIABLES.currentLevel;
     const fieldConfig = LEVEL_CONFIG[currentLevel].field;
     const row = Math.round((this._view.position.z + fieldConfig.rows * cellSize * 0.5 - cellSize * 0.5) / cellSize);
     const column = Math.round((this._view.position.x + fieldConfig.columns * cellSize * 0.5 - cellSize * 0.5) / cellSize);
@@ -144,7 +178,7 @@ export default class Player extends THREE.Group {
   _updateJump(dt) {
     if (this._jumpState === PLAYER_JUMP_STATE.GoingUp || this._jumpState === PLAYER_JUMP_STATE.GoingDown) {
       this._view.position.y += this._jumpSpeed * dt * PLAYER_CONFIG.speed;
-      this._jumpSpeed -= GAME_FIELD_CONFIG.gravity * PLAYER_CONFIG.mass * dt * PLAYER_CONFIG.speed;
+      this._jumpSpeed -= GAME_CONFIG.gravity * PLAYER_CONFIG.mass * dt * PLAYER_CONFIG.speed;
 
       if (this._jumpSpeed < 0) {
         this._setJumpState(PLAYER_JUMP_STATE.GoingDown);
@@ -295,7 +329,7 @@ export default class Player extends THREE.Group {
       return;
     }
 
-    let targetAngle = this._rotationByDirection[direction];
+    let targetAngle = ROTATION_BY_DIRECTION[direction];
 
     if (this._currentDirection === DIRECTION.Down && direction === DIRECTION.Left) {
       targetAngle = -Math.PI / 2;
@@ -312,7 +346,7 @@ export default class Player extends THREE.Group {
       .easing(TWEEN.Easing.Sinusoidal.InOut)
       .start()
       .onComplete(() => {
-        this._view.rotation.y = this._rotationByDirection[direction];
+        this._view.rotation.y = ROTATION_BY_DIRECTION[direction];
       });
   }
 
@@ -322,26 +356,13 @@ export default class Player extends THREE.Group {
   }
 
   _getCoordinatesFromPosition(position) {
-    const cellSize = GAME_FIELD_CONFIG.cellSize;
-    const currentLevel = GAME_FIELD_CONFIG.currentLevel;
+    const cellSize = GAME_CONFIG.cellSize;
+    const currentLevel = GLOBAL_VARIABLES.currentLevel;
     const fieldConfig = LEVEL_CONFIG[currentLevel].field;
     const x = (-fieldConfig.columns * cellSize * 0.5 + cellSize * 0.5) + position.column * cellSize;
     const z = (-fieldConfig.rows * cellSize * 0.5 + cellSize * 0.5) + position.row * cellSize;
 
     return { x, z };
-  }
-
-  _reset() {
-    this._resetAllTweens();
-    this._stopIdleAnimation();
-    this._setJumpState(PLAYER_JUMP_STATE.None);
-    this._state = PLAYER_STATE.Idle;
-    this._currentDirection = DIRECTION.Up;
-    this._view.scale.set(1, 1, 1);
-    this._view.position.y = PLAYER_CONFIG.halfHeight;
-    this._jumpSpeed = 0;
-    this._nextAction = null;
-    this._isNextActionAllowed = false;
   }
 
   _stopIdleAnimation() {
@@ -405,20 +426,12 @@ export default class Player extends THREE.Group {
     // rightEye.receiveShadow = true;
   
     view.position.y = PLAYER_CONFIG.halfHeight;
-
-    this._rotationByDirection = {
-      [DIRECTION.Down]: 0,
-      [DIRECTION.Right]: Math.PI / 2,
-      [DIRECTION.Up]: Math.PI,
-      [DIRECTION.Left]: Math.PI * 1.5,
-    };
-
-    view.rotation.y = this._rotationByDirection[this._currentDirection];
+    view.rotation.y = ROTATION_BY_DIRECTION[this._currentDirection];
   }
 
   _initJumpTime() {
-    const jumpHeight = PLAYER_CONFIG.jumpImpulse * PLAYER_CONFIG.jumpImpulse / (2 * GAME_FIELD_CONFIG.gravity * PLAYER_CONFIG.mass * PLAYER_CONFIG.mass);
-    this._jumpHalfTime = Math.sqrt(2 * jumpHeight / GAME_FIELD_CONFIG.gravity) * 1000 / PLAYER_CONFIG.speed;
+    const jumpHeight = PLAYER_CONFIG.jumpImpulse * PLAYER_CONFIG.jumpImpulse / (2 * GAME_CONFIG.gravity * PLAYER_CONFIG.mass * PLAYER_CONFIG.mass);
+    this._jumpHalfTime = Math.sqrt(2 * jumpHeight / GAME_CONFIG.gravity) * 1000 / PLAYER_CONFIG.speed;
   }
 
   _initActions() {
@@ -436,7 +449,7 @@ export default class Player extends THREE.Group {
   }
 
   _initHelpers() {
-    if (!GAME_FIELD_CONFIG.helpers) {
+    if (!GAME_CONFIG.helpers) {
       return;
     }
 
@@ -447,5 +460,4 @@ export default class Player extends THREE.Group {
     const arrowHelper = this._arrowHelper = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, 0), 1, 0xff0000);
     this._view.add(arrowHelper);
   }
-
 }

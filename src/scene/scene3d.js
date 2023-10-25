@@ -22,18 +22,16 @@ export default class Scene3D extends THREE.Group {
     this._gameScene.update(dt);
   }
 
-  onPointerMove(x, y) { }
-
-  onPointerDown(x, y) { }
-
-  onPointerUp(x, y) { }
-
-  onPointerLeave() { }
-
-  onWheelScroll(delta) { }
-
   onSoundChanged() {
     this._gameScene.onSoundChanged();
+  }
+
+  onStartGame() {
+    this._gameScene.onStartGame();
+  }
+
+  onRestartGame() {
+    this._gameScene.onRestartGame();
   }
 
   _init() {
@@ -49,5 +47,8 @@ export default class Scene3D extends THREE.Group {
   _initSignals() {
     this._gameScene.events.on('fpsMeterChanged', () => this.events.post('fpsMeterChanged'));
     this._gameScene.events.on('onSoundsEnabledChanged', () => this.events.post('onSoundsEnabledChanged'));
+    this._gameScene.events.on('gameOver', () => this.events.post('gameOver'));
+    this._gameScene.events.on('scoreChanged', (msg, score) => this.events.post('scoreChanged', score));
+    this._gameScene.events.on('gameplayStarted', () => this.events.post('gameplayStarted'));
   }
 }

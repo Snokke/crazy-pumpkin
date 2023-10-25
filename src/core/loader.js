@@ -20,6 +20,10 @@ const sounds = [
 
 ];
 
+const fonts = [
+  'halloween_spooky.ttf',
+];
+
 const loadingPercentElement = document.querySelector('.loading-percent');
 let progressRatio = 0;
 const blackAssetsProgressPart = 0;
@@ -47,6 +51,14 @@ export default class Loader extends GameObject {
       const imageFullPath = `${imagesBasePath}${textureFilename}`;
       const imageName = textureFilename.replace(/\.[^/.]+$/, "");
       this._blackManager.enqueueImage(imageName, imageFullPath);
+    });
+    
+    const fontsBasePath = '/fonts/';
+    
+    fonts.forEach((fontFilename) => {
+      const fontFullPath = `${fontsBasePath}${fontFilename}`;
+      const fontName = fontFilename.replace(/\.[^/.]+$/, "");
+      this._blackManager.enqueueFont(fontName, fontFullPath);
     });
 
     this._blackManager.on('complete', this._onBlackAssetsLoaded, this);

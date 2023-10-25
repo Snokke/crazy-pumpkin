@@ -1,10 +1,12 @@
 import * as THREE from 'three';
+import TWEEN from 'three/addons/libs/tween.module.js';
 import GameDebug from './game-debug';
 import { MessageDispatcher } from 'black-engine';
 import SCENE_CONFIG from '../../core/configs/scene-config';
 import DEBUG_CONFIG from '../../core/configs/debug-config';
 import GameField from './game-field/game-field';
 import CameraController from './camera-controller/camera-controller';
+import { GAME_CONFIG } from './game-field/data/game-config';
 
 export default class GameScene extends THREE.Group {
   constructor(data) {
@@ -34,13 +36,60 @@ export default class GameScene extends THREE.Group {
     this._gameDebug.updateSoundController();
   }
 
+  onStartGame() {
+    this._unBlurScene();
+    this._gameField.startGame();
+  }
+
+  onRestartGame() {
+    this._gameField.restartGame();
+    this._unBlurScene();
+  }
+
+  _blurScene(instant = false) {
+    if (instant) {
+      this._data.renderer.domElement.style.filter = `blur(${GAME_CONFIG.sceneBlur}px)`;
+
+      return;
+    }
+
+    const blurObject = { value: 0 };
+
+    new TWEEN.Tween(blurObject)
+      .to({ value: GAME_CONFIG.sceneBlur }, 300)
+      .easing(TWEEN.Easing.Sinusoidal.In)
+      .start()
+      .onUpdate(() => {
+        this._data.renderer.domElement.style.filter = `blur(${blurObject.value}px)`;
+      });
+  }
+
+  _unBlurScene(instant = false) {
+    if (instant) {
+      this._data.renderer.domElement.style.filter = `blur(0px)`;
+
+      return;
+    }
+
+    const blurObject = { value: GAME_CONFIG.sceneBlur };
+
+    new TWEEN.Tween(blurObject)
+      .to({ value: 0 }, 300)
+      .easing(TWEEN.Easing.Sinusoidal.Out)
+      .start()
+      .onUpdate(() => {
+        this._data.renderer.domElement.style.filter = `blur(${blurObject.value}px)`;
+      });
+  }
+
   _init() {
     this._initGameDebug();
     this._initEmptySound();
     this._initCameraController();
     this._initGameField();
-
     this._initSignals();
+
+    this._blurScene(true);
   }
 
   _initGameDebug() {
@@ -78,6 +127,15 @@ export default class GameScene extends THREE.Group {
     this._gameDebug.events.on('orbitControlsChanged', () => this._onOrbitControlsChanged());
     this._gameDebug.events.on('audioEnabledChanged', () => this.events.post('onSoundsEnabledChanged'));
     this._gameDebug.events.on('helpersChanged', () => this._gameField.onHelpersChanged());
+
+    this._gameField.events.on('gameOver', () => this._onGameOver());
+    this._gameField.events.on('scoreChanged', (msg, score) => this.events.post('scoreChanged', score));
+    this._gameField.events.on('gameplayStarted', () => this.events.post('gameplayStarted'));
+  }
+
+  _onGameOver() {
+    this._blurScene();
+    this.events.post('gameOver')
   }
 
   _onOrbitControlsChanged() {

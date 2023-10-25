@@ -1,6 +1,7 @@
 import * as THREE from 'three';
+import EnemyAbstract from './enemy-abstract';
 
-export default class Enemy extends THREE.Group {
+export default class SkeletonHand extends EnemyAbstract {
   constructor() {
     super();
 
