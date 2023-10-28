@@ -21,6 +21,8 @@ const GAME_STATE = {
 const MAP_TYPE = {
   Consumable: 'CONSUMABLE',
   Obstacle: 'OBSTACLE',
+  Ghost: 'GHOST',
+  EvilPumpkin: 'EVIL_PUMPKIN',
 }
 
 const ROTATION_BY_DIRECTION = {

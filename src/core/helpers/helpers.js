@@ -1,3 +1,7 @@
+import { GAME_CONFIG } from "../../scene/game-scene/game-field/data/game-config";
+import { GLOBAL_VARIABLES } from "../../scene/game-scene/game-field/data/global-variables";
+import { LEVEL_CONFIG } from "../../scene/game-scene/game-field/data/level-config";
+
 export const deepCopyArray = (array) => {
   const newArray = [];
 
@@ -18,4 +22,14 @@ export const randomBetween = (min, max) => {
 
 export const randomFromArray = (array) => {
   return array[randomBetween(0, array.length - 1)];
+}
+
+export const getCoordinatesFromPosition = (position) => {
+  const cellSize = GAME_CONFIG.cellSize;
+  const currentLevel = GLOBAL_VARIABLES.currentLevel;
+  const fieldConfig = LEVEL_CONFIG[currentLevel].field;
+  const x = (-fieldConfig.columns * cellSize * 0.5 + cellSize * 0.5) + position.column * cellSize;
+  const z = (-fieldConfig.rows * cellSize * 0.5 + cellSize * 0.5) + position.row * cellSize;
+
+  return { x, z };
 }

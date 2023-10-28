@@ -4,12 +4,11 @@ import EnemiesController from './enemies/enemies-controller';
 import { BUTTONS_CONFIG, BUTTON_TYPE } from './data/keyboard-config';
 import ObstaclesController from './obstacles/obstacles-controller';
 import { LEVEL_CONFIG, LEVEL_TYPE } from './data/level-config';
-import { deepCopyArray } from '../../../core/helpers/helpers';
 import { PLAYER_ACTIONS, PLAYER_ACTION_TO_DIRECTION, PLAYER_CONVERT_JUMP_IN_PLACE } from './player/data/player-data';
 import ObjectPositionHelper from './helpers/object-position-helper';
 import Board from './board/board';
 import { GAME_OBJECT_TYPE, GAME_STATE, MAP_TYPE } from './data/game-data';
-import { GAME_CONFIG } from './data/game-config';
+import { GAME_CONFIG, ROUND_CONFIG } from './data/game-config';
 import { MessageDispatcher } from 'black-engine';
 import { SCORE_CONFIG } from './data/score-config';
 import ConsumablesController from './consumables/consumables-controller';
@@ -28,13 +27,11 @@ export default class GameField extends THREE.Group {
     this._board = null;
 
     this._playerActions = null;
-    this._gameObjectsMap = null;
-
-    this._consumablesMap = null;
 
     this._score = 0;
     this._previousGameTime = 0;
     this._gameTime = 0;
+    this._roundTime = 0;
 
     this._init();
   }
@@ -43,6 +40,7 @@ export default class GameField extends THREE.Group {
     this._player.update(dt);
     this._enemiesController.update(dt);
     this._updateGameTime(dt);
+    this._updateRoundTime(dt);
   }
 
   initLevel(level) {
@@ -50,13 +48,14 @@ export default class GameField extends THREE.Group {
 
     GLOBAL_VARIABLES.gameState = GAME_STATE.Idle;
     GLOBAL_VARIABLES.currentLevel = level;
+    GLOBAL_VARIABLES.round = 0;
+    this.events.post('roundUp');
 
     this._board.init(); 
     this._initPlayerForLevel();
 
     this._initMaps();
     this._obstaclesController.createObstacles();
-    this._initGameObjectsMap();
   }
 
   startGame() {
@@ -86,6 +85,16 @@ export default class GameField extends THREE.Group {
     this._enemiesController.debugChangedHelper();
   }
 
+  _roundUp() {
+    GLOBAL_VARIABLES.round++;
+    this.events.post('roundUp');
+  }
+
+  onRoundChanged() {
+    this._player.onRoundChanged();
+    this._enemiesController.onRoundChanged();
+  }
+
   _initPlayerForLevel() {
     const playerConfig = LEVEL_CONFIG[GLOBAL_VARIABLES.currentLevel].player;
     this._player.setPosition(playerConfig.startPosition);
@@ -95,13 +104,6 @@ export default class GameField extends THREE.Group {
       this._playerPositionHelper.setPosition(playerConfig.startPosition);
       this._playerPositionHelper.show();
     }
-  }
-
-  _initGameObjectsMap() {
-    this._gameObjectsMap = deepCopyArray(this._obstaclesController.getObstaclesMap());
-
-    const playerPosition = this._player.getPosition();
-    this._gameObjectsMap[playerPosition.row][playerPosition.column] = GAME_OBJECT_TYPE.Player;
   }
 
   _resetLevel() {
@@ -122,7 +124,20 @@ export default class GameField extends THREE.Group {
 
       if (this._gameTime - this._previousGameTime > 1) {
         this._previousGameTime = this._gameTime;
-        this._addScore(SCORE_CONFIG.perSecond);
+        const round = GLOBAL_VARIABLES.round;
+        const score = SCORE_CONFIG.perSecond[round];
+        this._addScore(score);
+      }
+    }
+  }
+
+  _updateRoundTime(dt) {
+    if (GLOBAL_VARIABLES.gameState === GAME_STATE.Gameplay) {
+      this._roundTime += dt * 1000;
+
+      if (this._roundTime > ROUND_CONFIG.roundDuration) {
+        this._roundTime = 0;
+        this._roundUp();
       }
     }
   }
@@ -192,16 +207,22 @@ export default class GameField extends THREE.Group {
   _initMaps() {
     const currentLevel = GLOBAL_VARIABLES.currentLevel;
     const fieldConfig = LEVEL_CONFIG[currentLevel].field;
-    const consumableMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Consumable] = [];
+    const ghostMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Ghost] = [];
     const obstacleMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Obstacle] = [];
+    const consumableMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Consumable] = [];
+    const evilPumpkinMap = GLOBAL_VARIABLES.maps[MAP_TYPE.EvilPumpkin] = [];
 
     for (let row = 0; row < fieldConfig.rows; row++) {
-      consumableMap.push([]);
       obstacleMap.push([]);
+      ghostMap.push([]);
+      consumableMap.push([]);
+      evilPumpkinMap.push([]);
 
       for (let column = 0; column < fieldConfig.columns; column++) {
-        consumableMap[row].push(null);
         obstacleMap[row].push(null);
+        consumableMap[row].push(null);
+        ghostMap[row].push([]);
+        evilPumpkinMap[row].push(null);
       }
     }
   }
@@ -256,9 +277,9 @@ export default class GameField extends THREE.Group {
       return false;
     }
 
-    const gameObject = this._gameObjectsMap[newPosition.row][newPosition.column];
+    const obstacleMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Obstacle];
 
-    if (gameObject === GAME_OBJECT_TYPE.Obstacle) {
+    if (obstacleMap[newPosition.row][newPosition.column]) {
       return false;
     }
 
@@ -273,28 +294,48 @@ export default class GameField extends THREE.Group {
   }
 
   _initSignals() {
-    this._player.events.on('positionChanged', (msg, newPosition, previousPosition) => this._onPlayerPositionChanged(newPosition, previousPosition));
+    this._player.events.on('positionChanged', () => this._onPlayerPositionChanged());
     this._player.events.on('introFinished', () => this._startGameplay());
-    this._enemiesController.events.on('positionChanged', (msg, newPosition, previousPosition) => this._onEnemyPositionChanged(newPosition, previousPosition));
-    this._enemiesController.events.on('onRemoveFromMap', (msg, position) => this._onEnemyKilled(position));
+    this._enemiesController.events.on('positionChanged', () => this._onEnemyPositionChanged());
   }
 
-  _onPlayerPositionChanged(newPosition, previousPosition) {
+  _onPlayerPositionChanged() {
     if (GLOBAL_VARIABLES.gameState !== GAME_STATE.Gameplay) {
       return;
     }
 
-    this._playerPositionHelper.setPosition(newPosition);
+    const playerPosition = GLOBAL_VARIABLES.playerPosition;
+    this._playerPositionHelper.setPosition(playerPosition);
 
-    this._gameObjectsMap[previousPosition.row][previousPosition.column] = null;
+    this._checkGhostCollide();
+    this._checkEvilPumpkinCollide();
+    this._checkConsumablesCollide();
+  }
 
-    if (this._gameObjectsMap[newPosition.row][newPosition.column] === GAME_OBJECT_TYPE.Enemy) {
+  _checkGhostCollide() {
+    const playerPosition = GLOBAL_VARIABLES.playerPosition;
+    const ghostMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Ghost];
+
+    if (ghostMap[playerPosition.row][playerPosition.column].length > 0) {
       this._onLose();
       return;
     }
+  }
 
+  _checkEvilPumpkinCollide() {
+    const playerPosition = GLOBAL_VARIABLES.playerPosition;
+    const evilPumpkinMap = GLOBAL_VARIABLES.maps[MAP_TYPE.EvilPumpkin];
+
+    if (evilPumpkinMap[playerPosition.row][playerPosition.column]) {
+      this._onLose();
+      return;
+    }
+  }
+
+  _checkConsumablesCollide() {
+    const playerPosition = GLOBAL_VARIABLES.playerPosition;
     const consumablesMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Consumable];
-    const consumable = consumablesMap[newPosition.row][newPosition.column];
+    const consumable = consumablesMap[playerPosition.row][playerPosition.column];
 
     if (consumable) {
       const consumableType = consumable.getType();
@@ -302,52 +343,37 @@ export default class GameField extends THREE.Group {
       this._addScore(score);
       this._consumablesController.removeConsumable(consumable, false);
     }
-
-    this._gameObjectsMap[newPosition.row][newPosition.column] = GAME_OBJECT_TYPE.Player;
   }
 
-  _onEnemyPositionChanged(newPosition, previousPosition) {
-    if (previousPosition && this._gameObjectsMap[previousPosition.row][previousPosition.column] !== GAME_OBJECT_TYPE.Obstacle) {
-      this._gameObjectsMap[previousPosition.row][previousPosition.column] = null;
-    }
-
-    if (this._gameObjectsMap[newPosition.row][newPosition.column] === GAME_OBJECT_TYPE.Obstacle) {
-      return;
-    }
-
-    if (this._gameObjectsMap[newPosition.row][newPosition.column] === GAME_OBJECT_TYPE.Player) {
-      this._onLose();
-      return;
-    }
-
-    this._gameObjectsMap[newPosition.row][newPosition.column] = GAME_OBJECT_TYPE.Enemy;
+  _onEnemyPositionChanged() {
+    this._checkGhostCollide();
+    this._checkEvilPumpkinCollide();
+    this._updateBoardColors();
   }
 
-  _onEnemyKilled(position) {
-    this._gameObjectsMap[position.row][position.column] = null;
+  _updateBoardColors() {
+    const ghostMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Ghost];
+    const evilPumpkinMap = GLOBAL_VARIABLES.maps[MAP_TYPE.EvilPumpkin];
+    const obstacleMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Obstacle];
 
-    this._updateEnemiesMap();
-    this._updateObstaclesMap();
-  }
+    const enemiesMap = [];
 
-  _updateEnemiesMap() {
-    const enemiesPositions = this._enemiesController.getActiveEnemiesPositions();
+    for (let row = 0; row < ghostMap.length; row++) {
+      enemiesMap.push([]);
 
-    for (let i = 0; i < enemiesPositions.length; i++) {
-      const position = enemiesPositions[i];
-      this._gameObjectsMap[position.row][position.column] = GAME_OBJECT_TYPE.Enemy;
-    }
-  }
+      for (let column = 0; column < ghostMap[0].length; column++) {
+        let isEnemy = 0;
 
-  _updateObstaclesMap() {
-    const obstaclesMap = this._obstaclesController.getObstaclesMap();
-
-    for (let row = 0; row < obstaclesMap.length; row++) {
-      for (let column = 0; column < obstaclesMap[row].length; column++) {
-        if (obstaclesMap[row][column] === GAME_OBJECT_TYPE.Obstacle) {
-          this._gameObjectsMap[row][column] = GAME_OBJECT_TYPE.Obstacle;
+        if (obstacleMap[row][column]) {
+          isEnemy = 0;
+        } else {
+          isEnemy = ghostMap[row][column].length > 0 || evilPumpkinMap[row][column] ? 1 : 0;
         }
+
+        enemiesMap[row].push(isEnemy);
       }
     }
+
+    this._board.updateEnemiesMap(enemiesMap);
   }
 }

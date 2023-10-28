@@ -5,8 +5,9 @@ import { PLAYER_ACTIONS, PLAYER_JUMP_STATE, PLAYER_STATE } from './data/player-d
 import { PLAYER_CONFIG } from './data/player-config';
 import { LEVEL_CONFIG } from '../data/level-config';
 import { DIRECTION, ROTATION_BY_DIRECTION } from '../data/game-data';
-import { GAME_CONFIG } from '../data/game-config';
+import { GAME_CONFIG, ROUND_CONFIG } from '../data/game-config';
 import { GLOBAL_VARIABLES } from '../data/global-variables';
+import { getCoordinatesFromPosition } from '../../../../core/helpers/helpers';
 
 export default class Player extends THREE.Group {
   constructor() {
@@ -50,9 +51,8 @@ export default class Player extends THREE.Group {
     const position = this._calculateCurrentPosition();
 
     if (position.row !== this._currentPosition.row || position.column !== this._currentPosition.column) {
-      const previousPosition = this._currentPosition;
       this._currentPosition = GLOBAL_VARIABLES.playerPosition = position;
-      this.events.post('positionChanged', this._currentPosition, previousPosition);
+      this.events.post('positionChanged');
     }
   }
 
@@ -113,6 +113,13 @@ export default class Player extends THREE.Group {
   setDirection(direction) {
     this._currentDirection = direction;
     this._view.rotation.y = ROTATION_BY_DIRECTION[direction];
+  }
+
+  onRoundChanged() {
+    const round = GLOBAL_VARIABLES.round;
+    const playerRoundConfig = ROUND_CONFIG.player[round];
+
+    PLAYER_CONFIG.speedMultiplier = playerRoundConfig.speedMultiplier;
   }
 
   show() {
@@ -177,8 +184,8 @@ export default class Player extends THREE.Group {
 
   _updateJump(dt) {
     if (this._jumpState === PLAYER_JUMP_STATE.GoingUp || this._jumpState === PLAYER_JUMP_STATE.GoingDown) {
-      this._view.position.y += this._jumpSpeed * dt * PLAYER_CONFIG.speed;
-      this._jumpSpeed -= GAME_CONFIG.gravity * PLAYER_CONFIG.mass * dt * PLAYER_CONFIG.speed;
+      this._view.position.y += this._jumpSpeed * dt * PLAYER_CONFIG.speedMultiplier;
+      this._jumpSpeed -= GAME_CONFIG.gravity * PLAYER_CONFIG.mass * dt * PLAYER_CONFIG.speedMultiplier;
 
       if (this._jumpSpeed < 0) {
         this._setJumpState(PLAYER_JUMP_STATE.GoingDown);
@@ -224,7 +231,7 @@ export default class Player extends THREE.Group {
     this._setJumpState(PLAYER_JUMP_STATE.SqueezeBeforeJumpPhase01);
 
     const scaleDifference = (this._view.scale.y - this._squeezeSides) / (1 - this._squeezeSides);
-    const squeezeDuration = PLAYER_CONFIG.jumpAnimation.squeezeDuration * scaleDifference / PLAYER_CONFIG.speed;
+    const squeezeDuration = PLAYER_CONFIG.jumpAnimation.squeezeDuration * scaleDifference / PLAYER_CONFIG.speedMultiplier;
 
     if (scaleDifference < PLAYER_CONFIG.jumpAnimation.disableAnimationBeforeJumpThreshold) {
       this._phase02BeforeJump();
@@ -241,7 +248,7 @@ export default class Player extends THREE.Group {
   _phase02BeforeJump() {
     this._setJumpState(PLAYER_JUMP_STATE.SqueezeBeforeJumpPhase02);
     
-    const duration = PLAYER_CONFIG.jumpAnimation.squeezeDuration * 0.5 / PLAYER_CONFIG.speed;
+    const duration = PLAYER_CONFIG.jumpAnimation.squeezeDuration * 0.5 / PLAYER_CONFIG.speedMultiplier;
     this._beforeJumpSqueezeTweens = this._squeezeOnGround(this._squeezeTop, duration, TWEEN.Easing.Sinusoidal.In)
     this._beforeJumpSqueezeTweens.positionTween.onComplete(() => {
       this._setJumpState(PLAYER_JUMP_STATE.GoingUp);
@@ -256,7 +263,7 @@ export default class Player extends THREE.Group {
     this._resetJumpingTweens();
     this._setJumpState(PLAYER_JUMP_STATE.SqueezeAfterJump);
 
-    const duration = PLAYER_CONFIG.jumpAnimation.squeezeDuration / PLAYER_CONFIG.speed;
+    const duration = PLAYER_CONFIG.jumpAnimation.squeezeDuration / PLAYER_CONFIG.speedMultiplier;
     this._afterJumpSqueezeTweens = this._squeezeOnGround(this._squeezeSides, duration, TWEEN.Easing.Sinusoidal.Out);
     this._afterJumpSqueezeTweens.positionTween.onComplete(() => {
       if (this._nextAction) {
@@ -296,7 +303,7 @@ export default class Player extends THREE.Group {
   }
 
   _moveToPosition(newPosition) {
-    const coordinates = this._getCoordinatesFromPosition(newPosition);
+    const coordinates = getCoordinatesFromPosition(newPosition);
 
     this._moveToPositionTween = new TWEEN.Tween(this._view.position)
       .to({ x: coordinates.x, z: coordinates.z }, this._jumpHalfTime * 2)
@@ -308,7 +315,7 @@ export default class Player extends THREE.Group {
     if (startFromSecondPhase) {
       this._playIdleAnimationPhase02();
     } else {
-      const duration = PLAYER_CONFIG.idleAnimation.squeezeDuration / PLAYER_CONFIG.speed;
+      const duration = PLAYER_CONFIG.idleAnimation.squeezeDuration / PLAYER_CONFIG.speedMultiplier;
       this._idleSqueezeTweens = this._squeezeOnGround(PLAYER_CONFIG.idleAnimation.squeezePower, duration, TWEEN.Easing.Sinusoidal.InOut);
       this._idleSqueezeTweens.positionTween.onComplete(() => {        
         this._playIdleAnimationPhase02();
@@ -317,7 +324,7 @@ export default class Player extends THREE.Group {
   }
 
   _playIdleAnimationPhase02() {
-    const duration = PLAYER_CONFIG.idleAnimation.squeezeDuration / PLAYER_CONFIG.speed;
+    const duration = PLAYER_CONFIG.idleAnimation.squeezeDuration / PLAYER_CONFIG.speedMultiplier;
     this._idleSqueezeTweens = this._squeezeOnGround(1, duration, TWEEN.Easing.Sinusoidal.InOut);
     this._idleSqueezeTweens.positionTween.onComplete(() => {
       this._startIdleAnimation();
@@ -353,16 +360,6 @@ export default class Player extends THREE.Group {
   _setJumpState(state) {
     this._previousJumpState = this._jumpState;
     this._jumpState = state;
-  }
-
-  _getCoordinatesFromPosition(position) {
-    const cellSize = GAME_CONFIG.cellSize;
-    const currentLevel = GLOBAL_VARIABLES.currentLevel;
-    const fieldConfig = LEVEL_CONFIG[currentLevel].field;
-    const x = (-fieldConfig.columns * cellSize * 0.5 + cellSize * 0.5) + position.column * cellSize;
-    const z = (-fieldConfig.rows * cellSize * 0.5 + cellSize * 0.5) + position.row * cellSize;
-
-    return { x, z };
   }
 
   _stopIdleAnimation() {
@@ -431,7 +428,7 @@ export default class Player extends THREE.Group {
 
   _initJumpTime() {
     const jumpHeight = PLAYER_CONFIG.jumpImpulse * PLAYER_CONFIG.jumpImpulse / (2 * GAME_CONFIG.gravity * PLAYER_CONFIG.mass * PLAYER_CONFIG.mass);
-    this._jumpHalfTime = Math.sqrt(2 * jumpHeight / GAME_CONFIG.gravity) * 1000 / PLAYER_CONFIG.speed;
+    this._jumpHalfTime = Math.sqrt(2 * jumpHeight / GAME_CONFIG.gravity) * 1000 / PLAYER_CONFIG.speedMultiplier;
   }
 
   _initActions() {

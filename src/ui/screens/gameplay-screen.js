@@ -1,5 +1,6 @@
 import { Black, Ease, TextField, Tween } from "black-engine";
 import ScreenAbstract from "./screen-abstract";
+import { GLOBAL_VARIABLES } from "../../scene/game-scene/game-field/data/global-variables";
 
 export default class GameplayScreen extends ScreenAbstract {
   constructor() {
@@ -7,6 +8,22 @@ export default class GameplayScreen extends ScreenAbstract {
 
     this._score = null;
     this._goText = null;
+    this._round = null;
+  }
+
+  updateRound() {
+    const currentRound = GLOBAL_VARIABLES.round;
+    this._round.text = `${currentRound + 1}`;
+
+    this._round.removeComponent(this._round.getComponent(Tween));
+
+    const tween = new Tween({ scale: 1.7 }, 0.3, { ease: Ease.sinusoidalOut, });
+    this._round.add(tween);
+
+    tween.on('complete', () => {
+      const tween = new Tween({ scale: 1 }, 0.3, { ease: Ease.sinusoidalIn, });
+      this._round.add(tween);
+    });
   }
 
   setScore(value) {
@@ -33,6 +50,7 @@ export default class GameplayScreen extends ScreenAbstract {
 
   _init() {
     this._initScore();
+    this._initRoundText();
     this._initGoText();
   }
 
@@ -41,6 +59,18 @@ export default class GameplayScreen extends ScreenAbstract {
 
     score.alignAnchor(0, 0.5);
     this.add(score);
+  }
+
+  _initRoundText() {
+    const roundCaption = this._roundCaption = new TextField('Round:', 'halloween_spooky', 0x000000, 50);
+    this.add(roundCaption);
+
+    roundCaption.alignAnchor(0.5, 0.5);
+
+    const round = this._round = new TextField('1', 'halloween_spooky', 0x000000, 50);
+    this.add(round);
+
+    round.alignAnchor(0.5, 0.5);
   }
 
   _initGoText() {
@@ -60,10 +90,16 @@ export default class GameplayScreen extends ScreenAbstract {
   _onResize() {
     const bounds = Black.stage.bounds;
 
-    this._score.x = bounds.left + bounds.width * 0.5 - 50;
-    this._score.y = bounds.top + 60;
+    this._score.x = bounds.right - 300;
+    this._score.y = bounds.top + 70;
 
     this._goText.x = bounds.left + bounds.width * 0.5;
     this._goText.y = bounds.top + bounds.height * 0.5;
+
+    this._roundCaption.x = bounds.left + bounds.width * 0.5 - 35;
+    this._roundCaption.y = bounds.top + 70;
+
+    this._round.x = bounds.left + bounds.width * 0.5 + 35;
+    this._round.y = bounds.top + 70;
   }
 }

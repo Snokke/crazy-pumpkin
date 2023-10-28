@@ -15,7 +15,6 @@ export default class ObstaclesController extends THREE.Group {
 
     this._obstacles = [];
     this._positionHelpers = [];
-    this._obstaclesMap = null;
   }
 
   createObstacles() {
@@ -30,9 +29,11 @@ export default class ObstaclesController extends THREE.Group {
     let delay = 0;
     const delayStep = 80;
 
-    for (let row = 0; row < this._obstaclesMap.length; row++) {
-      for (let column = 0; column < this._obstaclesMap[0].length; column++) {
-        if (this._obstaclesMap[row][column]) {
+    const obstacleMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Obstacle];
+
+    for (let row = 0; row < obstacleMap.length; row++) {
+      for (let column = 0; column < obstacleMap[0].length; column++) {
+        if (obstacleMap[row][column]) {
           const obstacle = this._getObstacleByPosition({ row, column });
           obstacle.show();
           obstacle.showIntro(delay);
@@ -42,10 +43,6 @@ export default class ObstaclesController extends THREE.Group {
     }
 
     return Delayed.call(delay + delayStep * 1.5, () => {});
-  }
-
-  getObstaclesMap() {
-    return this._obstaclesMap;
   }
 
   debugChangedHelper() {
@@ -78,24 +75,12 @@ export default class ObstaclesController extends THREE.Group {
   }
 
   _initMap() {
-    this._obstaclesMap = [];
-    const currentLevel = GLOBAL_VARIABLES.currentLevel;
-    const fieldConfig = LEVEL_CONFIG[currentLevel].field;
     const obstacleMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Obstacle];
-
-    for (let row = 0; row < fieldConfig.rows; row++) {
-      this._obstaclesMap.push([]);
-
-      for (let column = 0; column < fieldConfig.columns; column++) {
-        this._obstaclesMap[row].push(null);
-      }
-    }
 
     for (let i = 0; i < this._obstacles.length; i++) {
       const obstacle = this._obstacles[i];
       const position = obstacle.getPosition();
 
-      this._obstaclesMap[position.row][position.column] = GAME_OBJECT_TYPE.Obstacle;
       obstacleMap[position.row][position.column] = obstacle;
     }
   }

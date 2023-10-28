@@ -40,6 +40,10 @@ export default class UI extends DisplayObject {
     this._gameplayScreen.showGoText();
   }
 
+  onRoundChanged() {
+    this._gameplayScreen.updateRound();
+  }
+
   onAdded() {
     this._initOverlay();
     this._initSoundIcon();

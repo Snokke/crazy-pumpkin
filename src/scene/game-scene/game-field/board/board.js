@@ -14,6 +14,7 @@ export default class Board extends THREE.Group {
     this._fieldHelper = null;
 
     this._cellsTweens = [];
+    this._enemiesMap = [];
   }
 
   reset() {
@@ -26,6 +27,7 @@ export default class Board extends THREE.Group {
     this._initCellsTweens();
     this._initField();
     this._initFieldHelper();
+    this._initEnemiesMap();
   }
 
   debugChangedHelper() {
@@ -34,6 +36,44 @@ export default class Board extends THREE.Group {
     }
 
     this._fieldHelper.visible = GAME_CONFIG.helpers;
+  }
+
+  updateEnemiesMap(newEnemiesMap) {
+    for (let row = 0; row < this._enemiesMap.length; row++) {
+      for (let column = 0; column < this._enemiesMap[0].length; column++) {
+        if (this._enemiesMap[row][column] !== newEnemiesMap[row][column]) {
+          this._enemiesMap[row][column] = newEnemiesMap[row][column];
+          this.updateCellColor({ row, column }, newEnemiesMap[row][column]);
+        } 
+      }
+    }
+  }
+
+  updateCellColor(position, isEnemy) {
+    const cellIndex = this._getCellIndex(position);
+    const endColor = isEnemy ? new THREE.Color(BOARD_CONFIG.enemyColor) : new THREE.Color(0xaaaaaa);
+    const currentColor = new THREE.Color();
+    this._view.getColorAt(cellIndex, currentColor);
+
+    const colorObject = { value: 0 };
+
+    new TWEEN.Tween(colorObject)
+      .to({ value: 1 }, 300)
+      .easing(TWEEN.Easing.Sinusoidal.InOut)
+      .start()
+      .onUpdate(() => {
+        const color = new THREE.Color().copy(currentColor).lerp(endColor, colorObject.value);
+        this._view.setColorAt(cellIndex, color);
+        this._view.instanceColor.needsUpdate = true;
+      });
+  }
+
+  _getCellIndex(position) {
+    const currentLevel = GLOBAL_VARIABLES.currentLevel;
+    const fieldConfig = LEVEL_CONFIG[currentLevel].field;
+    const cellSize = GAME_CONFIG.cellSize;
+
+    return Math.floor(position.column / cellSize) + Math.floor(position.row / cellSize) * fieldConfig.columns;
   }
 
   _circularWaveFromCell(position) {
@@ -128,8 +168,8 @@ export default class Board extends THREE.Group {
     const cellSize = GAME_CONFIG.cellSize;
     const cellsAmount = fieldConfig.columns * fieldConfig.rows;
 
-    const planeGeometry = new THREE.PlaneGeometry(cellSize * 0.95, cellSize * 0.95);
-    const planeMaterial = new THREE.MeshToonMaterial({ color: 0xaaaaaa });
+    const planeGeometry = new THREE.PlaneGeometry(cellSize * 0.98, cellSize * 0.98);
+    const planeMaterial = new THREE.MeshToonMaterial();
 
     const view = this._view = new THREE.InstancedMesh(planeGeometry, planeMaterial, cellsAmount);
     this.add(view);
@@ -145,8 +185,10 @@ export default class Board extends THREE.Group {
 
       dummy.updateMatrix();
       view.setMatrixAt(i, dummy.matrix);
+      view.setColorAt(i, new THREE.Color(0xaaaaaa));
     }
-
+    
+    view.instanceColor.needsUpdate = true;
     view.instanceMatrix.needsUpdate = true;
     view.receiveShadow = true;
   }
@@ -174,5 +216,19 @@ export default class Board extends THREE.Group {
 
     fieldHelper.rotation.x = Math.PI / 2;
     fieldHelper.position.y = 0.01;
+  }
+
+  _initEnemiesMap() {
+    const currentLevel = GLOBAL_VARIABLES.currentLevel;
+    const fieldConfig = LEVEL_CONFIG[currentLevel].field;
+    this._enemiesMap = [];
+
+    for (let i = 0; i < fieldConfig.rows; i += 1) {
+      this._enemiesMap[i] = [];
+
+      for (let j = 0; j < fieldConfig.columns; j += 1) {
+        this._enemiesMap[i][j] = 0;
+      }
+    }
   }
 }

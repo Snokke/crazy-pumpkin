@@ -5,7 +5,7 @@ import { LEVEL_CONFIG } from '../../data/level-config';
 import { GAME_CONFIG } from '../../data/game-config';
 import { ENEMY_STATE, ENEMY_TYPE } from '../data/enemy-data';
 import { isEqualsPositions, randomBetween } from '../../../../../core/helpers/helpers';
-import { DIRECTION, ROTATION_BY_DIRECTION } from '../../data/game-data';
+import { DIRECTION, MAP_TYPE, ROTATION_BY_DIRECTION } from '../../data/game-data';
 import { GHOST_CONFIG, GHOST_MOVEMENT_STATE } from '../data/ghost-config';
 import { GLOBAL_VARIABLES } from '../../data/global-variables';
 
@@ -38,7 +38,7 @@ export default class Ghost extends EnemyAbstract {
     const currentLevel = GLOBAL_VARIABLES.currentLevel;
     const fieldConfig = LEVEL_CONFIG[currentLevel].field;
 
-    const speed = this._moveSpeed * dt;
+    const speed = this._moveSpeed * dt * GHOST_CONFIG.speedMultiplier;
 
     switch (this._currentDirection) {
       case DIRECTION.Up:
@@ -74,7 +74,8 @@ export default class Ghost extends EnemyAbstract {
     const newPosition = this.getPositionFromView();
 
     if (!isEqualsPositions(this._currentPosition, newPosition)) {
-      this.events.post('positionChanged', newPosition, this._currentPosition);
+      this._updateGhostMap(newPosition);
+      this.events.post('positionChanged');
       this._currentPosition = newPosition;
 
       if (GAME_CONFIG.helpers) {
@@ -97,7 +98,8 @@ export default class Ghost extends EnemyAbstract {
       this._state = ENEMY_STATE.Active;
       this._movementState = GHOST_MOVEMENT_STATE.Moving;
       this.setBodyActivity(true);
-      this.events.post('positionChanged', this._currentPosition, null);
+      this._updateGhostMap(this._currentPosition);
+      this.events.post('positionChanged');
 
       if (GAME_CONFIG.helpers) {
         this._positionHelper.visible = true;
@@ -112,7 +114,9 @@ export default class Ghost extends EnemyAbstract {
     this._state = ENEMY_STATE.Idle;
     this._movementState = GHOST_MOVEMENT_STATE.Idle;
     this.setBodyActivity(false);
-    this.events.post('onRemoveFromMap', this._currentPosition);
+
+    const ghostMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Ghost];
+    this._removeGhostFromArray(ghostMap[this._currentPosition.row][this._currentPosition.column]);
 
     if (GAME_CONFIG.helpers) {
       this._positionHelper.visible = false;
@@ -166,8 +170,12 @@ export default class Ghost extends EnemyAbstract {
     this.stopTweens();
   }
 
-  getType() {
-    return this._type;
+  stopTweens() {    
+    this._rotationTween?.stop();
+    this._spawnHideTween?.opacityTween.stop();
+    this._spawnHideTween?.positionTween.stop();
+
+    this._lifeTimer?.stop();
   }
 
   _rotateToDirection(direction) {
@@ -188,7 +196,7 @@ export default class Ghost extends EnemyAbstract {
     }
 
     this._currentDirection = direction;
-    const duration = Math.abs(this._viewGroup.rotation.y - targetAngle) * GHOST_CONFIG.turnRate;
+    const duration = (Math.abs(this._viewGroup.rotation.y - targetAngle) * GHOST_CONFIG.turnRate) / GHOST_CONFIG.speedMultiplier;
 
     this._rotationTween = new TWEEN.Tween(this._viewGroup.rotation)
       .to({ y: targetAngle }, duration)
@@ -206,9 +214,10 @@ export default class Ghost extends EnemyAbstract {
     this._viewGroup.position.y = 1.7;
 
     const opacityObject = { value: 0 };
+    const duration = GHOST_CONFIG.spawnAnimationDuration / GHOST_CONFIG.speedMultiplier;
 
     const opacityTween = new TWEEN.Tween(opacityObject)
-      .to({ value: GHOST_CONFIG.opacity }, GHOST_CONFIG.spawnAnimationDuration)
+      .to({ value: GHOST_CONFIG.opacity }, duration)
       .easing(TWEEN.Easing.Sinusoidal.Out)
       .start()
       .onUpdate(() => {
@@ -218,7 +227,7 @@ export default class Ghost extends EnemyAbstract {
       });
 
     const positionTween = new TWEEN.Tween(this._viewGroup.position)
-      .to({ y: 0.7 }, GHOST_CONFIG.spawnAnimationDuration)
+      .to({ y: 0.7 }, duration)
       .easing(TWEEN.Easing.Sinusoidal.Out)
       .start();
 
@@ -227,9 +236,10 @@ export default class Ghost extends EnemyAbstract {
 
   _showHideAnimation() {
     const opacityObject = { value: GHOST_CONFIG.opacity };
+    const duration = GHOST_CONFIG.spawnAnimationDuration / GHOST_CONFIG.speedMultiplier;
 
     const opacityTween = new TWEEN.Tween(opacityObject)
-      .to({ value: 0 }, GHOST_CONFIG.spawnAnimationDuration)
+      .to({ value: 0 }, duration)
       .easing(TWEEN.Easing.Sinusoidal.Out)
       .start()
       .onUpdate(() => {
@@ -239,7 +249,7 @@ export default class Ghost extends EnemyAbstract {
       });
 
     const positionTween = new TWEEN.Tween(this._viewGroup.position)
-      .to({ y: 1.7 }, GHOST_CONFIG.spawnAnimationDuration)
+      .to({ y: 1.7 }, duration)
       .easing(TWEEN.Easing.Sinusoidal.Out)
       .start();
 
@@ -257,12 +267,22 @@ export default class Ghost extends EnemyAbstract {
       });
   }
 
-  stopTweens() {    
-    this._rotationTween?.stop();
-    this._spawnHideTween?.opacityTween.stop();
-    this._spawnHideTween?.positionTween.stop();
+  _updateGhostMap(newPosition) {
+    const ghostMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Ghost];
 
-    this._lifeTimer?.stop();
+    if (this._currentPosition) {
+      this._removeGhostFromArray(ghostMap[this._currentPosition.row][this._currentPosition.column]);
+    }
+
+    ghostMap[newPosition.row][newPosition.column].push(this);
+  }
+
+  _removeGhostFromArray(array) {
+    const index = array.indexOf(this);
+
+    if (index !== -1) {
+      array.splice(index, 1);
+    }
   }
 
   _init() {

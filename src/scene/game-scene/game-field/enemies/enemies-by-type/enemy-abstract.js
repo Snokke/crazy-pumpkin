@@ -23,6 +23,7 @@ export default class EnemyAbstract extends THREE.Group {
     this._isBodyActive = false;
 
     this._state = ENEMY_STATE.Idle;
+    this._type = null;
   }
 
   update(dt) { }
@@ -47,6 +48,10 @@ export default class EnemyAbstract extends THREE.Group {
 
   isBodyActive() {
     return this._isBodyActive;
+  }
+
+  getType() {
+    return this._type;
   }
 
   setPosition(position) {

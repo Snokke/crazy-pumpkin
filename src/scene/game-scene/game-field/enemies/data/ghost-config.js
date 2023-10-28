@@ -1,11 +1,11 @@
 const GHOST_CONFIG = {
-  moveSpeed: { min: 0.5, max: 1.5 },
+  speedMultiplier: 1,
+  moveSpeed: { min: 0.7, max: 1.5 },
   turnRate: 300,
   opacity: 0.9,
-  spawnAnimationDuration: 1700,
-  spawnTime: { min: 1000, max: 4000 },
-  lifeTime: { min: 20000, max: 25000 },
-  maxCount: 20,
+  spawnAnimationDuration: 1500,
+  spawnTime: { min: 1500, max: 2000 },
+  lifeTime: { min: 15000, max: 20000 },
 }
 
 const GHOST_MOVEMENT_STATE = {

@@ -2,12 +2,13 @@ import * as THREE from 'three';
 import { ENEMY_TYPE } from './data/enemy-data';
 import ENEMY_CLASS from './data/enemy-class';
 import { MessageDispatcher } from 'black-engine';
-import { GAME_CONFIG } from '../data/game-config';
 import { GAME_STATE } from '../data/game-data';
 import { GHOST_CONFIG } from './data/ghost-config';
 import Delayed from '../../../../core/helpers/delayed-call';
 import { randomBetween } from '../../../../core/helpers/helpers';
 import { GLOBAL_VARIABLES } from '../data/global-variables';
+import { EVIL_PUMPKIN_CONFIG } from './data/evil-pumpkin-config';
+import { ROUND_CONFIG } from '../data/game-config';
 
 export default class EnemiesController extends THREE.Group {
   constructor() {
@@ -32,8 +33,9 @@ export default class EnemiesController extends THREE.Group {
   }
 
   activateSpawnEnemies() {
-    this._ghostsSpawnHandler();
-  }
+    this._ghostSpawn();
+    this._spawnFirstEvilPumpkin();
+}
 
   stopTweens() {
     this._iterateActiveEnemies((enemy) => enemy.stopTweens());
@@ -49,6 +51,11 @@ export default class EnemiesController extends THREE.Group {
     });
   }
 
+  onRoundChanged() {
+    this._updateGhostOnRoundChanged();
+    this._updateEvilPumpkinOnRoundChanged();
+  }
+
   getActiveEnemiesPositions() {
     const positions = [];
 
@@ -61,8 +68,38 @@ export default class EnemiesController extends THREE.Group {
     return positions;
   }
 
-  _ghostsSpawnHandler() {
-    this._ghostSpawn();
+  _updateGhostOnRoundChanged() {
+    const round = GLOBAL_VARIABLES.round;
+    const ghostRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.Ghost][round];
+    GHOST_CONFIG.speedMultiplier = ghostRoundConfig.speedMultiplier;
+
+    const currentGhostCount = this._activeEnemies[ENEMY_TYPE.Ghost].length;
+    const spawnCount = ghostRoundConfig.maxCount - currentGhostCount;
+
+    if (spawnCount < 0) {
+      const removeCount = Math.abs(spawnCount);
+
+      for (let i = 0; i < removeCount; i++) {
+        const enemy = this._activeEnemies[ENEMY_TYPE.Ghost][i];
+        enemy.kill();
+      }
+    }
+  }
+
+  _updateEvilPumpkinOnRoundChanged() {
+    const round = GLOBAL_VARIABLES.round;
+    const evilPumpkinRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.EvilPumpkin][round];
+    EVIL_PUMPKIN_CONFIG.speedMultiplier = evilPumpkinRoundConfig.speedMultiplier;
+
+    if (GLOBAL_VARIABLES.gameState === GAME_STATE.Gameplay) {
+      this._evilPumpkinSpawn();
+    }
+  }
+
+  _spawnFirstEvilPumpkin() {
+    Delayed.call(1000, () => {
+      this._spawnEnemy(ENEMY_TYPE.EvilPumpkin);
+    });
   }
 
   _ghostSpawn() {
@@ -73,7 +110,11 @@ export default class EnemiesController extends THREE.Group {
         return;
       }
 
-      if (this._activeEnemies[ENEMY_TYPE.Ghost].length < GHOST_CONFIG.maxCount) {
+      const round = GLOBAL_VARIABLES.round;
+      const ghostRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.Ghost][round];
+      const maxCount = ghostRoundConfig.maxCount;
+
+      if (this._activeEnemies[ENEMY_TYPE.Ghost].length < maxCount) {
         this._spawnEnemy(ENEMY_TYPE.Ghost);
       }
 
@@ -81,8 +122,32 @@ export default class EnemiesController extends THREE.Group {
     });
   }
 
+  _evilPumpkinSpawn() {
+    const round = GLOBAL_VARIABLES.round;
+    const evilPumpkinRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.EvilPumpkin][round];
+    const currentCount = this._activeEnemies[ENEMY_TYPE.EvilPumpkin].length;
+
+    const spawnCount = evilPumpkinRoundConfig.count - currentCount;
+
+    if (spawnCount < 0) {
+      const removeCount = Math.abs(spawnCount);
+
+      for (let i = 0; i < removeCount; i++) {
+        const enemy = this._activeEnemies[ENEMY_TYPE.EvilPumpkin][i];
+        enemy.kill();
+      }
+
+      return;
+    }
+
+    for (let i = 0; i < spawnCount; i++) {
+      this._spawnEnemy(ENEMY_TYPE.EvilPumpkin);
+    }
+  }
+
   _removeAllEnemies() {
     this._removeEnemiesByType(ENEMY_TYPE.Ghost);
+    this._removeEnemiesByType(ENEMY_TYPE.EvilPumpkin);
     this._resetPoolEnemies();
   }
 
@@ -124,7 +189,7 @@ export default class EnemiesController extends THREE.Group {
 
   _getEnemyFromPool(type) {
     if (this._enemiesPool[type].length === 0) {
-      const enemy = this._createEnemy(ENEMY_TYPE.Ghost)
+      const enemy = this._createEnemy(type);
       return enemy;
     }
 
@@ -144,9 +209,8 @@ export default class EnemiesController extends THREE.Group {
   }
 
   _initEnemySignals(enemy) {
-    enemy.events.on('positionChanged', (msg, newPosition, previousPosition) => this.events.post('positionChanged', newPosition, previousPosition));
+    enemy.events.on('positionChanged', () => this.events.post('positionChanged'));
     enemy.events.on('onKilled', (msg, enemyToKill) => this._removeEnemy(enemyToKill));
-    enemy.events.on('onRemoveFromMap', (msg, position) => this.events.post('onRemoveFromMap', position));
   }
 
   _initEnemiesObjects() {

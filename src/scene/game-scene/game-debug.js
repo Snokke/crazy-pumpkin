@@ -3,7 +3,8 @@ import GUIHelper from '../../core/helpers/gui-helper/gui-helper';
 import { MessageDispatcher } from 'black-engine';
 import DEBUG_CONFIG from '../../core/configs/debug-config';
 import { SOUNDS_CONFIG } from '../../core/configs/sounds-config';
-import { GAME_CONFIG } from './game-field/data/game-config';
+import { GAME_CONFIG, ROUND_CONFIG } from './game-field/data/game-config';
+import { GLOBAL_VARIABLES } from './game-field/data/global-variables';
 
 export default class GameDebug extends THREE.Group {
   constructor() {
@@ -12,8 +13,15 @@ export default class GameDebug extends THREE.Group {
     this.events = new MessageDispatcher();
 
     this._audioEnabledController = null;
+    this._increaseRoundButton = null;
+    this._decreaseRoundButton = null;
 
     this._init();
+  }
+
+  onRoundChanged() {
+    this._increaseRoundButton.disabled = GLOBAL_VARIABLES.round === ROUND_CONFIG.maxRound;
+    this._decreaseRoundButton.disabled = GLOBAL_VARIABLES.round === 0;
   }
 
   updateSoundController() {
@@ -73,5 +81,19 @@ export default class GameDebug extends THREE.Group {
     });
 
     gameFolder.addSeparator();
+
+    this._decreaseRoundButton = gameFolder.addButton({
+      title: 'Decrease round',
+    }).on('click', () => {
+      this.events.post('decreaseRound');
+    });
+
+    this._increaseRoundButton = gameFolder.addButton({
+      title: 'Increase round',
+    }).on('click', () => {
+      this.events.post('increaseRound');
+    });
+
+    this.onRoundChanged();
   }
 }

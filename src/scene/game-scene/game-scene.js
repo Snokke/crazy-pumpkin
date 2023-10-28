@@ -6,7 +6,8 @@ import SCENE_CONFIG from '../../core/configs/scene-config';
 import DEBUG_CONFIG from '../../core/configs/debug-config';
 import GameField from './game-field/game-field';
 import CameraController from './camera-controller/camera-controller';
-import { GAME_CONFIG } from './game-field/data/game-config';
+import { GAME_CONFIG, ROUND_CONFIG } from './game-field/data/game-config';
+import { GLOBAL_VARIABLES } from './game-field/data/global-variables';
 
 export default class GameScene extends THREE.Group {
   constructor(data) {
@@ -127,10 +128,43 @@ export default class GameScene extends THREE.Group {
     this._gameDebug.events.on('orbitControlsChanged', () => this._onOrbitControlsChanged());
     this._gameDebug.events.on('audioEnabledChanged', () => this.events.post('onSoundsEnabledChanged'));
     this._gameDebug.events.on('helpersChanged', () => this._gameField.onHelpersChanged());
+    this._gameDebug.events.on('increaseRound', () => this._debugIncreaseRound());
+    this._gameDebug.events.on('decreaseRound', () => this._debugDecreaseRound());
 
     this._gameField.events.on('gameOver', () => this._onGameOver());
     this._gameField.events.on('scoreChanged', (msg, score) => this.events.post('scoreChanged', score));
     this._gameField.events.on('gameplayStarted', () => this.events.post('gameplayStarted'));
+    this._gameField.events.on('roundUp', () => this._onRoundUp());
+  }
+
+  _onRoundUp() {
+    this._gameDebug.onRoundChanged();
+    this._gameField.onRoundChanged();
+    this.events.post('onRoundChanged');
+  }
+
+  _debugIncreaseRound() {
+    GLOBAL_VARIABLES.round++;
+
+    if (GLOBAL_VARIABLES.round > ROUND_CONFIG.maxRound) {
+      GLOBAL_VARIABLES.round = ROUND_CONFIG.maxRound;
+    }
+
+    this.events.post('onRoundChanged');
+    this._gameField.onRoundChanged();
+    this._gameDebug.onRoundChanged();
+  }
+
+  _debugDecreaseRound() {
+    GLOBAL_VARIABLES.round--;
+
+    if (GLOBAL_VARIABLES.round < 0) {
+      GLOBAL_VARIABLES.round = 0;
+    }
+
+    this.events.post('onRoundChanged');
+    this._gameField.onRoundChanged();
+    this._gameDebug.onRoundChanged();
   }
 
   _onGameOver() {
