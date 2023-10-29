@@ -8,6 +8,7 @@ import { DIRECTION, ROTATION_BY_DIRECTION } from '../data/game-data';
 import { GAME_CONFIG, ROUND_CONFIG } from '../data/game-config';
 import { GLOBAL_VARIABLES } from '../data/global-variables';
 import { getCoordinatesFromPosition } from '../../../../core/helpers/helpers';
+import { CONSUMABLES_CONFIG, CONSUMABLE_TYPE } from '../consumables/data/consumables-config';
 
 export default class Player extends THREE.Group {
   constructor() {
@@ -15,7 +16,7 @@ export default class Player extends THREE.Group {
 
     this.events = new MessageDispatcher();
 
-    this._view = null;
+    this._viewGroup = null;
     this._arrowHelper = null;
     this._currentPosition = { row: 0, column: 0 };
     this._newPosition = { row: 0, column: 0 };
@@ -23,6 +24,8 @@ export default class Player extends THREE.Group {
     this._jumpHalfTime = null;
     this._goingUpTween = null;
     this._goingDownTween = null;
+    this._speedBoosterTimer = null;
+    this._invulnerabilityBoosterTimer = null;
     this._idleSqueezeTweens = { scaleTween: null, positionTween: null };
     this._beforeJumpSqueezeTweens = { scaleTween: null, positionTween: null };
     this._afterJumpSqueezeTweens = { scaleTween: null, positionTween: null };
@@ -102,8 +105,8 @@ export default class Player extends THREE.Group {
     const cellSize = GAME_CONFIG.cellSize;
     const currentLevel = GLOBAL_VARIABLES.currentLevel;
     const fieldConfig = LEVEL_CONFIG[currentLevel].field;
-    this._view.position.x = (-fieldConfig.columns * cellSize * 0.5 + cellSize * 0.5) + this._currentPosition.column * cellSize;
-    this._view.position.z = (-fieldConfig.rows * cellSize * 0.5 + cellSize * 0.5) + this._currentPosition.row * cellSize;
+    this._viewGroup.position.x = (-fieldConfig.columns * cellSize * 0.5 + cellSize * 0.5) + this._currentPosition.column * cellSize;
+    this._viewGroup.position.z = (-fieldConfig.rows * cellSize * 0.5 + cellSize * 0.5) + this._currentPosition.row * cellSize;
   }
 
   getPosition() {
@@ -112,14 +115,19 @@ export default class Player extends THREE.Group {
 
   setDirection(direction) {
     this._currentDirection = direction;
-    this._view.rotation.y = ROTATION_BY_DIRECTION[direction];
+    this._viewGroup.rotation.y = ROTATION_BY_DIRECTION[direction];
   }
 
   onRoundChanged() {
+    if (GLOBAL_VARIABLES.activeBooster === CONSUMABLE_TYPE.BoosterCandyPlayerSpeed) {
+      return;
+    }
+
     const round = GLOBAL_VARIABLES.round;
     const playerRoundConfig = ROUND_CONFIG.player[round];
 
     PLAYER_CONFIG.speedMultiplier = playerRoundConfig.speedMultiplier;
+    this._updateJumpTime();
   }
 
   show() {
@@ -130,17 +138,54 @@ export default class Player extends THREE.Group {
     this.visible = false;
   }
 
+  startSpeedBooster() {
+    const boosterConfig = CONSUMABLES_CONFIG[CONSUMABLE_TYPE.BoosterCandyPlayerSpeed];
+
+    PLAYER_CONFIG.speedMultiplier = boosterConfig.speedMultiplier;
+    this._updateJumpTime();
+
+    this._speedBoosterTimer = new TWEEN.Tween({ value: 0 })
+      .to({ value: 1 }, boosterConfig.duration)
+      .start()
+      .onComplete(() => {
+        GLOBAL_VARIABLES.activeBooster = null;
+        this.onRoundChanged();
+      });
+  }
+
+  startInvulnerabilityBooster() {
+    const boosterConfig = CONSUMABLES_CONFIG[CONSUMABLE_TYPE.BoosterCandyPlayerInvulnerability];
+    this._isBodyActive = false;
+    this._view.material.opacity = 0.8;
+
+    this._invulnerabilityBoosterAnimation = new TWEEN.Tween(this._view.material)
+      .to({ opacity: 0.4 }, 1000)
+      .repeat(Infinity)
+      .yoyo(true)
+      .start();
+
+    this._invulnerabilityBoosterTimer = new TWEEN.Tween({ value: 0 })
+      .to({ value: 1 }, boosterConfig.duration)
+      .start()
+      .onComplete(() => {
+        GLOBAL_VARIABLES.activeBooster = null;
+        this._isBodyActive = true;
+        this._invulnerabilityBoosterAnimation?.stop();
+        this._view.material.opacity = 1;
+      });
+  }
+
   showIntro() {
     this.show();
-    this._view.position.y = 8;
+    this._viewGroup.position.y = 8;
 
-    new TWEEN.Tween(this._view.position)
+    new TWEEN.Tween(this._viewGroup.position)
       .to({ y: PLAYER_CONFIG.halfHeight }, 600)
       .easing(TWEEN.Easing.Cubic.In)
       .start()
       .onComplete(() => {
         const squeezeTween = this._squeezeOnGround(0.6, 50, TWEEN.Easing.Sinusoidal.Out);
-        squeezeTween.positionTween.onComplete(() => {
+        squeezeTween.positionTween?.onComplete(() => {
           this._startIdleAnimation(true);
           this.events.post('introFinished');
         });
@@ -155,7 +200,7 @@ export default class Player extends THREE.Group {
     this._arrowHelper.visible = GAME_CONFIG.helpers;
   }
 
-  getBodyState() {
+  isBodyActive() {
     return this._isBodyActive;
   }
 
@@ -165,26 +210,31 @@ export default class Player extends THREE.Group {
     this._setJumpState(PLAYER_JUMP_STATE.None);
     this._state = PLAYER_STATE.Idle;
     this._currentDirection = DIRECTION.Up;
-    this._view.scale.set(1, 1, 1);
-    this._view.position.y = PLAYER_CONFIG.halfHeight;
+    this._viewGroup.scale.set(1, 1, 1);
+    this._viewGroup.position.y = PLAYER_CONFIG.halfHeight;
     this._jumpSpeed = 0;
     this._nextAction = null;
     this._isNextActionAllowed = false;
+    this._speedBoosterTimer?.stop();
+    this._invulnerabilityBoosterTimer?.stop();
+    this._isBodyActive = true;
+    this._invulnerabilityBoosterAnimation?.stop();
+    this._view.material.opacity = 1;
   }
 
   _calculateCurrentPosition() {
     const cellSize = GAME_CONFIG.cellSize;
     const currentLevel = GLOBAL_VARIABLES.currentLevel;
     const fieldConfig = LEVEL_CONFIG[currentLevel].field;
-    const row = Math.round((this._view.position.z + fieldConfig.rows * cellSize * 0.5 - cellSize * 0.5) / cellSize);
-    const column = Math.round((this._view.position.x + fieldConfig.columns * cellSize * 0.5 - cellSize * 0.5) / cellSize);
+    const row = Math.round((this._viewGroup.position.z + fieldConfig.rows * cellSize * 0.5 - cellSize * 0.5) / cellSize);
+    const column = Math.round((this._viewGroup.position.x + fieldConfig.columns * cellSize * 0.5 - cellSize * 0.5) / cellSize);
 
     return { row, column };
   }
 
   _updateJump(dt) {
     if (this._jumpState === PLAYER_JUMP_STATE.GoingUp || this._jumpState === PLAYER_JUMP_STATE.GoingDown) {
-      this._view.position.y += this._jumpSpeed * dt * PLAYER_CONFIG.speedMultiplier;
+      this._viewGroup.position.y += this._jumpSpeed * dt * PLAYER_CONFIG.speedMultiplier;
       this._jumpSpeed -= GAME_CONFIG.gravity * PLAYER_CONFIG.mass * dt * PLAYER_CONFIG.speedMultiplier;
 
       if (this._jumpSpeed < 0) {
@@ -197,8 +247,8 @@ export default class Player extends THREE.Group {
         this._isNextActionAllowed = true;
       }
 
-      if (this._jumpState === PLAYER_JUMP_STATE.GoingDown && this._view.position.y < PLAYER_CONFIG.halfHeight * this._squeezeTop) {
-        this._view.position.y = PLAYER_CONFIG.halfHeight * this._squeezeTop;
+      if (this._jumpState === PLAYER_JUMP_STATE.GoingDown && this._viewGroup.position.y < PLAYER_CONFIG.halfHeight * this._squeezeTop) {
+        this._viewGroup.position.y = PLAYER_CONFIG.halfHeight * this._squeezeTop;
         this._jumpSpeed = 0;
         this._showAnimationAfterJump();
       }
@@ -230,7 +280,7 @@ export default class Player extends THREE.Group {
   _showAnimationBeforeJump() {
     this._setJumpState(PLAYER_JUMP_STATE.SqueezeBeforeJumpPhase01);
 
-    const scaleDifference = (this._view.scale.y - this._squeezeSides) / (1 - this._squeezeSides);
+    const scaleDifference = (this._viewGroup.scale.y - this._squeezeSides) / (1 - this._squeezeSides);
     const squeezeDuration = PLAYER_CONFIG.jumpAnimation.squeezeDuration * scaleDifference / PLAYER_CONFIG.speedMultiplier;
 
     if (scaleDifference < PLAYER_CONFIG.jumpAnimation.disableAnimationBeforeJumpThreshold) {
@@ -240,7 +290,7 @@ export default class Player extends THREE.Group {
     }
 
     this._beforeJumpSqueezeTweens = this._squeezeOnGround(this._squeezeSides, squeezeDuration, TWEEN.Easing.Sinusoidal.In);
-    this._beforeJumpSqueezeTweens.positionTween.onComplete(() => {
+    this._beforeJumpSqueezeTweens.positionTween?.onComplete(() => {
       this._phase02BeforeJump();
     });
   }
@@ -250,7 +300,7 @@ export default class Player extends THREE.Group {
     
     const duration = PLAYER_CONFIG.jumpAnimation.squeezeDuration * 0.5 / PLAYER_CONFIG.speedMultiplier;
     this._beforeJumpSqueezeTweens = this._squeezeOnGround(this._squeezeTop, duration, TWEEN.Easing.Sinusoidal.In)
-    this._beforeJumpSqueezeTweens.positionTween.onComplete(() => {
+    this._beforeJumpSqueezeTweens.positionTween?.onComplete(() => {
       this._setJumpState(PLAYER_JUMP_STATE.GoingUp);
       this._jumpSpeed = PLAYER_CONFIG.jumpImpulse;
       
@@ -265,7 +315,7 @@ export default class Player extends THREE.Group {
 
     const duration = PLAYER_CONFIG.jumpAnimation.squeezeDuration / PLAYER_CONFIG.speedMultiplier;
     this._afterJumpSqueezeTweens = this._squeezeOnGround(this._squeezeSides, duration, TWEEN.Easing.Sinusoidal.Out);
-    this._afterJumpSqueezeTweens.positionTween.onComplete(() => {
+    this._afterJumpSqueezeTweens.positionTween?.onComplete(() => {
       if (this._nextAction) {
         this._setJumpState(PLAYER_JUMP_STATE.None);
         this._state = PLAYER_STATE.Idle;
@@ -283,7 +333,7 @@ export default class Player extends THREE.Group {
   _squeezeOnGround(squeezePower, duration, easing) {
     const scaleTween = this._squeeze(squeezePower, duration, easing);
 
-    const positionTween = new TWEEN.Tween(this._view.position)
+    const positionTween = new TWEEN.Tween(this._viewGroup.position)
       .to({ y: PLAYER_CONFIG.halfHeight * squeezePower }, duration)
       .easing(easing)
       .start();
@@ -294,7 +344,7 @@ export default class Player extends THREE.Group {
   _squeeze(squeezePower, duration, easing) {
     const squeezeSides = (1 - squeezePower) + 1;
 
-    const tween = new TWEEN.Tween(this._view.scale)
+    const tween = new TWEEN.Tween(this._viewGroup.scale)
       .to({ y: squeezePower, x: squeezeSides, z: squeezeSides }, duration)
       .easing(easing)
       .start();
@@ -305,7 +355,7 @@ export default class Player extends THREE.Group {
   _moveToPosition(newPosition) {
     const coordinates = getCoordinatesFromPosition(newPosition);
 
-    this._moveToPositionTween = new TWEEN.Tween(this._view.position)
+    this._moveToPositionTween = new TWEEN.Tween(this._viewGroup.position)
       .to({ x: coordinates.x, z: coordinates.z }, this._jumpHalfTime * 2)
       .easing(TWEEN.Easing.Linear.None)
       .start();
@@ -317,7 +367,7 @@ export default class Player extends THREE.Group {
     } else {
       const duration = PLAYER_CONFIG.idleAnimation.squeezeDuration / PLAYER_CONFIG.speedMultiplier;
       this._idleSqueezeTweens = this._squeezeOnGround(PLAYER_CONFIG.idleAnimation.squeezePower, duration, TWEEN.Easing.Sinusoidal.InOut);
-      this._idleSqueezeTweens.positionTween.onComplete(() => {        
+      this._idleSqueezeTweens.positionTween?.onComplete(() => {        
         this._playIdleAnimationPhase02();
       });
     }
@@ -326,7 +376,7 @@ export default class Player extends THREE.Group {
   _playIdleAnimationPhase02() {
     const duration = PLAYER_CONFIG.idleAnimation.squeezeDuration / PLAYER_CONFIG.speedMultiplier;
     this._idleSqueezeTweens = this._squeezeOnGround(1, duration, TWEEN.Easing.Sinusoidal.InOut);
-    this._idleSqueezeTweens.positionTween.onComplete(() => {
+    this._idleSqueezeTweens.positionTween?.onComplete(() => {
       this._startIdleAnimation();
     });
   }
@@ -348,12 +398,12 @@ export default class Player extends THREE.Group {
 
     this._currentDirection = direction;
 
-    this._rotationTween = new TWEEN.Tween(this._view.rotation)
+    this._rotationTween = new TWEEN.Tween(this._viewGroup.rotation)
       .to({ y: targetAngle }, this._jumpHalfTime * 2)
       .easing(TWEEN.Easing.Sinusoidal.InOut)
       .start()
       .onComplete(() => {
-        this._view.rotation.y = ROTATION_BY_DIRECTION[direction];
+        this._viewGroup.rotation.y = ROTATION_BY_DIRECTION[direction];
       });
   }
 
@@ -386,7 +436,7 @@ export default class Player extends THREE.Group {
 
   _init() {
     this._initView();
-    this._initJumpTime();
+    this._updateJumpTime();
     this._initActions();
     this._initHelpers();
 
@@ -394,22 +444,26 @@ export default class Player extends THREE.Group {
   }
 
   _initView() {
-    const view = this._view = new THREE.Group();
-    this.add(view);
+    const viewGroup = this._viewGroup = new THREE.Group();
+    this.add(viewGroup);
 
     const geometry = new THREE.SphereGeometry(0.5, 32, 32);
-    const material = new THREE.MeshToonMaterial({ color: 0xffa500 });
-    const mesh = new THREE.Mesh(geometry, material);
-    view.add(mesh);
+    const material = new THREE.MeshToonMaterial({
+      color: 0xffa500,
+      transparent: true,
+      opacity: 1,
+    });
+    const view = this._view = new THREE.Mesh(geometry, material);
+    viewGroup.add(view);
 
-    mesh.castShadow = true;
+    view.castShadow = true;
     // mesh.receiveShadow = true;
 
     const eyeGeometry = new THREE.SphereGeometry(0.1, 32, 32);
     const eyeMaterial = new THREE.MeshToonMaterial({ color: 0xffffff });
     const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
     const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-    view.add(leftEye, rightEye);
+    viewGroup.add(leftEye, rightEye);
     
     leftEye.position.x = -0.2;
     leftEye.position.y = 0.2;
@@ -422,11 +476,11 @@ export default class Player extends THREE.Group {
     leftEye.receiveShadow = true;
     // rightEye.receiveShadow = true;
   
-    view.position.y = PLAYER_CONFIG.halfHeight;
-    view.rotation.y = ROTATION_BY_DIRECTION[this._currentDirection];
+    viewGroup.position.y = PLAYER_CONFIG.halfHeight;
+    viewGroup.rotation.y = ROTATION_BY_DIRECTION[this._currentDirection];
   }
 
-  _initJumpTime() {
+  _updateJumpTime() {
     const jumpHeight = PLAYER_CONFIG.jumpImpulse * PLAYER_CONFIG.jumpImpulse / (2 * GAME_CONFIG.gravity * PLAYER_CONFIG.mass * PLAYER_CONFIG.mass);
     this._jumpHalfTime = Math.sqrt(2 * jumpHeight / GAME_CONFIG.gravity) * 1000 / PLAYER_CONFIG.speedMultiplier;
   }
@@ -455,6 +509,6 @@ export default class Player extends THREE.Group {
 
   _initDirectionHelper() {
     const arrowHelper = this._arrowHelper = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, 0), 1, 0xff0000);
-    this._view.add(arrowHelper);
+    this._viewGroup.add(arrowHelper);
   }
 }

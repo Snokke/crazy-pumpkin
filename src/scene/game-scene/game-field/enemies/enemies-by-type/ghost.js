@@ -21,6 +21,7 @@ export default class Ghost extends EnemyAbstract {
     this._rotationTween = null;
     this._view = null;
     this._lifeTimer = null;
+    this._spawnShowTween = null;
     this._spawnHideTween = null;
 
     this._moveSpeed = 0;
@@ -93,8 +94,12 @@ export default class Ghost extends EnemyAbstract {
 
     this._moveSpeed = Math.random() * (GHOST_CONFIG.moveSpeed.max - GHOST_CONFIG.moveSpeed.min) + GHOST_CONFIG.moveSpeed.min;
 
-    this._spawnHideTween = this._showSpawnAnimation();
-    this._spawnHideTween.positionTween.onComplete(() => {
+    this._spawnShowTween = this._showSpawnAnimation();
+    this._spawnShowTween.onComplete(() => {
+      this._view.material.opacity = GHOST_CONFIG.opacity;
+      this._leftEye.material.opacity = GHOST_CONFIG.opacity;
+      this._rightEye.material.opacity = GHOST_CONFIG.opacity;
+
       this._state = ENEMY_STATE.Active;
       this._movementState = GHOST_MOVEMENT_STATE.Moving;
       this.setBodyActivity(true);
@@ -123,7 +128,7 @@ export default class Ghost extends EnemyAbstract {
       this._arrowHelper.visible = false;
     }
     
-    this._spawnHideTween = this._showHideAnimation()
+    this._spawnHideTween = this._showHideAnimation();
     this._spawnHideTween.positionTween.onComplete(() => {
       this.hide();
       this.reset();
@@ -172,8 +177,9 @@ export default class Ghost extends EnemyAbstract {
 
   stopTweens() {    
     this._rotationTween?.stop();
-    this._spawnHideTween?.opacityTween.stop();
-    this._spawnHideTween?.positionTween.stop();
+    this._spawnHideTween?.positionTween?.stop();
+    this._spawnHideTween?.opacityTween?.stop();
+    this._spawnShowTween?.stop();
 
     this._lifeTimer?.stop();
   }
@@ -208,30 +214,19 @@ export default class Ghost extends EnemyAbstract {
   }
 
   _showSpawnAnimation() {
-    this._view.material.opacity = 0;
-    this._leftEye.material.opacity = 0;
-    this._rightEye.material.opacity = 0;
+    this._view.material.opacity = 0.5;
+    this._leftEye.material.opacity = 0.5;
+    this._rightEye.material.opacity = 0.5;
     this._viewGroup.position.y = 1.7;
 
-    const opacityObject = { value: 0 };
     const duration = GHOST_CONFIG.spawnAnimationDuration / GHOST_CONFIG.speedMultiplier;
-
-    const opacityTween = new TWEEN.Tween(opacityObject)
-      .to({ value: GHOST_CONFIG.opacity }, duration)
-      .easing(TWEEN.Easing.Sinusoidal.Out)
-      .start()
-      .onUpdate(() => {
-        this._view.material.opacity = opacityObject.value;
-        this._leftEye.material.opacity = opacityObject.value;
-        this._rightEye.material.opacity = opacityObject.value;
-      });
 
     const positionTween = new TWEEN.Tween(this._viewGroup.position)
       .to({ y: 0.7 }, duration)
       .easing(TWEEN.Easing.Sinusoidal.Out)
       .start();
 
-    return { opacityTween, positionTween };
+    return positionTween;
   }
 
   _showHideAnimation() {

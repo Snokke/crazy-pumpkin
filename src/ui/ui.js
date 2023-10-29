@@ -28,12 +28,17 @@ export default class UI extends DisplayObject {
 
   onGameOver() {
     this._gameplayScreen.hide();
+    this._gameplayScreen.reset();
     this._gameOverScreen.show();
   }
 
   onScoreChanged(score) {
     this._gameplayScreen.setScore(score);
     this._gameOverScreen.setScore(score);
+  }
+
+  onConsumableCollect(consumableType, position) {
+    this._gameplayScreen.onConsumableCollect(consumableType, position);
   }
 
   onGameplayStarted() {

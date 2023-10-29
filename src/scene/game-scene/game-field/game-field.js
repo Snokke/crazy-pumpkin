@@ -13,12 +13,17 @@ import { MessageDispatcher } from 'black-engine';
 import { SCORE_CONFIG } from './data/score-config';
 import ConsumablesController from './consumables/consumables-controller';
 import { GLOBAL_VARIABLES } from './data/global-variables';
+import { vector3ToBlackPosition } from '../../../core/helpers/helpers';
+import { CONSUMABLE_TYPE } from './consumables/data/consumables-config';
 
 export default class GameField extends THREE.Group {
-  constructor() {
+  constructor(renderer, camera) {
     super();
 
     this.events = new MessageDispatcher();
+
+    this._renderer = renderer;
+    this._camera = camera;
 
     this._player = null;
     this._enemiesController = null;
@@ -114,6 +119,9 @@ export default class GameField extends THREE.Group {
     this._obstaclesController.reset();
     this._consumablesController.reset();
 
+    GLOBAL_VARIABLES.boosterSpawned = false;
+    GLOBAL_VARIABLES.activeBooster = null;
+    this._roundTime = 0;
     this._resetGameTime();
     this._setScore(0);
   }
@@ -307,16 +315,19 @@ export default class GameField extends THREE.Group {
     const playerPosition = GLOBAL_VARIABLES.playerPosition;
     this._playerPositionHelper.setPosition(playerPosition);
 
-    this._checkGhostCollide();
-    this._checkEvilPumpkinCollide();
     this._checkConsumablesCollide();
+
+    if (this._player.isBodyActive()) {
+      this._checkGhostCollide();
+      this._checkEvilPumpkinCollide();
+    }
   }
 
   _checkGhostCollide() {
     const playerPosition = GLOBAL_VARIABLES.playerPosition;
     const ghostMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Ghost];
 
-    if (ghostMap[playerPosition.row][playerPosition.column].length > 0) {
+    if (ghostMap[playerPosition.row][playerPosition.column] && ghostMap[playerPosition.row][playerPosition.column].length > 0) {
       this._onLose();
       return;
     }
@@ -339,15 +350,46 @@ export default class GameField extends THREE.Group {
 
     if (consumable) {
       const consumableType = consumable.getType();
-      const score = SCORE_CONFIG.consumables[consumableType];
+      const round = GLOBAL_VARIABLES.round;
+      const score = SCORE_CONFIG.consumables[consumableType][round];
+
+      const coordinates = consumable.getCoordinates();
+      const consumablePosition = new THREE.Vector3(coordinates.x, 0.7, coordinates.z);
+      const screenPosition = vector3ToBlackPosition(consumablePosition, this._renderer, this._camera);
       this._addScore(score);
+      this.events.post('onConsumableCollect', consumableType, screenPosition);
+
+      if (consumableType === CONSUMABLE_TYPE.BoosterCandyEnemiesSlow || consumableType === CONSUMABLE_TYPE.BoosterCandyPlayerInvulnerability || consumableType === CONSUMABLE_TYPE.BoosterCandyPlayerSpeed) {
+        this._startBooster(consumableType);
+      }
+
       this._consumablesController.removeConsumable(consumable, false);
     }
   }
 
+  _startBooster(type) {
+    GLOBAL_VARIABLES.activeBooster = type;
+    GLOBAL_VARIABLES.boosterSpawned = false;
+    
+    if (type === CONSUMABLE_TYPE.BoosterCandyEnemiesSlow) {
+      this._enemiesController.startEnemiesSlowBooster();
+    }
+
+    if (type === CONSUMABLE_TYPE.BoosterCandyPlayerSpeed) {
+      this._player.startSpeedBooster();
+    }
+
+    if (type === CONSUMABLE_TYPE.BoosterCandyPlayerInvulnerability) {
+      this._player.startInvulnerabilityBooster();
+    }
+  }
+
   _onEnemyPositionChanged() {
-    this._checkGhostCollide();
-    this._checkEvilPumpkinCollide();
+    if (this._player.isBodyActive()) {
+      this._checkGhostCollide();
+      this._checkEvilPumpkinCollide();
+    }
+    
     this._updateBoardColors();
   }
 

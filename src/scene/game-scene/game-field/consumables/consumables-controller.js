@@ -1,11 +1,9 @@
 import * as THREE from 'three';
+import TWEEN from 'three/addons/libs/tween.module.js';
 import CONSUMABLE_CLASS from './data/consumables-class';
-import { GAME_CONFIG } from '../data/game-config';
 import { GAME_STATE, MAP_TYPE } from '../data/game-data';
-import Delayed from '../../../../core/helpers/delayed-call';
-import { CONSUMABLE_TYPE } from './data/consumables-config';
-import { CANDY_CONFIG } from './data/candy-config';
-import { randomBetween } from '../../../../core/helpers/helpers';
+import { CONSUMABLE_TYPE, CONSUMABLES_CONFIG } from './data/consumables-config';
+import { randomBetween, randomFromArray } from '../../../../core/helpers/helpers';
 import { GLOBAL_VARIABLES } from '../data/global-variables';
 
 export default class ConsumablesController extends THREE.Group {
@@ -14,16 +12,27 @@ export default class ConsumablesController extends THREE.Group {
 
     this._consumablesPool = [];
     this._activeConsumables = [];
+
+    this._spawnTimer = {};
+    this._spawnBoosterTimer = null;
   }
 
   activateSpawnConsumables() {
-    this._spawnCandy();
+    this._spawnCandy(CONSUMABLE_TYPE.BigCandy);
+    this._spawnCandy(CONSUMABLE_TYPE.SmallCandy);
+    this._spawnBoosterCandy();
   }
 
   removeConsumable(consumable, hideAnimation) {
     const consumableMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Consumable];
     const position = consumable.getPosition();
     consumableMap[position.row][position.column] = null;
+
+    const consumableType = consumable.getType();
+
+    if (consumableType === CONSUMABLE_TYPE.BoosterCandyEnemiesSlow || consumableType === CONSUMABLE_TYPE.BoosterCandyPlayerInvulnerability || consumableType === CONSUMABLE_TYPE.BoosterCandyPlayerSpeed) {
+      GLOBAL_VARIABLES.boosterSpawned = false;
+    }
     
     this._activeConsumables.splice(this._activeConsumables.indexOf(consumable), 1);
     this._consumablesPool.push(consumable);
@@ -33,23 +42,76 @@ export default class ConsumablesController extends THREE.Group {
 
   reset() {
     this._activeConsumables.forEach(consumable => consumable.kill(false));
+
+    for (const key in this._spawnTimer) {
+      if (this._spawnTimer.hasOwnProperty(key)) {
+        const spawnTimer = this._spawnTimer[key];
+        spawnTimer?.stop();
+      }
+    }
+
+    this._spawnBoosterTimer?.stop();
   }
 
   stopTweens() {
     this._activeConsumables.forEach(consumable => consumable.stopTweens());
   }
 
-  _spawnCandy() {
-    const spawnTime = randomBetween(CANDY_CONFIG.spawnTime.min, CANDY_CONFIG.spawnTime.max);
+  _spawnCandy(type) {
+    const config = CONSUMABLES_CONFIG[type];
+    const spawnTime = randomBetween(config.spawnTime.min, config.spawnTime.max);
 
-    Delayed.call(spawnTime, () => {
-      if (GLOBAL_VARIABLES.gameState !== GAME_STATE.Gameplay) {
-        return;
-      }
+    this._spawnTimer[type] = new TWEEN.Tween({ value: 0 })
+      .to({ value: 1 }, spawnTime)
+      .start()
+      .onComplete(() => {
+        if (GLOBAL_VARIABLES.gameState !== GAME_STATE.Gameplay) {
+          return;
+        }
+  
+        const chanceToSpawn = Math.random();
+  
+        if (chanceToSpawn > config.chanceToSpawn) {
+          this._spawnCandy(type);
+          return;
+        }
+  
+        this._spawnConsumable(type);
+        this._spawnCandy(type);
+      });
+  }
 
-      this._spawnConsumable(CONSUMABLE_TYPE.Candy);
-      this._spawnCandy();
-    });
+  _spawnBoosterCandy() {
+    const config = CONSUMABLES_CONFIG.boosterCandyConfig;
+    const spawnTime = randomBetween(config.spawnTime.min, config.spawnTime.max);
+
+    this._spawnBoosterTimer = new TWEEN.Tween({ value: 0 })
+      .to({ value: 1 }, spawnTime)
+      .start()
+      .onComplete(() => {
+        if (GLOBAL_VARIABLES.gameState !== GAME_STATE.Gameplay) {
+          return;
+        }
+  
+        const chanceToSpawn = Math.random();
+  
+        if (chanceToSpawn > config.chanceToSpawn || GLOBAL_VARIABLES.activeBooster || GLOBAL_VARIABLES.boosterSpawned) {
+          this._spawnBoosterCandy();
+          return;
+        }
+
+        const boosterCandyTypes = [
+          CONSUMABLE_TYPE.BoosterCandyPlayerSpeed,
+          CONSUMABLE_TYPE.BoosterCandyPlayerInvulnerability,
+          CONSUMABLE_TYPE.BoosterCandyEnemiesSlow,
+        ];
+
+        const randomType = randomFromArray(boosterCandyTypes);
+  
+        GLOBAL_VARIABLES.boosterSpawned = true;
+        this._spawnConsumable(randomType);
+        this._spawnBoosterCandy();
+      });
   }
 
   _spawnConsumable(type) {

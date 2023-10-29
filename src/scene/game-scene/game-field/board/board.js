@@ -59,7 +59,7 @@ export default class Board extends THREE.Group {
 
     new TWEEN.Tween(colorObject)
       .to({ value: 1 }, 300)
-      .easing(TWEEN.Easing.Sinusoidal.InOut)
+      .easing(TWEEN.Easing.Sinusoidal.In)
       .start()
       .onUpdate(() => {
         const color = new THREE.Color().copy(currentColor).lerp(endColor, colorObject.value);

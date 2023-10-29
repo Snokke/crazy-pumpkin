@@ -1,3 +1,4 @@
+import { Black, Vector } from "black-engine";
 import { GAME_CONFIG } from "../../scene/game-scene/game-field/data/game-config";
 import { GLOBAL_VARIABLES } from "../../scene/game-scene/game-field/data/global-variables";
 import { LEVEL_CONFIG } from "../../scene/game-scene/game-field/data/level-config";
@@ -32,4 +33,21 @@ export const getCoordinatesFromPosition = (position) => {
   const z = (-fieldConfig.rows * cellSize * 0.5 + cellSize * 0.5) + position.row * cellSize;
 
   return { x, z };
+}
+
+export const vector3ToBlackPosition = (vector3, renderer, camera) => {
+  const dpr = Black.device.getDevicePixelRatio();
+  const width = renderer.getContext().canvas.width / dpr;
+  const height = renderer.getContext().canvas.height / dpr;
+
+  camera.updateMatrixWorld();
+
+  vector3.project(camera);
+
+  const globalPos = new Vector().copyFrom(vector3);
+
+  globalPos.x = (globalPos.x + 1) * width / 2;
+  globalPos.y = - (globalPos.y - 1) * height / 2;
+
+  return Black.stage.worldTransformationInverted.transformVector(globalPos);
 }

@@ -41,6 +41,7 @@ export default class MainScene {
     this._scene3D.events.on('onSoundsEnabledChanged', () => this._ui.updateSoundIcon());
     this._scene3D.events.on('gameOver', () => this._ui.onGameOver());
     this._scene3D.events.on('scoreChanged', (msg, score) => this._ui.onScoreChanged(score));
+    this._scene3D.events.on('onConsumableCollect', (msg, consumableType, position) => this._ui.onConsumableCollect(consumableType, position));
     this._scene3D.events.on('gameplayStarted', () => this._ui.onGameplayStarted());
     this._scene3D.events.on('onRoundChanged', () => this._ui.onRoundChanged());
   }

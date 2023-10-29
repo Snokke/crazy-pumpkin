@@ -119,7 +119,9 @@ export default class GameScene extends THREE.Group {
   }
 
   _initGameField() {
-    const gameField = this._gameField = new GameField();
+    const renderer = this._data.renderer;
+    const camera = this._data.camera;
+    const gameField = this._gameField = new GameField(renderer, camera);
     this.add(gameField);
   }
 
@@ -133,6 +135,7 @@ export default class GameScene extends THREE.Group {
 
     this._gameField.events.on('gameOver', () => this._onGameOver());
     this._gameField.events.on('scoreChanged', (msg, score) => this.events.post('scoreChanged', score));
+    this._gameField.events.on('onConsumableCollect', (msg, consumableType, position) => this.events.post('onConsumableCollect', consumableType, position));
     this._gameField.events.on('gameplayStarted', () => this.events.post('gameplayStarted'));
     this._gameField.events.on('roundUp', () => this._onRoundUp());
   }

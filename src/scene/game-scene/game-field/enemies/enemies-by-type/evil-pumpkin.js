@@ -58,8 +58,10 @@ export default class EvilPumpkin extends EnemyAbstract {
     this.show();
 
     this._spawnHideTween = this._showSpawnAnimation();
-    this._spawnHideTween.scaleTween.onComplete(() => {
+    this._spawnHideTween.scaleTween?.onComplete(() => {
       this._state = ENEMY_STATE.Active;
+
+      this._view.material.opacity = 1;
 
       const waitingTime = EVIL_PUMPKIN_CONFIG.waitingToRotateTime;
       this._waitingToRotateTime = (waitingTime.min + Math.random() * (waitingTime.max - waitingTime.min)) / EVIL_PUMPKIN_CONFIG.speedMultiplier;
@@ -92,7 +94,7 @@ export default class EvilPumpkin extends EnemyAbstract {
     }
     
     this._spawnHideTween = this._showHideAnimation();
-    this._spawnHideTween.scaleTween.onComplete(() => {
+    this._spawnHideTween.scaleTween?.onComplete(() => {
       this.hide();
       this.reset();
       this.events.post('onKilled', this);
@@ -117,6 +119,11 @@ export default class EvilPumpkin extends EnemyAbstract {
     this._newPosition = position;
   }
 
+  updateJumpTime() {
+    const jumpHeight = EVIL_PUMPKIN_CONFIG.jumpImpulse * EVIL_PUMPKIN_CONFIG.jumpImpulse / (2 * GAME_CONFIG.gravity * EVIL_PUMPKIN_CONFIG.mass * EVIL_PUMPKIN_CONFIG.mass);
+    this._jumpHalfTime = Math.sqrt(2 * jumpHeight / GAME_CONFIG.gravity) * 1000 / EVIL_PUMPKIN_CONFIG.speedMultiplier;
+  }
+
   reset() {
     this._movementState = EVIL_PUMPKIN_MOVEMENT_STATE.Idle;
     this._previousMovementState = EVIL_PUMPKIN_MOVEMENT_STATE.Idle;
@@ -135,7 +142,6 @@ export default class EvilPumpkin extends EnemyAbstract {
   stopTweens() {    
     this._spawnHideTween?.scaleTween?.stop();
     this._spawnHideTween?.positionTween?.stop();
-    this._spawnHideTween?.opacityTween?.stop();
     this._rotateTween?.stop();
     this._moveToPositionTween?.stop();
     this._resetJumpingTweens();
@@ -236,7 +242,7 @@ export default class EvilPumpkin extends EnemyAbstract {
 
     const duration = EVIL_PUMPKIN_CONFIG.jumpAnimation.squeezeDuration / EVIL_PUMPKIN_CONFIG.speedMultiplier;
     this._afterJumpSqueezeTweens = this._squeezeOnGround(this._squeezeSides, duration, TWEEN.Easing.Sinusoidal.Out);
-    this._afterJumpSqueezeTweens.positionTween.onComplete(() => {
+    this._afterJumpSqueezeTweens.positionTween?.onComplete(() => {
       this._phase02AfterJump();
     });
   }
@@ -246,7 +252,7 @@ export default class EvilPumpkin extends EnemyAbstract {
 
     const duration = EVIL_PUMPKIN_CONFIG.jumpAnimation.squeezeDuration * 0.5 / EVIL_PUMPKIN_CONFIG.speedMultiplier;
     this._afterJumpSqueezeTweens = this._squeezeOnGround(1, duration, TWEEN.Easing.Sinusoidal.Out);
-    this._afterJumpSqueezeTweens.positionTween.onComplete(() => {
+    this._afterJumpSqueezeTweens.positionTween?.onComplete(() => {
       const waitingTime = EVIL_PUMPKIN_CONFIG.waitingToRotateTime;
       this._waitingToRotateTime = (waitingTime.min + Math.random() * (waitingTime.max - waitingTime.min)) / EVIL_PUMPKIN_CONFIG.speedMultiplier;
       this._setMovementState(EVIL_PUMPKIN_MOVEMENT_STATE.WaitingToRotate);
@@ -260,7 +266,7 @@ export default class EvilPumpkin extends EnemyAbstract {
     const squeezeDuration = EVIL_PUMPKIN_CONFIG.jumpAnimation.squeezeDuration * scaleDifference / EVIL_PUMPKIN_CONFIG.speedMultiplier;
 
     this._beforeJumpSqueezeTweens = this._squeezeOnGround(this._squeezeSides, squeezeDuration, TWEEN.Easing.Sinusoidal.In);
-    this._beforeJumpSqueezeTweens.positionTween.onComplete(() => {
+    this._beforeJumpSqueezeTweens.positionTween?.onComplete(() => {
       this._phase02BeforeJump();
     });
   }
@@ -270,7 +276,7 @@ export default class EvilPumpkin extends EnemyAbstract {
     
     const duration = EVIL_PUMPKIN_CONFIG.jumpAnimation.squeezeDuration * 0.5 / EVIL_PUMPKIN_CONFIG.speedMultiplier;
     this._beforeJumpSqueezeTweens = this._squeezeOnGround(this._squeezeTop, duration, TWEEN.Easing.Sinusoidal.In)
-    this._beforeJumpSqueezeTweens.positionTween.onComplete(() => {
+    this._beforeJumpSqueezeTweens.positionTween?.onComplete(() => {
       this._setMovementState(EVIL_PUMPKIN_MOVEMENT_STATE.GoingUp);
       const newPosition = this._getNextPosition();
       const isPositionAvailable = this._isPositionAvailable(newPosition);
@@ -342,7 +348,7 @@ export default class EvilPumpkin extends EnemyAbstract {
     if (randomDirection === this._currentDirection) {
       this._startJump(this._currentDirection);
     } else {
-      this._rotateToDirection(randomDirection).onComplete(() => {
+      this._rotateToDirection(randomDirection)?.onComplete(() => {
         this._currentDirection = randomDirection;
         this._startJump(this._currentDirection);
       });
@@ -446,7 +452,7 @@ export default class EvilPumpkin extends EnemyAbstract {
   _showSpawnAnimation() {
     this._viewGroup.scale.y = 0;
     this._viewGroup.position.y = 0;
-    this._view.material.opacity = 0;
+    this._view.material.opacity = 0.5;
     const duration = EVIL_PUMPKIN_CONFIG.spawnAnimationDuration / EVIL_PUMPKIN_CONFIG.speedMultiplier;
 
     const scaleTween = new TWEEN.Tween(this._viewGroup.scale)
@@ -459,12 +465,7 @@ export default class EvilPumpkin extends EnemyAbstract {
       .easing(TWEEN.Easing.Back.Out)
       .start();
 
-    const opacityTween = new TWEEN.Tween(this._view.material)
-      .to({ opacity: 1 }, duration)
-      .easing(TWEEN.Easing.Sinusoidal.Out)
-      .start();
-
-    return { scaleTween, positionTween, opacityTween };
+    return { scaleTween, positionTween };
   }
 
   _resetJumpingTweens() {
@@ -479,7 +480,7 @@ export default class EvilPumpkin extends EnemyAbstract {
   _init() {
     this._initView();
     this._initHelpers();
-    this._initJumpTime();
+    this.updateJumpTime();
 
     this.hide(true);
   }
@@ -499,10 +500,5 @@ export default class EvilPumpkin extends EnemyAbstract {
     viewGroup.add(view);
 
     viewGroup.position.y = EVIL_PUMPKIN_CONFIG.halfHeight;
-  }
-
-  _initJumpTime() {
-    const jumpHeight = EVIL_PUMPKIN_CONFIG.jumpImpulse * EVIL_PUMPKIN_CONFIG.jumpImpulse / (2 * GAME_CONFIG.gravity * EVIL_PUMPKIN_CONFIG.mass * EVIL_PUMPKIN_CONFIG.mass);
-    this._jumpHalfTime = Math.sqrt(2 * jumpHeight / GAME_CONFIG.gravity) * 1000 / EVIL_PUMPKIN_CONFIG.speedMultiplier;
   }
 }

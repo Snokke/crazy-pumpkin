@@ -5,6 +5,8 @@ const GLOBAL_VARIABLES = {
   gameState: GAME_STATE.Idle,
   round: 0,
   playerPosition: { row: 0, column: 0 },
+  activeBooster: null,
+  boosterSpawned: false,
   maps: {
     [MAP_TYPE.Consumable]: [],
     [MAP_TYPE.Obstacle]: [],

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import TWEEN from 'three/addons/libs/tween.module.js';
 import { ENEMY_TYPE } from './data/enemy-data';
 import ENEMY_CLASS from './data/enemy-class';
 import { MessageDispatcher } from 'black-engine';
@@ -9,6 +10,7 @@ import { randomBetween } from '../../../../core/helpers/helpers';
 import { GLOBAL_VARIABLES } from '../data/global-variables';
 import { EVIL_PUMPKIN_CONFIG } from './data/evil-pumpkin-config';
 import { ROUND_CONFIG } from '../data/game-config';
+import { CONSUMABLES_CONFIG, CONSUMABLE_TYPE } from '../consumables/data/consumables-config';
 
 export default class EnemiesController extends THREE.Group {
   constructor() {
@@ -18,6 +20,8 @@ export default class EnemiesController extends THREE.Group {
 
     this._enemiesPool = {};
     this._activeEnemies = {};
+    this._ghostSpawnTimer = null;
+    this._enemiesSlowBoosterTimer = null;
 
     this._initEnemiesObjects();
   }
@@ -43,6 +47,9 @@ export default class EnemiesController extends THREE.Group {
 
   reset() {
     this._removeAllEnemies();
+    this._ghostSpawnTimer?.stop();
+    this._enemiesSlowBoosterTimer?.stop();
+    this._updateSpeedMultiplier();
   }
 
   debugChangedHelper() {
@@ -68,10 +75,60 @@ export default class EnemiesController extends THREE.Group {
     return positions;
   }
 
+  _updateSpeedMultiplier() {
+    const round = GLOBAL_VARIABLES.round;
+    const ghostRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.Ghost][round];
+    const evilPumpkinRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.EvilPumpkin][round];
+
+    GHOST_CONFIG.speedMultiplier = ghostRoundConfig.speedMultiplier;
+    EVIL_PUMPKIN_CONFIG.speedMultiplier = evilPumpkinRoundConfig.speedMultiplier;
+
+    this._iterateActiveEnemies((enemy) => {
+      if (enemy.getType() === ENEMY_TYPE.EvilPumpkin) {
+        enemy.updateJumpTime();
+      }
+    });
+
+    this._iteratePoolEnemies((enemy) => {
+      if (enemy.getType() === ENEMY_TYPE.EvilPumpkin) {
+        enemy.updateJumpTime();
+      }
+    });
+  }
+
+  startEnemiesSlowBooster() {
+    const boosterConfig = CONSUMABLES_CONFIG[CONSUMABLE_TYPE.BoosterCandyEnemiesSlow];
+    GHOST_CONFIG.speedMultiplier = boosterConfig.speedMultiplier;
+    EVIL_PUMPKIN_CONFIG.speedMultiplier = boosterConfig.speedMultiplier;
+
+    this._iterateActiveEnemies((enemy) => {
+      if (enemy.getType() === ENEMY_TYPE.EvilPumpkin) {
+        enemy.updateJumpTime();
+      }
+    });
+
+    this._iteratePoolEnemies((enemy) => {
+      if (enemy.getType() === ENEMY_TYPE.EvilPumpkin) {
+        enemy.updateJumpTime();
+      }
+    });
+
+    this._enemiesSlowBoosterTimer = new TWEEN.Tween({ value: 0 })
+      .to({ value: 1 }, boosterConfig.duration)
+      .start()
+      .onComplete(() => {
+        this._updateSpeedMultiplier();
+        GLOBAL_VARIABLES.activeBooster = null;
+      });
+  }
+
   _updateGhostOnRoundChanged() {
     const round = GLOBAL_VARIABLES.round;
     const ghostRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.Ghost][round];
-    GHOST_CONFIG.speedMultiplier = ghostRoundConfig.speedMultiplier;
+
+    if (!GLOBAL_VARIABLES.activeBooster) {
+      GHOST_CONFIG.speedMultiplier = ghostRoundConfig.speedMultiplier;
+    }
 
     const currentGhostCount = this._activeEnemies[ENEMY_TYPE.Ghost].length;
     const spawnCount = ghostRoundConfig.maxCount - currentGhostCount;
@@ -87,39 +144,62 @@ export default class EnemiesController extends THREE.Group {
   }
 
   _updateEvilPumpkinOnRoundChanged() {
-    const round = GLOBAL_VARIABLES.round;
-    const evilPumpkinRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.EvilPumpkin][round];
-    EVIL_PUMPKIN_CONFIG.speedMultiplier = evilPumpkinRoundConfig.speedMultiplier;
+    if (!GLOBAL_VARIABLES.activeBooster) {
+      this._updateEvilPumpkinSpeedMultiplier();
+    }
 
     if (GLOBAL_VARIABLES.gameState === GAME_STATE.Gameplay) {
       this._evilPumpkinSpawn();
     }
   }
 
+  _updateEvilPumpkinSpeedMultiplier() {
+    const round = GLOBAL_VARIABLES.round;
+    const evilPumpkinRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.EvilPumpkin][round];
+
+    EVIL_PUMPKIN_CONFIG.speedMultiplier = evilPumpkinRoundConfig.speedMultiplier;
+
+    this._iterateActiveEnemies((enemy) => {
+      if (enemy.getType() === ENEMY_TYPE.EvilPumpkin) {
+        enemy.updateJumpTime();
+      }
+    });
+
+    this._iteratePoolEnemies((enemy) => {
+      if (enemy.getType() === ENEMY_TYPE.EvilPumpkin) {
+        enemy.updateJumpTime();
+      }
+    });
+  }
+
   _spawnFirstEvilPumpkin() {
     Delayed.call(1000, () => {
       this._spawnEnemy(ENEMY_TYPE.EvilPumpkin);
+      this._evilPumpkinSpawn();
     });
   }
 
   _ghostSpawn() {
     const spawnTime = randomBetween(GHOST_CONFIG.spawnTime.min, GHOST_CONFIG.spawnTime.max);
 
-    Delayed.call(spawnTime, () => {
-      if (GLOBAL_VARIABLES.gameState !== GAME_STATE.Gameplay) {
-        return;
-      }
-
-      const round = GLOBAL_VARIABLES.round;
-      const ghostRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.Ghost][round];
-      const maxCount = ghostRoundConfig.maxCount;
-
-      if (this._activeEnemies[ENEMY_TYPE.Ghost].length < maxCount) {
-        this._spawnEnemy(ENEMY_TYPE.Ghost);
-      }
-
-      this._ghostSpawn();
-    });
+    this._ghostSpawnTimer = new TWEEN.Tween({ value: 0 })
+      .to({ value: 1 }, spawnTime)
+      .start()
+      .onComplete(() => {
+        if (GLOBAL_VARIABLES.gameState !== GAME_STATE.Gameplay) {
+          return;
+        }
+  
+        const round = GLOBAL_VARIABLES.round;
+        const ghostRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.Ghost][round];
+        const maxCount = ghostRoundConfig.maxCount;
+  
+        if (this._activeEnemies[ENEMY_TYPE.Ghost].length < maxCount) {
+          this._spawnEnemy(ENEMY_TYPE.Ghost);
+        }
+  
+        this._ghostSpawn();
+      });
   }
 
   _evilPumpkinSpawn() {
