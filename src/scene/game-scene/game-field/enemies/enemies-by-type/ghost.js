@@ -8,6 +8,7 @@ import { isEqualsPositions, randomBetween } from '../../../../../core/helpers/he
 import { DIRECTION, MAP_TYPE, ROTATION_BY_DIRECTION } from '../../data/game-data';
 import { GHOST_CONFIG, GHOST_MOVEMENT_STATE } from '../data/ghost-config';
 import { GLOBAL_VARIABLES } from '../../data/global-variables';
+import Loader from '../../../../../core/loader';
 
 export default class Ghost extends EnemyAbstract {
   constructor() {
@@ -96,9 +97,7 @@ export default class Ghost extends EnemyAbstract {
 
     this._spawnShowTween = this._showSpawnAnimation();
     this._spawnShowTween.onComplete(() => {
-      this._view.material.opacity = GHOST_CONFIG.opacity;
-      this._leftEye.material.opacity = GHOST_CONFIG.opacity;
-      this._rightEye.material.opacity = GHOST_CONFIG.opacity;
+      this._view.material.opacity = GHOST_CONFIG.activeBodyOpacity;
 
       this._state = ENEMY_STATE.Active;
       this._movementState = GHOST_MOVEMENT_STATE.Moving;
@@ -214,15 +213,13 @@ export default class Ghost extends EnemyAbstract {
   }
 
   _showSpawnAnimation() {
-    this._view.material.opacity = 0.5;
-    this._leftEye.material.opacity = 0.5;
-    this._rightEye.material.opacity = 0.5;
+    this._view.material.opacity = GHOST_CONFIG.inactiveBodyOpacity;
     this._viewGroup.position.y = 1.7;
 
     const duration = GHOST_CONFIG.spawnAnimationDuration / GHOST_CONFIG.speedMultiplier;
 
     const positionTween = new TWEEN.Tween(this._viewGroup.position)
-      .to({ y: 0.7 }, duration)
+      .to({ y: 0.2 }, duration)
       .easing(TWEEN.Easing.Sinusoidal.Out)
       .start();
 
@@ -230,7 +227,7 @@ export default class Ghost extends EnemyAbstract {
   }
 
   _showHideAnimation() {
-    const opacityObject = { value: GHOST_CONFIG.opacity };
+    const opacityObject = { value: GHOST_CONFIG.activeBodyOpacity };
     const duration = GHOST_CONFIG.spawnAnimationDuration / GHOST_CONFIG.speedMultiplier;
 
     const opacityTween = new TWEEN.Tween(opacityObject)
@@ -239,8 +236,6 @@ export default class Ghost extends EnemyAbstract {
       .start()
       .onUpdate(() => {
         this._view.material.opacity = opacityObject.value;
-        this._leftEye.material.opacity = opacityObject.value;
-        this._rightEye.material.opacity = opacityObject.value;
       });
 
     const positionTween = new TWEEN.Tween(this._viewGroup.position)
@@ -281,7 +276,7 @@ export default class Ghost extends EnemyAbstract {
   }
 
   _init() {
-    this._initView();
+    this._initView(); 
     this._initHelpers();
 
     this.hide(true);
@@ -291,35 +286,23 @@ export default class Ghost extends EnemyAbstract {
     const viewGroup = this._viewGroup = new THREE.Group();
     this.add(viewGroup);
 
-    const geometry = new THREE.SphereGeometry(0.5, 32, 32);
-    const material = new THREE.MeshToonMaterial({
-      color: 0xeeeeee,
-      transparent: true,
-      opacity: GHOST_CONFIG.opacity,
-    });
-    const view = this._view = new THREE.Mesh(geometry, material);
-
-    const eyeGeometry = new THREE.SphereGeometry(0.1, 32, 32);
-    const eyeMaterial = new THREE.MeshToonMaterial({
-      color: 0x555555,
-      transparent: true,
-      opacity: GHOST_CONFIG.opacity,
-    });
-    const leftEye = this._leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-    const rightEye = this._rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-    viewGroup.add(leftEye);
-    viewGroup.add(rightEye);
-
-    leftEye.position.x = -0.2;
-    leftEye.position.y = 0.2;
-    leftEye.position.z = 0.4;
-
-    rightEye.position.x = 0.2;
-    rightEye.position.y = 0.2;
-    rightEye.position.z = 0.4;
-
+    const view = this._view = Loader.assets['ghost'].scene.children[0].clone();
     viewGroup.add(view);
 
-    viewGroup.position.y = 0.7;
+    const scale = 0.6;
+    view.scale.set(scale, scale, scale);
+
+    const texture = Loader.assets['ghost_basecolor'];
+    texture.flipY = false;
+
+    const material = new THREE.MeshPhongMaterial({
+      transparent: true,
+      opacity: GHOST_CONFIG.activeBodyOpacity,
+      map: texture,
+    });
+
+    view.material = material;
+
+    viewGroup.position.y = 0.2;
   }
 }

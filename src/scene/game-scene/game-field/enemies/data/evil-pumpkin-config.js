@@ -4,7 +4,7 @@ const EVIL_PUMPKIN_CONFIG = {
   spawnAnimationDuration: 1500,
   maxCount: 5,
   mass: 4,
-  halfHeight: 0.5,
+  halfHeight: 0.35,
   jumpImpulse: 8,
   jumpAnimation: {
     squeezePower: 0.02,

@@ -5,6 +5,9 @@ import { LEVEL_CONFIG } from '../data/level-config';
 import Utils from '../../../../core/helpers/utils';
 import { BOARD_CONFIG } from './board-config';
 import { GLOBAL_VARIABLES } from '../data/global-variables';
+import Loader from '../../../../core/loader';
+import Materials from '../../../../core/materials';
+import { randomFromArray } from '../../../../core/helpers/helpers';
 
 export default class Board extends THREE.Group {
   constructor() {
@@ -51,7 +54,7 @@ export default class Board extends THREE.Group {
 
   updateCellColor(position, isEnemy) {
     const cellIndex = this._getCellIndex(position);
-    const endColor = isEnemy ? new THREE.Color(BOARD_CONFIG.enemyColor) : new THREE.Color(0xaaaaaa);
+    const endColor = isEnemy ? new THREE.Color(BOARD_CONFIG.enemyColor) : new THREE.Color(0xffffff);
     const currentColor = new THREE.Color();
     this._view.getColorAt(cellIndex, currentColor);
 
@@ -168,24 +171,34 @@ export default class Board extends THREE.Group {
     const cellSize = GAME_CONFIG.cellSize;
     const cellsAmount = fieldConfig.columns * fieldConfig.rows;
 
-    const planeGeometry = new THREE.PlaneGeometry(cellSize * 0.98, cellSize * 0.98);
-    const planeMaterial = new THREE.MeshToonMaterial();
+    const tileModel = Loader.assets['tile'].scene.children[0];
+    const geometry = tileModel.geometry;
+    const material = Materials.getMaterial(Materials.type.HalloweenBits);
 
-    const view = this._view = new THREE.InstancedMesh(planeGeometry, planeMaterial, cellsAmount);
+    const view = this._view = new THREE.InstancedMesh(geometry, material, cellsAmount);
     this.add(view);
     view.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
 
     const dummy = new THREE.Object3D();
 
+    const rotationY = [
+      0,
+      Math.PI / 2,
+      Math.PI,
+      Math.PI * 1.5,
+    ];
+
     for (let i = 0; i < cellsAmount; i += 1) {
       dummy.position.x = (-fieldConfig.columns * cellSize * 0.5 + cellSize * 0.5) + (i % fieldConfig.columns) * GAME_CONFIG.cellSize;
       dummy.position.z = (-fieldConfig.rows * cellSize * 0.5 + cellSize * 0.5) + Math.floor(i / fieldConfig.columns) * GAME_CONFIG.cellSize;
+      dummy.scale.setScalar(0.25);
 
-      dummy.rotation.x = -Math.PI / 2;
+      const randomYRotation = randomFromArray(rotationY);
+      dummy.rotation.y = randomYRotation;
 
       dummy.updateMatrix();
       view.setMatrixAt(i, dummy.matrix);
-      view.setColorAt(i, new THREE.Color(0xaaaaaa));
+      view.setColorAt(i, new THREE.Color(0xffffff));
     }
     
     view.instanceColor.needsUpdate = true;

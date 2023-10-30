@@ -1,9 +1,9 @@
 const DEBUG_CONFIG = {
   fpsMeter: true,
   rendererStats: false,
-  orbitControls: true,
+  orbitControls: false,
   axesHelper: false,
-  startFromGameplay: true,
+  startFromGameplay: false,
 };
 
 export default DEBUG_CONFIG;

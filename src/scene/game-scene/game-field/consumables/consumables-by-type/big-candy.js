@@ -15,7 +15,7 @@ export default class BigCandy extends ConsumableAbstract {
 
   _init() {
     const geometry = new THREE.IcosahedronGeometry(0.25, 0);
-    const material = new THREE.MeshToonMaterial({ color: 0x00ff00 });
+    const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
     const view = this._view = new THREE.Mesh(geometry, material);
     this.add(view);
 

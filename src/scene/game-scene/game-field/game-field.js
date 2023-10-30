@@ -91,6 +91,10 @@ export default class GameField extends THREE.Group {
   }
 
   _roundUp() {
+    if (GLOBAL_VARIABLES.round >= ROUND_CONFIG.maxRound) {
+      return;
+    }
+    
     GLOBAL_VARIABLES.round++;
     this.events.post('roundUp');
   }

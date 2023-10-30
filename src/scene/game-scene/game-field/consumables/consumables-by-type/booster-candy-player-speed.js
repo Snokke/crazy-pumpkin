@@ -15,7 +15,7 @@ export default class BoosterCandyPlayerSpeed extends ConsumableAbstract {
 
   _init() {
     const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
-    const material = new THREE.MeshToonMaterial({ color: 0xff0000 });
+    const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
     const view = this._view = new THREE.Mesh(geometry, material);
     this.add(view);
 

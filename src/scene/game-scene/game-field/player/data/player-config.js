@@ -1,6 +1,6 @@
 const PLAYER_CONFIG = {
   mass: 3,
-  halfHeight: 0.5,
+  halfHeight: 0.3,
   jumpImpulse: 6,
   speedMultiplier: 1,
   jumpAnimation: {

@@ -9,6 +9,7 @@ import { GAME_CONFIG, ROUND_CONFIG } from '../data/game-config';
 import { GLOBAL_VARIABLES } from '../data/global-variables';
 import { getCoordinatesFromPosition } from '../../../../core/helpers/helpers';
 import { CONSUMABLES_CONFIG, CONSUMABLE_TYPE } from '../consumables/data/consumables-config';
+import Loader from '../../../../core/loader';
 
 export default class Player extends THREE.Group {
   constructor() {
@@ -74,7 +75,7 @@ export default class Player extends THREE.Group {
     this._actions[action]();
   }
 
-  getNewPosition(direction) { 
+  getNewPosition(direction) {
     const newPosition = { row: this._currentPosition.row, column: this._currentPosition.column };
 
     switch (direction) {
@@ -241,7 +242,7 @@ export default class Player extends THREE.Group {
         this._setJumpState(PLAYER_JUMP_STATE.GoingDown);
       }
 
-      if (this._jumpState === PLAYER_JUMP_STATE.GoingDown && this._previousJumpState === PLAYER_JUMP_STATE.GoingUp) {        
+      if (this._jumpState === PLAYER_JUMP_STATE.GoingDown && this._previousJumpState === PLAYER_JUMP_STATE.GoingUp) {
         this._resetJumpingTweens();
         this._goingDownTween = this._squeeze(this._squeezeTop, this._jumpHalfTime, TWEEN.Easing.Sinusoidal.In);
         this._isNextActionAllowed = true;
@@ -297,13 +298,13 @@ export default class Player extends THREE.Group {
 
   _phase02BeforeJump() {
     this._setJumpState(PLAYER_JUMP_STATE.SqueezeBeforeJumpPhase02);
-    
+
     const duration = PLAYER_CONFIG.jumpAnimation.squeezeDuration * 0.5 / PLAYER_CONFIG.speedMultiplier;
     this._beforeJumpSqueezeTweens = this._squeezeOnGround(this._squeezeTop, duration, TWEEN.Easing.Sinusoidal.In)
     this._beforeJumpSqueezeTweens.positionTween?.onComplete(() => {
       this._setJumpState(PLAYER_JUMP_STATE.GoingUp);
       this._jumpSpeed = PLAYER_CONFIG.jumpImpulse;
-      
+
       this._goingUpTween = this._squeeze(1, this._jumpHalfTime, TWEEN.Easing.Sinusoidal.In);
       this._moveToPosition(this._newPosition);
     });
@@ -322,7 +323,7 @@ export default class Player extends THREE.Group {
         this.startAction(this._nextAction);
 
         return;
-      } 
+      }
 
       this._setJumpState(PLAYER_JUMP_STATE.None);
       this._state = PLAYER_STATE.Idle;
@@ -367,7 +368,7 @@ export default class Player extends THREE.Group {
     } else {
       const duration = PLAYER_CONFIG.idleAnimation.squeezeDuration / PLAYER_CONFIG.speedMultiplier;
       this._idleSqueezeTweens = this._squeezeOnGround(PLAYER_CONFIG.idleAnimation.squeezePower, duration, TWEEN.Easing.Sinusoidal.InOut);
-      this._idleSqueezeTweens.positionTween?.onComplete(() => {        
+      this._idleSqueezeTweens.positionTween?.onComplete(() => {
         this._playIdleAnimationPhase02();
       });
     }
@@ -447,35 +448,35 @@ export default class Player extends THREE.Group {
     const viewGroup = this._viewGroup = new THREE.Group();
     this.add(viewGroup);
 
-    const geometry = new THREE.SphereGeometry(0.5, 32, 32);
-    const material = new THREE.MeshToonMaterial({
-      color: 0xffa500,
-      transparent: true,
-      opacity: 1,
-    });
-    const view = this._view = new THREE.Mesh(geometry, material);
+    const view = this._view = Loader.assets['player-pumpkin'].scene.children[0].clone();
     viewGroup.add(view);
 
+    const scale = 0.6;
+    view.scale.set(scale, scale, scale);
+
+    const texture = Loader.assets['pumpkin002_basecolor'];
+    texture.flipY = false;
+    // texture.encoding = THREE.SRGBColorSpace;
+
+    const roughness = Loader.assets['pumpkin002_roughness'];
+    roughness.flipY = false;
+
+    const material = new THREE.MeshStandardMaterial({
+      transparent: true,
+      opacity: 1,
+      map: texture,
+      roughnessMap: roughness,
+      roughness: 0.6,
+    });
+
+    view.material = material;
     view.castShadow = true;
-    // mesh.receiveShadow = true;
 
-    const eyeGeometry = new THREE.SphereGeometry(0.1, 32, 32);
-    const eyeMaterial = new THREE.MeshToonMaterial({ color: 0xffffff });
-    const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-    const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
-    viewGroup.add(leftEye, rightEye);
-    
-    leftEye.position.x = -0.2;
-    leftEye.position.y = 0.2;
-    leftEye.position.z = 0.4;
+    const innerCylinderGeometry = new THREE.CylinderGeometry(0.38, 0.38, 0.37, 32, 1, true);
+    const cylinderMaterial = new THREE.MeshBasicMaterial({ color: 0xffd700 });
+    const cylinder = new THREE.Mesh(innerCylinderGeometry, cylinderMaterial);
+    viewGroup.add(cylinder);
 
-    rightEye.position.x = 0.2;
-    rightEye.position.y = 0.2;
-    rightEye.position.z = 0.4;
-
-    leftEye.receiveShadow = true;
-    // rightEye.receiveShadow = true;
-  
     viewGroup.position.y = PLAYER_CONFIG.halfHeight;
     viewGroup.rotation.y = ROTATION_BY_DIRECTION[this._currentDirection];
   }

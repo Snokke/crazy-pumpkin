@@ -3,17 +3,31 @@ import { AssetManager, GameObject, MessageDispatcher } from 'black-engine';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader';
 
 const textures = [
-
+  'ghost_basecolor.jpg',
+  'pumpkin002_basecolor.jpg',
+  'pumpkin002_roughness.jpg',
+  'pumpkin004_basecolor.jpg',
+  'pumpkin004_roughness.jpg',
+  'halloweenbits_texture.png',
 ];
 
 const models = [
-
+  'ghost.glb',
+  'player-pumpkin.glb',
+  'evil-pumpkin.glb',
+  'tile.glb',
+  'tree-orange-small.glb',
+  'tree-yellow-small.glb',
+  'post-skull.glb',
+  'post-lantern.glb',
+  'grave-a.glb',
+  'grave-a-destroyed.glb',
 ];
 
 const images = [
-    'overlay.png',
-    'sound-icon.png',
-    'sound-icon-mute.png',
+  'overlay.png',
+  'sound-icon.png',
+  'sound-icon-mute.png',
 ];
 
 const sounds = [

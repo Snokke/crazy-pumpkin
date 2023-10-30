@@ -8,6 +8,7 @@ import { DIRECTION, GAME_STATE, MAP_TYPE, ROTATION_BY_DIRECTION } from '../../da
 import { GLOBAL_VARIABLES } from '../../data/global-variables';
 import { getCoordinatesFromPosition, randomFromArray } from '../../../../../core/helpers/helpers';
 import { LEVEL_CONFIG } from '../../data/level-config';
+import Loader from '../../../../../core/loader';
 
 export default class EvilPumpkin extends EnemyAbstract {
   constructor() {
@@ -17,6 +18,7 @@ export default class EvilPumpkin extends EnemyAbstract {
 
     this._view = null;
     this._viewGroup = null;
+    this._innerCylinder = null;
     this._spawnHideTween = {};
     this._rotateTween = null;
     this._moveToPositionTween = null;
@@ -62,6 +64,7 @@ export default class EvilPumpkin extends EnemyAbstract {
       this._state = ENEMY_STATE.Active;
 
       this._view.material.opacity = 1;
+      this._innerCylinder.visible = true;
 
       const waitingTime = EVIL_PUMPKIN_CONFIG.waitingToRotateTime;
       this._waitingToRotateTime = (waitingTime.min + Math.random() * (waitingTime.max - waitingTime.min)) / EVIL_PUMPKIN_CONFIG.speedMultiplier;
@@ -136,6 +139,7 @@ export default class EvilPumpkin extends EnemyAbstract {
     this._viewGroup.rotation.y = 0;
     this._viewGroup.scale.set(1, 1, 1);
     this._view.material.opacity = 1;
+    this._innerCylinder.visible = false;
     this.stopTweens();
   }
 
@@ -431,6 +435,7 @@ export default class EvilPumpkin extends EnemyAbstract {
   _showHideAnimation() {
     const duration = EVIL_PUMPKIN_CONFIG.spawnAnimationDuration / EVIL_PUMPKIN_CONFIG.speedMultiplier;
 
+
     const scaleTween = new TWEEN.Tween(this._viewGroup.scale)
       .to({ y: 0 }, duration)
       .easing(TWEEN.Easing.Back.In)
@@ -453,6 +458,7 @@ export default class EvilPumpkin extends EnemyAbstract {
     this._viewGroup.scale.y = 0;
     this._viewGroup.position.y = 0;
     this._view.material.opacity = 0.5;
+    this._innerCylinder.visible = false;
     const duration = EVIL_PUMPKIN_CONFIG.spawnAnimationDuration / EVIL_PUMPKIN_CONFIG.speedMultiplier;
 
     const scaleTween = new TWEEN.Tween(this._viewGroup.scale)
@@ -489,15 +495,37 @@ export default class EvilPumpkin extends EnemyAbstract {
     const viewGroup = this._viewGroup = new THREE.Group();
     this.add(viewGroup);
 
-    const geometry = new THREE.SphereGeometry(0.5, 32, 32);
-    const material = new THREE.MeshToonMaterial({
-      color: 0xff0000,
+    const view = this._view = Loader.assets['evil-pumpkin'].scene.children[0].clone();
+    viewGroup.add(view);
+
+    const scale = 0.72;
+    view.scale.set(scale, scale, scale);
+
+    const texture = Loader.assets['pumpkin004_basecolor'];
+    texture.flipY = false;
+    // texture.encoding = THREE.SRGBColorSpace;
+
+    const roughness = Loader.assets['pumpkin004_roughness'];
+    roughness.flipY = false;
+
+    const material = new THREE.MeshStandardMaterial({
+      color: 0xf4cccc,
       transparent: true,
       opacity: 1,
+      map: texture,
+      roughnessMap: roughness,
+      roughness: 0.6,
     });
-    const view = this._view = new THREE.Mesh(geometry, material);
 
-    viewGroup.add(view);
+    view.material = material;
+    view.castShadow = true;
+
+    const innerCylinderGeometry = new THREE.CylinderGeometry(0.45, 0.45, 0.5, 32, 1, true);
+    const cylinderMaterial = new THREE.MeshBasicMaterial({ color: 0xdd0000 });
+    const cylinder = this._innerCylinder = new THREE.Mesh(innerCylinderGeometry, cylinderMaterial);
+    viewGroup.add(cylinder);
+
+    this._innerCylinder.visible = false;
 
     viewGroup.position.y = EVIL_PUMPKIN_CONFIG.halfHeight;
   }

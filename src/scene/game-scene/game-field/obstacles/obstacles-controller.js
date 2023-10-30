@@ -95,7 +95,14 @@ export default class ObstaclesController extends THREE.Group {
     const fieldConfig = LEVEL_CONFIG[GLOBAL_VARIABLES.currentLevel].field;
     const randomPositions = [];
     const randomObstaclesConfig = [];
-    const types = [OBSTACLE_TYPE.Tree, OBSTACLE_TYPE.Rock];
+    const types = [
+      OBSTACLE_TYPE.TreeYellow,
+      OBSTACLE_TYPE.TreeOrange,
+      OBSTACLE_TYPE.PostSkull,
+      OBSTACLE_TYPE.PostLantern,
+      OBSTACLE_TYPE.Grave,
+      OBSTACLE_TYPE.GraveDestroyed,
+    ];
 
     for (let i = 0; i < count; i++) {
       let position = null;

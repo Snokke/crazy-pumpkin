@@ -15,7 +15,7 @@ export default class SmallCandy extends ConsumableAbstract {
 
   _init() {
     const geometry = new THREE.IcosahedronGeometry(0.18, 0);
-    const material = new THREE.MeshToonMaterial({ color: 0x00ff00 });
+    const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
     const view = this._view = new THREE.Mesh(geometry, material);
     this.add(view);
 

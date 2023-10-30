@@ -4,6 +4,9 @@ import { OBSTACLE_CONFIG, OBSTACLE_TYPE } from './data/obstacles-config';
 import { GAME_CONFIG } from '../data/game-config';
 import { LEVEL_CONFIG } from '../data/level-config';
 import { GLOBAL_VARIABLES } from '../data/global-variables';
+import Loader from '../../../../core/loader';
+import Materials from '../../../../core/materials';
+import { randomFromArray } from '../../../../core/helpers/helpers';
 
 export default class Obstacle extends THREE.Group {
   constructor(type) {
@@ -13,6 +16,7 @@ export default class Obstacle extends THREE.Group {
     this._config = OBSTACLE_CONFIG[type];
 
     this._view = null;
+    this._viewGroup = null;
     this._position = null;
 
     this._init();
@@ -27,9 +31,9 @@ export default class Obstacle extends THREE.Group {
   }
 
   showIntro(delay = 0) {
-    this._view.position.y = 8;
+    this._viewGroup.position.y = 8;
 
-    new TWEEN.Tween(this._view.position)
+    new TWEEN.Tween(this._viewGroup.position)
       .to({ y: 0.4 }, 600)
       .delay(delay)
       .easing(TWEEN.Easing.Cubic.In)
@@ -60,12 +64,12 @@ export default class Obstacle extends THREE.Group {
   _squeeze(squeezePower, duration, easing) {
     const squeezeSides = (1 - squeezePower) + 1;
 
-    const tween = new TWEEN.Tween(this._view.scale)
+    const tween = new TWEEN.Tween(this._viewGroup.scale)
       .to({ y: squeezePower, x: squeezeSides, z: squeezeSides }, duration)
       .easing(easing)
       .start();
 
-    new TWEEN.Tween(this._view.position)
+    new TWEEN.Tween(this._viewGroup.position)
       .to({ y: 0.4 * squeezePower }, duration)
       .easing(easing)
       .start();
@@ -74,27 +78,22 @@ export default class Obstacle extends THREE.Group {
   }
 
   _init() {
-    if (this._type === OBSTACLE_TYPE.Rock) {
-      const geometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
-      const material = new THREE.MeshToonMaterial({ color: 0x808080 });
-      const view = this._view = new THREE.Mesh(geometry, material);
-      this.add(view);
+    const viewGroup = this._viewGroup = new THREE.Group();
+    this.add(viewGroup);
 
-      view.castShadow = true;
+    const modelName = this._config.modelName;
+    const model = Loader.assets[modelName].scene.children[0];
+    const geometry = model.geometry;
+    const material = Materials.getMaterial(Materials.type.HalloweenBits);
+    const view = this._view = new THREE.Mesh(geometry, material);
+    viewGroup.add(view);
 
-      view.position.y = 0.4;
-    }
+    view.scale.set(this._config.scale, this._config.scale, this._config.scale);
+    view.position.y = this._config.offsetY;
 
-    if (this._type === OBSTACLE_TYPE.Tree) {
-      const geometry = new THREE.ConeGeometry(0.65, 0.8, 4, 1, false);
-      const material = new THREE.MeshToonMaterial({ color: 0x8b4513 });
-      const view = this._view = new THREE.Mesh(geometry, material);
-      this.add(view);
+    view.castShadow = true;
 
-      view.castShadow = true;
-
-      view.position.y = 0.4;
-      view.rotation.y = Math.PI / 4;
-    }
+    const randomAngleY = randomFromArray(this._config.availableRotation);
+    viewGroup.rotation.y = randomAngleY;
   }
 }
