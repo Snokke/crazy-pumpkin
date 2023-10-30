@@ -140,16 +140,16 @@ export default class BaseScene {
   }
 
   _initEffectsComposer() {
-    const pixelRatio = Math.min(window.devicePixelRatio, SCENE_CONFIG.maxPixelRatio);
+    // const pixelRatio = Math.min(window.devicePixelRatio, SCENE_CONFIG.maxPixelRatio);
 
-    if (WebGL.isWebGL2Available() && pixelRatio === 1) {
-      const size = this._renderer.getDrawingBufferSize(new THREE.Vector2());
-      const target = new THREE.WebGLRenderTarget(size.width, size.height, { samples: 3 });
-      this._effectComposer = new EffectComposer(this._renderer, target);
-    } else {
+    // if (WebGL.isWebGL2Available() && pixelRatio === 1) {
+    //   const size = this._renderer.getDrawingBufferSize(new THREE.Vector2());
+    //   const target = new THREE.WebGLRenderTarget(size.width, size.height, { samples: 3 });
+    //   this._effectComposer = new EffectComposer(this._renderer, target);
+    // } else {
       SCENE_CONFIG.fxaaPass = true;
       this._effectComposer = new EffectComposer(this._renderer);
-    }
+    // }
 
     const renderPass = this._renderPass = new RenderPass(this._scene, this._camera);
     this._effectComposer.addPass(renderPass);
@@ -275,7 +275,7 @@ export default class BaseScene {
           this._mainScene.update(deltaTime);
         }
 
-        // this._renderer.render(this._scene, this._camera);
+        this._renderer.render(this._scene, this._camera);
 
         if (SCENE_CONFIG.isMobile || DEBUG_CONFIG.rendererStats) {
           this._renderer.render(this._scene, this._camera);

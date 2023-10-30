@@ -53,22 +53,22 @@ export default class Board extends THREE.Group {
   }
 
   updateCellColor(position, isEnemy) {
-    const cellIndex = this._getCellIndex(position);
-    const endColor = isEnemy ? new THREE.Color(BOARD_CONFIG.enemyColor) : new THREE.Color(0xffffff);
-    const currentColor = new THREE.Color();
-    this._view.getColorAt(cellIndex, currentColor);
+    // const cellIndex = this._getCellIndex(position);
+    // const endColor = isEnemy ? new THREE.Color(BOARD_CONFIG.enemyColor) : new THREE.Color(0xffffff);
+    // const currentColor = new THREE.Color();
+    // this._view.getColorAt(cellIndex, currentColor);
 
-    const colorObject = { value: 0 };
+    // const colorObject = { value: 0 };
 
-    new TWEEN.Tween(colorObject)
-      .to({ value: 1 }, 300)
-      .easing(TWEEN.Easing.Sinusoidal.In)
-      .start()
-      .onUpdate(() => {
-        const color = new THREE.Color().copy(currentColor).lerp(endColor, colorObject.value);
-        this._view.setColorAt(cellIndex, color);
-        this._view.instanceColor.needsUpdate = true;
-      });
+    // new TWEEN.Tween(colorObject)
+    //   .to({ value: 1 }, 300)
+    //   .easing(TWEEN.Easing.Sinusoidal.In)
+    //   .start()
+    //   .onUpdate(() => {
+    //     const color = new THREE.Color().copy(currentColor).lerp(endColor, colorObject.value);
+    //     this._view.setColorAt(cellIndex, color);
+    //     this._view.instanceColor.needsUpdate = true;
+    //   });
   }
 
   _getCellIndex(position) {
