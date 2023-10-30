@@ -290,7 +290,7 @@ export default class Player extends THREE.Group {
       return;
     }
 
-    this._beforeJumpSqueezeTweens = this._squeezeOnGround(this._squeezeSides, squeezeDuration, TWEEN.Easing.Sinusoidal.In);
+    this._beforeJumpSqueezeTweens = this._squeezeOnGround(this._squeezeSides, squeezeDuration * 0.3, TWEEN.Easing.Sinusoidal.In);
     this._beforeJumpSqueezeTweens.positionTween?.onComplete(() => {
       this._phase02BeforeJump();
     });
@@ -300,7 +300,7 @@ export default class Player extends THREE.Group {
     this._setJumpState(PLAYER_JUMP_STATE.SqueezeBeforeJumpPhase02);
 
     const duration = PLAYER_CONFIG.jumpAnimation.squeezeDuration * 0.5 / PLAYER_CONFIG.speedMultiplier;
-    this._beforeJumpSqueezeTweens = this._squeezeOnGround(this._squeezeTop, duration, TWEEN.Easing.Sinusoidal.In)
+    this._beforeJumpSqueezeTweens = this._squeezeOnGround(this._squeezeTop, duration * 0.3, TWEEN.Easing.Sinusoidal.In)
     this._beforeJumpSqueezeTweens.positionTween?.onComplete(() => {
       this._setJumpState(PLAYER_JUMP_STATE.GoingUp);
       this._jumpSpeed = PLAYER_CONFIG.jumpImpulse;
