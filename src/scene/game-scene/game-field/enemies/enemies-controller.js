@@ -173,7 +173,7 @@ export default class EnemiesController extends THREE.Group {
   }
 
   _spawnFirstEvilPumpkin() {
-    Delayed.call(1000, () => {
+    Delayed.call(2000, () => {
       this._spawnEnemy(ENEMY_TYPE.EvilPumpkin);
       this._evilPumpkinSpawn();
     });

@@ -171,7 +171,7 @@ export default class Board extends THREE.Group {
     const cellSize = GAME_CONFIG.cellSize;
     const cellsAmount = fieldConfig.columns * fieldConfig.rows;
 
-    const tileModel = Loader.assets['tile'].scene.children[0];
+    const tileModel = Loader.assets['tile'].scene.children[0].clone();
     const geometry = tileModel.geometry;
     const material = Materials.getMaterial(Materials.type.HalloweenBits);
 

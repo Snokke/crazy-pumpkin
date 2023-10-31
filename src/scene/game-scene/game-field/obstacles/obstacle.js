@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import TWEEN from 'three/addons/libs/tween.module.js';
-import { OBSTACLE_CONFIG, OBSTACLE_TYPE } from './data/obstacles-config';
+import { OBSTACLE_CONFIG } from './data/obstacles-config';
 import { GAME_CONFIG } from '../data/game-config';
 import { LEVEL_CONFIG } from '../data/level-config';
 import { GLOBAL_VARIABLES } from '../data/global-variables';
@@ -95,5 +95,10 @@ export default class Obstacle extends THREE.Group {
 
     const randomAngleY = randomFromArray(this._config.availableRotation);
     viewGroup.rotation.y = randomAngleY;
+
+    if (this._config.mirrorXEnabled) {
+      const randomMirrorX = randomFromArray([-this._config.scale, this._config.scale]);
+      view.scale.x = randomMirrorX;
+    }
   }
 }

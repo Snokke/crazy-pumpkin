@@ -1,48 +1,46 @@
 const OBSTACLE_TYPE = {
-  TreeOrange: 'ROCK',
-  TreeYellow: 'TREE',
-  PostSkull: 'POST_SKULL',
-  PostLantern: 'POST_LANTERN',
-  Grave: 'GRAVE',
-  GraveDestroyed: 'GRAVE_DESTROYED',
+  Grave01: 'GRAVE_01',
+  Grave02: 'GRAVE_02',
+  Grave03: 'GRAVE_03',
+  Grave04: 'GRAVE_04',
+  Grave05: 'GRAVE_05',
 }
 
 const OBSTACLE_CONFIG = {
-  [OBSTACLE_TYPE.TreeOrange]: {
-    modelName: 'tree-orange-small',
-    scale: 0.45,
-    offsetY: -0.3,
-    availableRotation: [0, Math.PI * 0.5, Math.PI, Math.PI * 1.5],
-  },
-  [OBSTACLE_TYPE.TreeYellow]: {
-    modelName: 'tree-yellow-small',
-    scale: 0.45,
-    offsetY: -0.3,
-    availableRotation: [0, Math.PI * 0.5, Math.PI, Math.PI * 1.5],
-  },
-  [OBSTACLE_TYPE.PostSkull]: {
-    modelName: 'post-skull',
-    scale: 0.45,
-    offsetY: -0.4,
-    availableRotation: [Math.PI * 0.5, Math.PI * 1.5],
-  },
-  [OBSTACLE_TYPE.PostLantern]: {
-    modelName: 'post-lantern',
-    scale: 0.45,
-    offsetY: -0.4,
-    availableRotation: [Math.PI * 0.5, Math.PI * 1.5],
-  },
-  [OBSTACLE_TYPE.Grave]: {
-    modelName: 'grave-a',
+  [OBSTACLE_TYPE.Grave01]: {
+    modelName: 'grave-01',
     scale: 0.45,
     offsetY: -0.4,
     availableRotation: [0],
+    mirrorXEnabled: false,
   },
-  [OBSTACLE_TYPE.GraveDestroyed]: {
-    modelName: 'grave-a-destroyed',
+  [OBSTACLE_TYPE.Grave02]: {
+    modelName: 'grave-02',
     scale: 0.45,
     offsetY: -0.4,
     availableRotation: [0],
+    mirrorXEnabled: true,
+  },
+  [OBSTACLE_TYPE.Grave03]: {
+    modelName: 'grave-03',
+    scale: 0.45,
+    offsetY: -0.4,
+    availableRotation: [0],
+    mirrorXEnabled: true,
+  },
+  [OBSTACLE_TYPE.Grave04]: {
+    modelName: 'grave-04',
+    scale: 0.5,
+    offsetY: -0.4,
+    availableRotation: [0],
+    mirrorXEnabled: false,
+  },
+  [OBSTACLE_TYPE.Grave05]: {
+    modelName: 'grave-05',
+    scale: 0.5,
+    offsetY: -0.4,
+    availableRotation: [0, Math.PI * 0.5, Math.PI, Math.PI * 1.5],
+    mirrorXEnabled: false,
   },
 }
 

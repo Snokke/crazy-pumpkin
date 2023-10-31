@@ -1,9 +1,10 @@
-import { Black, DisplayObject, Ease, Graphics, TextField, Tween } from "black-engine";
-import TWEEN from 'three/addons/libs/tween.module.js';
+import { Black, DisplayObject, Ease, TextField, Tween } from "black-engine";
 import ScreenAbstract from "./screen-abstract";
 import { GLOBAL_VARIABLES } from "../../scene/game-scene/game-field/data/global-variables";
 import { CONSUMABLES_CONFIG, CONSUMABLE_TYPE } from "../../scene/game-scene/game-field/consumables/data/consumables-config";
 import { SCORE_CONFIG } from "../../scene/game-scene/game-field/data/score-config";
+import ProgressBar from "../progress-bar";
+import { ROUND_CONFIG } from "../../scene/game-scene/game-field/data/game-config";
 
 export default class GameplayScreen extends ScreenAbstract {
   constructor() {
@@ -15,8 +16,15 @@ export default class GameplayScreen extends ScreenAbstract {
     this._collectedScore = null;
     this._boosterText = null;
     this._boosterGroup = null;
-    this._progressBar = null;
-    this._progressBarTween = null;
+    this._powerUpProgressBar = null;
+    this._roundProgressBar = null;
+  }
+
+  show() {
+    super.show();
+
+    const duration = ROUND_CONFIG.roundDuration;
+    this._roundProgressBar.show(0x000000, 140, duration);
   }
 
   updateRound() {
@@ -32,6 +40,9 @@ export default class GameplayScreen extends ScreenAbstract {
       const tween = new Tween({ scale: 1 }, 0.3, { ease: Ease.sinusoidalIn, });
       this._round.add(tween);
     });
+
+    const duration = ROUND_CONFIG.roundDuration;
+    this._roundProgressBar.show(0x000000, 140, duration);
   }
 
   setScore(value) {
@@ -91,7 +102,8 @@ export default class GameplayScreen extends ScreenAbstract {
 
   reset() {
     this._boosterGroup.visible = false;
-    this._progressBarTween?.stop();
+    this._powerUpProgressBar.reset();
+    this._roundProgressBar.reset();
   }
 
   _showBoosterProgressBar(type) {
@@ -101,30 +113,8 @@ export default class GameplayScreen extends ScreenAbstract {
 
     this._boosterText.text = config.name;
     this._boosterText.textColor = config.color;
-    
-    this._progressBar.x = -config.progressBarWidth * 0.5;
 
-    const progress = { percent: 1 };
-
-    this._progressBarTween = new TWEEN.Tween(progress)
-      .to({ percent: 0 }, config.duration)
-      .start()
-      .onUpdate(() => {
-        this._updateProgressBar(type, progress.percent);
-      })
-      .onComplete(() => {
-        this._boosterGroup.visible = false;
-      });
-  }
-
-  _updateProgressBar(type, percent) {
-    const config = CONSUMABLES_CONFIG[type];
-
-    this._progressBar.clear();
-    this._progressBar.beginPath();
-    this._progressBar.fillStyle(config.color);
-    this._progressBar.rect(0, 0, config.progressBarWidth * percent, 7);
-    this._progressBar.fill();
+    this._powerUpProgressBar.show(config.color, config.progressBarWidth, config.duration);
   }
 
   _init() {
@@ -133,6 +123,7 @@ export default class GameplayScreen extends ScreenAbstract {
     this._initGoText();
     this._initCollectedScore();
     this._initBoosterGroup();
+    this._initRoundProgressBar();
   }
 
   _initScore() {
@@ -204,16 +195,17 @@ export default class GameplayScreen extends ScreenAbstract {
   }
 
   _initBoosterProgressBar() {
-    const progressBar = this._progressBar = new Graphics();
-    this._boosterGroup.add(progressBar);
+    const powerUpProgressBar = this._powerUpProgressBar = new ProgressBar();
+    this._boosterGroup.add(powerUpProgressBar);
 
-    progressBar.beginPath();
-    progressBar.fillStyle(0x000000);
-    progressBar.rect(0, 0, 100, 5);
-    progressBar.fill();
+    powerUpProgressBar.on('complete', () => {
+      this._boosterGroup.visible = false;
+    });
+  }
 
-    progressBar.alignAnchor(0, 0.5);
-    progressBar.y = 29;
+  _initRoundProgressBar() {
+    const roundProgressBar = this._roundProgressBar = new ProgressBar();
+    this.add(roundProgressBar);
   }
 
   _onResize() {
@@ -230,6 +222,9 @@ export default class GameplayScreen extends ScreenAbstract {
 
     this._round.x = bounds.left + bounds.width * 0.5 + 35;
     this._round.y = bounds.top + 70;
+
+    this._roundProgressBar.x = bounds.left + bounds.width * 0.5 - 20;
+    this._roundProgressBar.y = bounds.top + 72;
 
     this._boosterGroup.x = bounds.left + 300;
     this._boosterGroup.y = bounds.top + 70;

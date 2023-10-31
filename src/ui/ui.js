@@ -108,6 +108,25 @@ export default class UI extends DisplayObject {
 
     this._startGameScreen.on('onStartGame', () => this._onStartGame());
     this._gameOverScreen.on('onRestartGame', () => this._onRestartGame());
+
+    this._onPressDownSignal = this._onPressDownSignal.bind(this);
+    window.addEventListener("keydown", this._onPressDownSignal);
+  }
+
+  _onPressDownSignal(e) {
+    if (e.repeat) {
+      return;
+    }
+
+    if (e.code === 'Enter') {
+      if (this._startGameScreen.visible) {
+        this._onStartGame();
+      }
+
+      if (this._gameOverScreen.visible) {
+        this._onRestartGame();
+      }
+    }
   }
 
   _onOverlayPointerMove(x, y) {

@@ -302,6 +302,7 @@ export default class Ghost extends EnemyAbstract {
     });
 
     view.material = material;
+    view.castShadow = true;
 
     viewGroup.position.y = 0.2;
   }

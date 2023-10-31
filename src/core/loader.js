@@ -9,6 +9,7 @@ const textures = [
   'pumpkin004_basecolor.jpg',
   'pumpkin004_roughness.jpg',
   'halloweenbits_texture.png',
+  'ghost-shadow.png',
 ];
 
 const models = [
@@ -16,12 +17,19 @@ const models = [
   'player-pumpkin.glb',
   'evil-pumpkin.glb',
   'tile.glb',
-  'tree-orange-small.glb',
-  'tree-yellow-small.glb',
-  'post-skull.glb',
-  'post-lantern.glb',
-  'grave-a.glb',
-  'grave-a-destroyed.glb',
+  'grave-01.glb',
+  'grave-02.glb',
+  'grave-03.glb',
+  'grave-04.glb',
+  'grave-05.glb',
+  'candy-small.glb',
+  'candy-big.glb',
+  'power-up-yellow.glb',
+  'power-up-blue.glb',
+  'power-up-green.glb',
+  'board.glb',
+  'environment.glb',
+  'arch.glb',
 ];
 
 const images = [
@@ -31,7 +39,7 @@ const images = [
 ];
 
 const sounds = [
-
+  'music.mp3',
 ];
 
 const fonts = [

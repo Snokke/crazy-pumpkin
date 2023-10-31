@@ -9,7 +9,7 @@ const GAME_CONFIG = {
 
 const ROUND_CONFIG = {
   maxRound: 4,
-  roundDuration: 45000,
+  roundDuration: 30000,
   player: [
     { speedMultiplier: 1 },
     { speedMultiplier: 1.1 },
@@ -20,10 +20,10 @@ const ROUND_CONFIG = {
   enemies: {
     [ENEMY_TYPE.Ghost]: [
       { speedMultiplier: 1, maxCount: 4 },
-      { speedMultiplier: 1.25, maxCount: 6 },
-      { speedMultiplier: 1.5, maxCount: 8 },
-      { speedMultiplier: 1.75, maxCount: 10 },
-      { speedMultiplier: 2, maxCount: 12 },
+      { speedMultiplier: 1.25, maxCount: 5 },
+      { speedMultiplier: 1.5, maxCount: 7 },
+      { speedMultiplier: 1.75, maxCount: 8 },
+      { speedMultiplier: 2, maxCount: 10 },
     ],
     [ENEMY_TYPE.EvilPumpkin]: [
       { speedMultiplier: 1, count: 1 },

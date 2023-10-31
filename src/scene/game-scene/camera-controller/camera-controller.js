@@ -14,10 +14,10 @@ export default class CameraController extends THREE.Group {
   }
 
   _setCameraPosition() {
-    this._camera.position.x = 2;
-    this._camera.position.y = 7;
+    this._camera.position.x = 3;
+    this._camera.position.y = 9;
     this._camera.position.z = 10;
 
-    this._camera.lookAt(new THREE.Vector3(0, 0, 0));
+    this._camera.lookAt(new THREE.Vector3(0, 0, 0.5));
   }
 }

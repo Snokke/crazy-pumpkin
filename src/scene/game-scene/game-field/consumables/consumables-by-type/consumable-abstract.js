@@ -22,6 +22,13 @@ export default class ConsumableAbstract extends THREE.Group {
     this._idlePositionTween = null;
     this._spawnTween = {};
     this._hideAnimation = null;
+
+    this._viewGroup = null;
+
+    this._scale = 1;
+    this._positionY = 0.3;
+
+    this._initViewGroup();
   }
 
   show() {
@@ -92,7 +99,7 @@ export default class ConsumableAbstract extends THREE.Group {
   }
 
   _showHideAnimation() {
-    const tween = new TWEEN.Tween(this._view.scale)
+    const tween = new TWEEN.Tween(this._viewGroup.scale)
       .to({ x: 0, y: 0, z: 0 }, 300)
       .easing(TWEEN.Easing.Back.In)
       .start();
@@ -101,23 +108,23 @@ export default class ConsumableAbstract extends THREE.Group {
   }
 
   _showSpawnAnimation() {
-    this._view.scale.set(0, 0, 0);
-    this._view.position.y = 0.1;
-    this._view.rotation.y = 0;
+    this._viewGroup.scale.set(0, 0, 0);
+    this._viewGroup.position.y = 0.1;
+    this._viewGroup.rotation.y = 0;
     const duration = 600;
 
-    const scaleTween = new TWEEN.Tween(this._view.scale)
-      .to({ x: 1, y: 1, z: 1 }, duration)
+    const scaleTween = new TWEEN.Tween(this._viewGroup.scale)
+      .to({ x: this._scale, y: this._scale, z: this._scale }, duration)
       .easing(TWEEN.Easing.Back.Out)
       .start();
 
-    const rotationTween = new TWEEN.Tween(this._view.rotation)
-      .to({ y: Math.PI * 0.5 }, duration)
+    const rotationTween = new TWEEN.Tween(this._viewGroup.rotation)
+      .to({ y: 0 }, duration)
       .easing(TWEEN.Easing.Sinusoidal.In)
       .start();
 
-    const positionTween = new TWEEN.Tween(this._view.position)
-      .to({ y: 0.3 }, duration)
+    const positionTween = new TWEEN.Tween(this._viewGroup.position)
+      .to({ y: this._positionY }, duration)
       .easing(TWEEN.Easing.Back.Out)
       .start();
 
@@ -125,7 +132,7 @@ export default class ConsumableAbstract extends THREE.Group {
   }
 
   _idleAnimation() {
-    const idleAnimationDuration = 1800;
+    const idleAnimationDuration = 2400;
 
     const rotationObject = { y: 0 };
 
@@ -134,16 +141,16 @@ export default class ConsumableAbstract extends THREE.Group {
       .repeat(Infinity)
       .start()
       .onUpdate(() => {
-        const delta = rotationObject.y - this._view.rotation.y;
-        this._view.rotation.y += delta;
+        const delta = rotationObject.y - this._viewGroup.rotation.y;
+        this._viewGroup.rotation.y += delta;
 
-        if (this._view.rotation.y > Math.PI * 2) {
-          this._view.rotation.y -= Math.PI * 2;
+        if (this._viewGroup.rotation.y > Math.PI * 2) {
+          this._viewGroup.rotation.y -= Math.PI * 2;
         }
       });
 
-    this._idlePositionTween = new TWEEN.Tween(this._view.position)
-      .to({ y: 0.4 }, idleAnimationDuration)
+    this._idlePositionTween = new TWEEN.Tween(this._viewGroup.position)
+      .to({ y: this._positionY + 0.1 }, idleAnimationDuration)
       .easing(TWEEN.Easing.Sinusoidal.InOut)
       .repeat(Infinity)
       .yoyo(true)
@@ -159,5 +166,10 @@ export default class ConsumableAbstract extends THREE.Group {
       .onComplete(() => {
         this.events.post('kill', this);
       });
+  }
+
+  _initViewGroup() {
+    const viewGroup = this._viewGroup = new THREE.Group();
+    this.add(viewGroup);
   }
 }

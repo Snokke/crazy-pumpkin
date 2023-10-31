@@ -8,6 +8,9 @@ import GameField from './game-field/game-field';
 import CameraController from './camera-controller/camera-controller';
 import { GAME_CONFIG, ROUND_CONFIG } from './game-field/data/game-config';
 import { GLOBAL_VARIABLES } from './game-field/data/global-variables';
+import Environment from './environment/environment';
+import Loader from '../../core/loader';
+import { SOUNDS_CONFIG } from '../../core/configs/sounds-config';
 
 export default class GameScene extends THREE.Group {
   constructor(data) {
@@ -19,6 +22,7 @@ export default class GameScene extends THREE.Group {
 
     this._gameDebug = null;
     this._gameField = null;
+    this._music = null;
 
     this._isSoundPlayed = false;
 
@@ -35,11 +39,14 @@ export default class GameScene extends THREE.Group {
 
   onSoundChanged() {
     this._gameDebug.updateSoundController();
+    const volume = SOUNDS_CONFIG.enabled ? SOUNDS_CONFIG.masterVolume : 0;
+    this._music.setVolume(volume);
   }
 
   onStartGame() {
     this._unBlurScene();
     this._gameField.startGame();
+    this._music.play();
   }
 
   onRestartGame() {
@@ -88,7 +95,9 @@ export default class GameScene extends THREE.Group {
     this._initEmptySound();
     this._initCameraController();
     this._initGameField();
+    this._initEnvironment();
     this._initSignals();
+    this._initMusic();
 
     this._blurScene(true);
   }
@@ -123,6 +132,21 @@ export default class GameScene extends THREE.Group {
     const camera = this._data.camera;
     const gameField = this._gameField = new GameField(renderer, camera);
     this.add(gameField);
+  }
+
+  _initEnvironment() {
+    const environment = this._environment = new Environment();
+    this.add(environment);
+  }
+
+  _initMusic() {
+    const music = this._music = new THREE.Audio(this._data.audioListener);
+
+    Loader.events.on('onAudioLoaded', () => {
+      music.setBuffer(Loader.assets['music']);
+      music.setLoop(true);
+      music.setVolume(SOUNDS_CONFIG.masterVolume);
+    });
   }
 
   _initSignals() {

@@ -158,6 +158,7 @@ export default class Player extends THREE.Group {
     const boosterConfig = CONSUMABLES_CONFIG[CONSUMABLE_TYPE.BoosterCandyPlayerInvulnerability];
     this._isBodyActive = false;
     this._view.material.opacity = 0.8;
+    this._innerCylinder.visible = false;
 
     this._invulnerabilityBoosterAnimation = new TWEEN.Tween(this._view.material)
       .to({ opacity: 0.4 }, 1000)
@@ -173,6 +174,7 @@ export default class Player extends THREE.Group {
         this._isBodyActive = true;
         this._invulnerabilityBoosterAnimation?.stop();
         this._view.material.opacity = 1;
+        this._innerCylinder.visible = true;
       });
   }
 
@@ -221,6 +223,7 @@ export default class Player extends THREE.Group {
     this._isBodyActive = true;
     this._invulnerabilityBoosterAnimation?.stop();
     this._view.material.opacity = 1;
+    this._innerCylinder.visible = true;
   }
 
   _calculateCurrentPosition() {
@@ -290,7 +293,7 @@ export default class Player extends THREE.Group {
       return;
     }
 
-    this._beforeJumpSqueezeTweens = this._squeezeOnGround(this._squeezeSides, squeezeDuration * 0.3, TWEEN.Easing.Sinusoidal.In);
+    this._beforeJumpSqueezeTweens = this._squeezeOnGround(this._squeezeSides, squeezeDuration * 0.25, TWEEN.Easing.Sinusoidal.In);
     this._beforeJumpSqueezeTweens.positionTween?.onComplete(() => {
       this._phase02BeforeJump();
     });
@@ -300,7 +303,7 @@ export default class Player extends THREE.Group {
     this._setJumpState(PLAYER_JUMP_STATE.SqueezeBeforeJumpPhase02);
 
     const duration = PLAYER_CONFIG.jumpAnimation.squeezeDuration * 0.5 / PLAYER_CONFIG.speedMultiplier;
-    this._beforeJumpSqueezeTweens = this._squeezeOnGround(this._squeezeTop, duration * 0.3, TWEEN.Easing.Sinusoidal.In)
+    this._beforeJumpSqueezeTweens = this._squeezeOnGround(this._squeezeTop, duration * 0.25, TWEEN.Easing.Sinusoidal.In)
     this._beforeJumpSqueezeTweens.positionTween?.onComplete(() => {
       this._setJumpState(PLAYER_JUMP_STATE.GoingUp);
       this._jumpSpeed = PLAYER_CONFIG.jumpImpulse;
@@ -474,7 +477,7 @@ export default class Player extends THREE.Group {
 
     const innerCylinderGeometry = new THREE.CylinderGeometry(0.38, 0.38, 0.37, 32, 1, true);
     const cylinderMaterial = new THREE.MeshBasicMaterial({ color: 0xffd700 });
-    const cylinder = new THREE.Mesh(innerCylinderGeometry, cylinderMaterial);
+    const cylinder = this._innerCylinder = new THREE.Mesh(innerCylinderGeometry, cylinderMaterial);
     viewGroup.add(cylinder);
 
     viewGroup.position.y = PLAYER_CONFIG.halfHeight;

@@ -96,12 +96,11 @@ export default class ObstaclesController extends THREE.Group {
     const randomPositions = [];
     const randomObstaclesConfig = [];
     const types = [
-      OBSTACLE_TYPE.TreeYellow,
-      OBSTACLE_TYPE.TreeOrange,
-      OBSTACLE_TYPE.PostSkull,
-      OBSTACLE_TYPE.PostLantern,
-      OBSTACLE_TYPE.Grave,
-      OBSTACLE_TYPE.GraveDestroyed,
+      OBSTACLE_TYPE.Grave01,
+      OBSTACLE_TYPE.Grave02,
+      OBSTACLE_TYPE.Grave03,
+      OBSTACLE_TYPE.Grave04,
+      OBSTACLE_TYPE.Grave05,
     ];
 
     for (let i = 0; i < count; i++) {

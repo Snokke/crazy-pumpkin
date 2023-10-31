@@ -509,7 +509,6 @@ export default class EvilPumpkin extends EnemyAbstract {
     roughness.flipY = false;
 
     const material = new THREE.MeshStandardMaterial({
-      color: 0xf4cccc,
       transparent: true,
       opacity: 1,
       map: texture,
@@ -521,7 +520,7 @@ export default class EvilPumpkin extends EnemyAbstract {
     view.castShadow = true;
 
     const innerCylinderGeometry = new THREE.CylinderGeometry(0.45, 0.45, 0.5, 32, 1, true);
-    const cylinderMaterial = new THREE.MeshBasicMaterial({ color: 0xdd0000 });
+    const cylinderMaterial = new THREE.MeshBasicMaterial({ color: 0xe68631 });
     const cylinder = this._innerCylinder = new THREE.Mesh(innerCylinderGeometry, cylinderMaterial);
     viewGroup.add(cylinder);
 

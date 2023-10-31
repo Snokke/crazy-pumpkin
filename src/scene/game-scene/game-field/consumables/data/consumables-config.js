@@ -20,9 +20,9 @@ const CONSUMABLES_CONFIG = {
   [CONSUMABLE_TYPE.BoosterCandyPlayerSpeed]: {
     lifeTime: { min: 20000, max: 25000 },
     name: 'Speed Bonus',
-    color: 0xaa0000,
+    color: 0x00aa00,
     progressBarWidth: 200,
-    duration: 17000,
+    duration: 18000,
     speedMultiplier: 1.8,
   },
   [CONSUMABLE_TYPE.BoosterCandyPlayerInvulnerability]: {
@@ -37,11 +37,11 @@ const CONSUMABLES_CONFIG = {
     name: 'Enemies Slow',
     color: 0x0000bb,
     progressBarWidth: 210,
-    duration: 17000,
+    duration: 18000,
     speedMultiplier: 0.4,
   },
   boosterCandyConfig: {
-    spawnTime: { min: 15000, max: 25000 },
+    spawnTime: { min: 10000, max: 15000 },
     chanceToSpawn: 0.5,
   },
 }
