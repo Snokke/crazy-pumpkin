@@ -96,7 +96,7 @@ export default class Ghost extends EnemyAbstract {
     this._moveSpeed = Math.random() * (GHOST_CONFIG.moveSpeed.max - GHOST_CONFIG.moveSpeed.min) + GHOST_CONFIG.moveSpeed.min;
 
     this._spawnShowTween = this._showSpawnAnimation();
-    this._spawnShowTween.onComplete(() => {
+    this._spawnShowTween.positionTween.onComplete(() => {
       this._view.material.opacity = GHOST_CONFIG.activeBodyOpacity;
 
       this._state = ENEMY_STATE.Active;
@@ -178,7 +178,8 @@ export default class Ghost extends EnemyAbstract {
     this._rotationTween?.stop();
     this._spawnHideTween?.positionTween?.stop();
     this._spawnHideTween?.opacityTween?.stop();
-    this._spawnShowTween?.stop();
+    this._spawnShowTween?.position?.stop();
+    this._spawnShowTween?.opacity?.stop();
 
     this._lifeTimer?.stop();
   }
@@ -213,17 +214,22 @@ export default class Ghost extends EnemyAbstract {
   }
 
   _showSpawnAnimation() {
-    this._view.material.opacity = GHOST_CONFIG.inactiveBodyOpacity;
+    this._view.material.opacity = 0;
     this._viewGroup.position.y = 1.7;
 
     const duration = GHOST_CONFIG.spawnAnimationDuration / GHOST_CONFIG.speedMultiplier;
+
+    const opacityTween = new TWEEN.Tween(this._view.material)
+      .to({ opacity: GHOST_CONFIG.inactiveBodyOpacity }, duration)
+      .easing(TWEEN.Easing.Sinusoidal.Out)
+      .start();
 
     const positionTween = new TWEEN.Tween(this._viewGroup.position)
       .to({ y: 0.2 }, duration)
       .easing(TWEEN.Easing.Sinusoidal.Out)
       .start();
 
-    return positionTween;
+    return { positionTween, opacityTween };
   }
 
   _showHideAnimation() {
