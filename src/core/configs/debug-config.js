@@ -4,6 +4,7 @@ const DEBUG_CONFIG = {
   orbitControls: false,
   axesHelper: false,
   startFromGameplay: false,
+  invulnerability: false,
 };
 
 export default DEBUG_CONFIG;

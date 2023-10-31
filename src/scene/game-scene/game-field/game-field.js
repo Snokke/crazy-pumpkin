@@ -17,6 +17,7 @@ import { vector3ToBlackPosition } from '../../../core/helpers/helpers';
 import { CONSUMABLE_TYPE } from './consumables/data/consumables-config';
 import SimpleBoard from './board/simple-board';
 import { ENVIRONMENT_CONFIG } from '../environment/environment-config';
+import DEBUG_CONFIG from '../../../core/configs/debug-config';
 
 export default class GameField extends THREE.Group {
   constructor(renderer, camera) {
@@ -331,7 +332,7 @@ export default class GameField extends THREE.Group {
 
     this._checkConsumablesCollide();
 
-    if (this._player.isBodyActive()) {
+    if (!DEBUG_CONFIG.invulnerability && this._player.isBodyActive()) {
       this._checkGhostCollide();
       this._checkEvilPumpkinCollide();
     }
@@ -406,7 +407,7 @@ export default class GameField extends THREE.Group {
   }
 
   _onEnemyPositionChanged() {
-    if (this._player.isBodyActive()) {
+    if (!DEBUG_CONFIG.invulnerability && this._player.isBodyActive()) {
       this._checkGhostCollide();
       this._checkEvilPumpkinCollide();
     }
