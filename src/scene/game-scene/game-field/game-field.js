@@ -16,6 +16,7 @@ import { GLOBAL_VARIABLES } from './data/global-variables';
 import { vector3ToBlackPosition } from '../../../core/helpers/helpers';
 import { CONSUMABLE_TYPE } from './consumables/data/consumables-config';
 import SimpleBoard from './board/simple-board';
+import { ENVIRONMENT_CONFIG } from '../environment/environment-config';
 
 export default class GameField extends THREE.Group {
   constructor(renderer, camera) {
@@ -57,6 +58,7 @@ export default class GameField extends THREE.Group {
     GLOBAL_VARIABLES.currentLevel = level;
     GLOBAL_VARIABLES.round = 0;
     this.events.post('roundUp');
+    this.events.post('initLevel');
 
     // this._board.init(); 
     this._initPlayerForLevel();
@@ -332,6 +334,13 @@ export default class GameField extends THREE.Group {
     if (this._player.isBodyActive()) {
       this._checkGhostCollide();
       this._checkEvilPumpkinCollide();
+    }
+
+    const archPositionForHide = ENVIRONMENT_CONFIG.arch.playerPositionsForHide;
+    if (archPositionForHide.some(position => position.row === playerPosition.row && position.column === playerPosition.column)) {
+      this.events.post('onPlayerInArch');
+    } else {
+      this.events.post('onPlayerOutArch');
     }
   }
 

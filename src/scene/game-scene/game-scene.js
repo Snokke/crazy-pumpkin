@@ -162,6 +162,9 @@ export default class GameScene extends THREE.Group {
     this._gameField.events.on('onConsumableCollect', (msg, consumableType, position) => this.events.post('onConsumableCollect', consumableType, position));
     this._gameField.events.on('gameplayStarted', () => this.events.post('gameplayStarted'));
     this._gameField.events.on('roundUp', () => this._onRoundUp());
+    this._gameField.events.on('onPlayerInArch', () => this._environment.setArchInvisible());
+    this._gameField.events.on('onPlayerOutArch', () => this._environment.setArchVisible());
+    this._gameField.events.on('initLevel', () => this._environment.setArchVisible());
   }
 
   _onRoundUp() {

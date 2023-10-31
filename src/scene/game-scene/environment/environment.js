@@ -6,7 +6,17 @@ export default class Environment extends THREE.Group {
   constructor() {
     super();
 
+    this._arch = null;
+
     this._init();
+  }
+
+  setArchInvisible() {
+    this._arch.material.opacity = 0.3;
+  }
+
+  setArchVisible() {
+    this._arch.material.opacity = 1;
   }
 
   _init() {
@@ -29,8 +39,8 @@ export default class Environment extends THREE.Group {
   }
 
   _initArch() {
-    const view = Loader.assets['arch'].scene.children[0].clone();
-    this.add(view);
+    const arch = this._arch = Loader.assets['arch'].scene.children[0].clone();
+    this.add(arch);
 
     const texture = Loader.assets['halloweenbits_texture'];
     texture.flipY = false;
@@ -38,14 +48,14 @@ export default class Environment extends THREE.Group {
     const material = new THREE.MeshPhongMaterial({
       map: texture,
       transparent: true,
-      opacity: 0.3,
+      opacity: 1,
     });
 
-    view.material = material;
+    arch.material = material;
 
     const scale = 0.5;
-    view.scale.set(scale, scale, scale);
+    arch.scale.set(scale, scale, scale);
 
-    view.castShadow = true;
+    arch.castShadow = true;
   }
 }

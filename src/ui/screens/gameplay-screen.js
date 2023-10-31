@@ -4,7 +4,7 @@ import { GLOBAL_VARIABLES } from "../../scene/game-scene/game-field/data/global-
 import { CONSUMABLES_CONFIG, CONSUMABLE_TYPE } from "../../scene/game-scene/game-field/consumables/data/consumables-config";
 import { SCORE_CONFIG } from "../../scene/game-scene/game-field/data/score-config";
 import ProgressBar from "../progress-bar";
-import { ROUND_CONFIG } from "../../scene/game-scene/game-field/data/game-config";
+import { GAME_CONFIG, ROUND_CONFIG } from "../../scene/game-scene/game-field/data/game-config";
 
 export default class GameplayScreen extends ScreenAbstract {
   constructor() {
@@ -41,8 +41,10 @@ export default class GameplayScreen extends ScreenAbstract {
       this._round.add(tween);
     });
 
-    const duration = ROUND_CONFIG.roundDuration;
-    this._roundProgressBar.show(0x000000, 140, duration);
+    if (currentRound !== ROUND_CONFIG.maxRound) {
+      const duration = ROUND_CONFIG.roundDuration;
+      this._roundProgressBar.show(0x000000, 140, duration);
+    }
   }
 
   setScore(value) {
