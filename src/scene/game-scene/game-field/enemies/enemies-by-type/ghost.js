@@ -300,6 +300,7 @@ export default class Ghost extends EnemyAbstract {
 
     const texture = Loader.assets['ghost_basecolor'];
     texture.flipY = false;
+    texture.colorSpace = THREE.SRGBColorSpace;
 
     const material = new THREE.MeshPhongMaterial({
       transparent: true,

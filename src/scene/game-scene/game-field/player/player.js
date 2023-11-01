@@ -459,7 +459,7 @@ export default class Player extends THREE.Group {
 
     const texture = Loader.assets['pumpkin002_basecolor'];
     texture.flipY = false;
-    // texture.encoding = THREE.SRGBColorSpace;
+    texture.colorSpace = THREE.SRGBColorSpace;
 
     const roughness = Loader.assets['pumpkin002_roughness'];
     roughness.flipY = false;

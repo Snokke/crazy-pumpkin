@@ -18,6 +18,7 @@ export default class Materials {
   _initHalloweenBitsTexture() {
     const texture = Loader.assets['halloweenbits_texture'];
     texture.flipY = false;
+    texture.colorSpace = THREE.SRGBColorSpace;
 
     this.halloweenBits = new THREE.MeshPhongMaterial({
       map: texture,

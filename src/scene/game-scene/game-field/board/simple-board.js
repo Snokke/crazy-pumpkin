@@ -12,15 +12,12 @@ export default class SimpleBoard extends THREE.Group {
   _init() {
     const view = Loader.assets['board'].scene.children[0].clone();
     this.add(view);
-
-    // const material = Materials.getMaterial(Materials.type.HalloweenBits);
-    // view.material = material;
-
+    
     const texture = Loader.assets['halloweenbits_texture'];
     texture.flipY = false;
 
     const material = new THREE.MeshPhongMaterial({
-      color: 0xe7e7e7,
+      color: 0xdfdfdf,
       map: texture,
     });
 

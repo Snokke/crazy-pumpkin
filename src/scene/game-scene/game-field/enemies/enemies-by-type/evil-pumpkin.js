@@ -503,7 +503,7 @@ export default class EvilPumpkin extends EnemyAbstract {
 
     const texture = Loader.assets['pumpkin004_basecolor'];
     texture.flipY = false;
-    // texture.encoding = THREE.SRGBColorSpace;
+    texture.colorSpace = THREE.SRGBColorSpace;
 
     const roughness = Loader.assets['pumpkin004_roughness'];
     roughness.flipY = false;

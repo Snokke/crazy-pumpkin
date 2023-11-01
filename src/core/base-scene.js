@@ -10,11 +10,6 @@ import { GLOBAL_LIGHT_CONFIG } from './configs/global-light-config';
 import isMobile from 'ismobilejs';
 import DEBUG_CONFIG from './configs/debug-config';
 import Materials from './materials';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
-import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
-import WebGL from 'three/addons/capabilities/WebGL.js';
 
 export default class BaseScene {
   constructor() {
@@ -26,7 +21,6 @@ export default class BaseScene {
     this._scene3DDebugMenu = null;
     this._orbitControls = null;
     this._audioListener = null;
-    this._effectComposer = null;
 
     this._windowSizes = {};
     this._isAssetsLoaded = false;
@@ -91,7 +85,6 @@ export default class BaseScene {
     this._initAxesHelper();
     this._initLoadingOverlay();
     this._initOnResize();
-    this._initPostProcessing();
     this._initAudioListener();
 
     this._initScene3DDebugMenu();
@@ -130,42 +123,6 @@ export default class BaseScene {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   }
 
-  _initPostProcessing() {
-    if (SCENE_CONFIG.isMobile) {
-      return;
-    }
-
-    this._initEffectsComposer();
-    this._initAntiAliasingPass();
-  }
-
-  _initEffectsComposer() {
-    // const pixelRatio = Math.min(window.devicePixelRatio, SCENE_CONFIG.maxPixelRatio);
-
-    // if (WebGL.isWebGL2Available() && pixelRatio === 1) {
-    //   const size = this._renderer.getDrawingBufferSize(new THREE.Vector2());
-    //   const target = new THREE.WebGLRenderTarget(size.width, size.height, { samples: 3 });
-    //   this._effectComposer = new EffectComposer(this._renderer, target);
-    // } else {
-      SCENE_CONFIG.fxaaPass = true;
-      this._effectComposer = new EffectComposer(this._renderer);
-    // }
-
-    const renderPass = this._renderPass = new RenderPass(this._scene, this._camera);
-    this._effectComposer.addPass(renderPass);
-  }
-
-  _initAntiAliasingPass() {
-    if (SCENE_CONFIG.fxaaPass) {
-      const fxaaPass = this._fxaaPass = new ShaderPass(FXAAShader);
-      this._effectComposer.addPass(fxaaPass);
-
-      const pixelRatio = Math.min(window.devicePixelRatio, SCENE_CONFIG.maxPixelRatio);
-      fxaaPass.material.uniforms['resolution'].value.x = 1 / (this._windowSizes.width * pixelRatio);
-      fxaaPass.material.uniforms['resolution'].value.y = 1 / (this._windowSizes.height * pixelRatio);
-    }
-  }
-
   _initCamera() {
     const camera = this._camera = new THREE.PerspectiveCamera(50, this._windowSizes.width / this._windowSizes.height, 0.5, 70);
     this._scene.add(camera);
@@ -179,7 +136,7 @@ export default class BaseScene {
       this._scene.add(ambientLight);
     }
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
     directionalLight.position.set(-3, 5, 5);
     this._scene.add(directionalLight);
 
@@ -228,16 +185,6 @@ export default class BaseScene {
 
     this._renderer.setSize(this._windowSizes.width, this._windowSizes.height);
     this._renderer.setPixelRatio(pixelRatio);
-
-    if (this._effectComposer) {
-      this._effectComposer.setSize(this._windowSizes.width, this._windowSizes.height);
-      this._effectComposer.setPixelRatio(pixelRatio);
-    }
-
-    if (SCENE_CONFIG.fxaaPass) {
-      this._fxaaPass.material.uniforms['resolution'].value.x = 1 / (this._windowSizes.width * pixelRatio);
-      this._fxaaPass.material.uniforms['resolution'].value.y = 1 / (this._windowSizes.height * pixelRatio);
-    }
   }
 
   _setupBackgroundColor() {
@@ -276,12 +223,6 @@ export default class BaseScene {
         }
 
         this._renderer.render(this._scene, this._camera);
-
-        if (SCENE_CONFIG.isMobile || DEBUG_CONFIG.rendererStats) {
-          this._renderer.render(this._scene, this._camera);
-        } else {
-          this._effectComposer.render();
-        }
       }
 
       this._scene3DDebugMenu.postUpdate();
