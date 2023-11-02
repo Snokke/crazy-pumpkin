@@ -165,6 +165,7 @@ export default class GameScene extends THREE.Group {
     this._gameField.events.on('onPlayerInArch', () => this._environment.setArchInvisible());
     this._gameField.events.on('onPlayerOutArch', () => this._environment.setArchVisible());
     this._gameField.events.on('initLevel', () => this._environment.setArchVisible());
+    this._gameField.events.on('onButtonPress', () => this.events.post('onButtonPress'));
   }
 
   _onRoundUp() {

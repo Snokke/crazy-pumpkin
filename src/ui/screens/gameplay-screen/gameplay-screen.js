@@ -105,11 +105,22 @@ export default class GameplayScreen extends ScreenAbstract {
     });
   }
 
+  reset() {
+    this._boosterGroup.visible = false;
+    this._powerUpProgressBar.reset();
+    this._roundProgressBar.reset();
+  }
+
+  hideTutorial() {
+    const hideTween = new Tween({ scale: 0 }, 0.5, { ease: Ease.backIn, delay: 0.4 });
+    this._tutorial.add(hideTween);
+  }
+
   _showNewRound() {
     this._newRoundText.text = `Round: ${GLOBAL_VARIABLES.round + 1}`;
 
     this._newRoundText.visible = true;
-    this._newRoundText.alpha = 0.75;
+    this._newRoundText.alpha = 0.85;
     this._newRoundText.scale = 0;
 
     const showTween = new Tween({ scale: 1 }, 0.4, { ease: Ease.backOut, delay: 0.2 });
@@ -123,12 +134,6 @@ export default class GameplayScreen extends ScreenAbstract {
         this._newRoundText.visible = false;
       });
     });
-  }
-
-  reset() {
-    this._boosterGroup.visible = false;
-    this._powerUpProgressBar.reset();
-    this._roundProgressBar.reset();
   }
 
   _showBoosterProgressBar(type) {
@@ -151,6 +156,7 @@ export default class GameplayScreen extends ScreenAbstract {
     this._initRoundProgressBar();
     this._initNewRoundText();
     this._initDPad();
+    this._initTutorial();
   }
 
   _initScore() {
@@ -283,6 +289,19 @@ export default class GameplayScreen extends ScreenAbstract {
     dPad.on('onDown', () => this.post('onDown'));
   }
 
+  _initTutorial() {
+    const tutorial = this._tutorial = new TextField('Use WASD or arrows to move', 'halloween_spooky', 0xffffff, 60);
+    this.add(tutorial);
+
+    tutorial.alignAnchor(0.5, 0.5);
+
+    tutorial.dropShadow = true;
+    tutorial.shadowBlur = 1;
+    tutorial.shadowAlpha = 0.4;
+    tutorial.shadowDistanceX = 4;
+    tutorial.shadowDistanceY = 4;
+  }
+
   _onResize() {
     const bounds = Black.stage.bounds;
 
@@ -301,6 +320,9 @@ export default class GameplayScreen extends ScreenAbstract {
     this._newRoundText.x = bounds.left + bounds.width * 0.5;
     this._newRoundText.y = bounds.top + bounds.height * 0.5;
 
+    this._tutorial.x = bounds.left + bounds.width * 0.5;
+    this._tutorial.y = bounds.top + bounds.height * 0.8;
+
     if (SCENE_CONFIG.isMobile) {
       if (window.innerWidth < window.innerHeight) {
         this._scoreGroup.x = bounds.left + bounds.width * 0.7 - 10;
@@ -314,11 +336,11 @@ export default class GameplayScreen extends ScreenAbstract {
 
         this._dPad.scale = 1;
         this._dPad.x = bounds.right - 200;
-        this._dPad.y = bounds.bottom - 190;
+        this._dPad.y = bounds.bottom - 200;
       } else {
         this._dPad.scale = 1.5;
         this._dPad.x = bounds.right - 240;
-        this._dPad.y = bounds.bottom - 230;
+        this._dPad.y = bounds.bottom - 300;
       }
     }
   }

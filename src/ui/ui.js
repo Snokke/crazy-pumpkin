@@ -53,6 +53,10 @@ export default class UI extends DisplayObject {
     this._gameplayScreen.updateRound();
   }
 
+  hideTutorial() {
+    this._gameplayScreen.hideTutorial();
+  }
+
   onAdded() {
     this._initOverlay();
     this._initSoundIcon();

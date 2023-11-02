@@ -25,6 +25,10 @@ export const randomFromArray = (array) => {
   return array[randomBetween(0, array.length - 1)];
 }
 
+export const lerp = (a, b, t) => {
+  return a + (b - a) * t;
+}
+
 export const getCoordinatesFromPosition = (position) => {
   const cellSize = GAME_CONFIG.cellSize;
   const currentLevel = GLOBAL_VARIABLES.currentLevel;

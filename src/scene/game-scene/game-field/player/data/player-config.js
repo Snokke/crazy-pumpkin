@@ -12,6 +12,7 @@ const PLAYER_CONFIG = {
     squeezePower: 0.85,
     squeezeDuration: 320,
   },
+  spawnPositionY: 11.5,
 }
 
 export { PLAYER_CONFIG };

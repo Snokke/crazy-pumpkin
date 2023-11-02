@@ -36,6 +36,7 @@ const images = [
   'sound-icon.png',
   'sound-icon-mute.png',
   'arrow.png',
+  'logo.png',
 ];
 
 const sounds = [

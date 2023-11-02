@@ -54,5 +54,6 @@ export default class MainScene {
     this._scene3D.events.on('onConsumableCollect', (msg, consumableType, position) => this._ui.onConsumableCollect(consumableType, position));
     this._scene3D.events.on('gameplayStarted', () => this._ui.onGameplayStarted());
     this._scene3D.events.on('onRoundChanged', () => this._ui.onRoundChanged());
+    this._scene3D.events.on('onButtonPress', () => this._ui.hideTutorial());
   }
 }

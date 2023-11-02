@@ -5,6 +5,7 @@ const DEBUG_CONFIG = {
   axesHelper: false,
   startFromGameplay: false,
   invulnerability: false,
+  showControlPanel: false,
 };
 
 export default DEBUG_CONFIG;

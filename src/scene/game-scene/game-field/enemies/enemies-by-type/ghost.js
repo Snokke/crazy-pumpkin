@@ -4,7 +4,7 @@ import EnemyAbstract from './enemy-abstract';
 import { LEVEL_CONFIG } from '../../data/level-config';
 import { GAME_CONFIG } from '../../data/game-config';
 import { ENEMY_STATE, ENEMY_TYPE } from '../data/enemy-data';
-import { isEqualsPositions, randomBetween } from '../../../../../core/helpers/helpers';
+import { isEqualsPositions, lerp, randomBetween } from '../../../../../core/helpers/helpers';
 import { DIRECTION, MAP_TYPE, ROTATION_BY_DIRECTION } from '../../data/game-data';
 import { GHOST_CONFIG, GHOST_MOVEMENT_STATE } from '../data/ghost-config';
 import { GLOBAL_VARIABLES } from '../../data/global-variables';
@@ -41,6 +41,9 @@ export default class Ghost extends EnemyAbstract {
     const fieldConfig = LEVEL_CONFIG[currentLevel].field;
 
     const speed = this._moveSpeed * dt * GHOST_CONFIG.speedMultiplier;
+
+    const maxInclineAngle = speed * GHOST_CONFIG.inclineCoeff;
+    this._view.rotation.x = lerp(this._view.rotation.x, maxInclineAngle, dt);
 
     switch (this._currentDirection) {
       case DIRECTION.Up:
@@ -178,6 +181,7 @@ export default class Ghost extends EnemyAbstract {
     this._rotationTween?.stop();
     this._spawnHideTween?.positionTween?.stop();
     this._spawnHideTween?.opacityTween?.stop();
+    this._spawnHideTween?.inclineTween?.stop();
     this._spawnShowTween?.position?.stop();
     this._spawnShowTween?.opacity?.stop();
 
@@ -249,7 +253,12 @@ export default class Ghost extends EnemyAbstract {
       .easing(TWEEN.Easing.Sinusoidal.Out)
       .start();
 
-    return { opacityTween, positionTween };
+    const inclineTween = new TWEEN.Tween(this._view.rotation)
+      .to({ x: 0 }, duration)
+      .easing(TWEEN.Easing.Sinusoidal.Out)
+      .start();
+
+    return { opacityTween, positionTween, inclineTween };
   }
 
   _startLifeTimer() {

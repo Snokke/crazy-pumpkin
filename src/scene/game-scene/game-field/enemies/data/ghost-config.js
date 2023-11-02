@@ -2,6 +2,7 @@ const GHOST_CONFIG = {
   speedMultiplier: 1,
   moveSpeed: { min: 0.7, max: 1 },
   turnRate: 300,
+  inclineCoeff: 10,
   activeBodyOpacity: 0.8,
   inactiveBodyOpacity: 0.5,
   spawnAnimationDuration: 1500,

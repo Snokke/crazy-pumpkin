@@ -39,6 +39,7 @@ export default class GameField extends THREE.Group {
     this._previousGameTime = 0;
     this._gameTime = 0;
     this._roundTime = 0;
+    this._isTutorialShown = false;
 
     this._init();
   }
@@ -274,6 +275,11 @@ export default class GameField extends THREE.Group {
   }
 
   _onButtonPress(buttonType) {
+    if (!this._isTutorialShown) {
+      this._isTutorialShown = true;
+      this.events.post('onButtonPress');
+    }
+
     const action = this._playerActions[buttonType];
 
     if (action === PLAYER_ACTIONS.JumpInPlace) {

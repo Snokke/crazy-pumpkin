@@ -7,6 +7,7 @@ import { GLOBAL_VARIABLES } from '../data/global-variables';
 import Loader from '../../../../core/loader';
 import Materials from '../../../../core/materials';
 import { randomFromArray } from '../../../../core/helpers/helpers';
+import { PLAYER_CONFIG } from '../player/data/player-config';
 
 export default class Obstacle extends THREE.Group {
   constructor(type) {
@@ -31,7 +32,7 @@ export default class Obstacle extends THREE.Group {
   }
 
   showIntro(delay = 0) {
-    this._viewGroup.position.y = 11.5;
+    this._viewGroup.position.y = PLAYER_CONFIG.spawnPositionY;
 
     new TWEEN.Tween(this._viewGroup.position)
       .to({ y: 0.4 }, 700)

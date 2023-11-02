@@ -180,7 +180,7 @@ export default class Player extends THREE.Group {
 
   showIntro() {
     this.show();
-    this._viewGroup.position.y = 11.5;
+    this._viewGroup.position.y = PLAYER_CONFIG.spawnPositionY;
 
     new TWEEN.Tween(this._viewGroup.position)
       .to({ y: PLAYER_CONFIG.halfHeight }, 700)

@@ -56,5 +56,6 @@ export default class Scene3D extends THREE.Group {
     this._gameScene.events.on('onConsumableCollect', (msg, consumableType, position) => this.events.post('onConsumableCollect', consumableType, position));
     this._gameScene.events.on('gameplayStarted', () => this.events.post('gameplayStarted'));
     this._gameScene.events.on('onRoundChanged', () => this.events.post('onRoundChanged'));
+    this._gameScene.events.on('onButtonPress', () => this.events.post('onButtonPress'));
   }
 }

@@ -59,9 +59,9 @@ export default class GUIHelper {
   }
 
   showAfterAssetsLoad() {
-    // if (!DEBUG_CONFIG.withoutUIMode) {
-    //   this.gui.hidden = false;
-    // }
+    if (DEBUG_CONFIG.showControlPanel) {
+      this.gui.hidden = false;
+    }
   }
 
   static getGui() {
