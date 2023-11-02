@@ -6,7 +6,6 @@ import ObstaclesController from './obstacles/obstacles-controller';
 import { LEVEL_CONFIG, LEVEL_TYPE } from './data/level-config';
 import { PLAYER_ACTIONS, PLAYER_ACTION_TO_DIRECTION, PLAYER_CONVERT_JUMP_IN_PLACE } from './player/data/player-data';
 import ObjectPositionHelper from './helpers/object-position-helper';
-import Board from './board/board';
 import { GAME_OBJECT_TYPE, GAME_STATE, MAP_TYPE } from './data/game-data';
 import { GAME_CONFIG, ROUND_CONFIG } from './data/game-config';
 import { MessageDispatcher } from 'black-engine';
@@ -15,7 +14,7 @@ import ConsumablesController from './consumables/consumables-controller';
 import { GLOBAL_VARIABLES } from './data/global-variables';
 import { vector3ToBlackPosition } from '../../../core/helpers/helpers';
 import { CONSUMABLE_TYPE } from './consumables/data/consumables-config';
-import SimpleBoard from './board/simple-board';
+import Board from './board/board';
 import { ENVIRONMENT_CONFIG } from '../environment/environment-config';
 import DEBUG_CONFIG from '../../../core/configs/debug-config';
 
@@ -33,7 +32,6 @@ export default class GameField extends THREE.Group {
     this._obstaclesController = null;
     this._consumablesController = null;
     this._board = null;
-    this._simpleBoard = null;
 
     this._playerActions = null;
 
@@ -61,7 +59,6 @@ export default class GameField extends THREE.Group {
     this.events.post('roundUp');
     this.events.post('initLevel');
 
-    // this._board.init(); 
     this._initPlayerForLevel();
 
     this._initMaps();
@@ -80,7 +77,6 @@ export default class GameField extends THREE.Group {
   }
 
   onHelpersChanged() {
-    // this._board.debugChangedHelper();
     this._player.debugChangedHelper();
     this._playerPositionHelper.debugChangedHelper();
     this._playerPositionHelper.setPosition(this._player.getPosition());
@@ -131,7 +127,6 @@ export default class GameField extends THREE.Group {
   _resetLevel() {
     this._player.hide();
     this._player.reset();
-    // this._board.reset();
     this._enemiesController.reset();
     this._obstaclesController.reset();
     this._consumablesController.reset();
@@ -188,8 +183,7 @@ export default class GameField extends THREE.Group {
     this._initObstaclesController();
     this._initConsumablesController();
     this._initPlayerPositionHelper();
-    // this._initBoard();
-    this._initSimpleBoard();
+    this._initBoard();
     this._initKeyboardEvents();
 
     this._initSignals();
@@ -228,11 +222,6 @@ export default class GameField extends THREE.Group {
   _initBoard() {
     const board = this._board = new Board();
     this.add(board);
-  }
-
-  _initSimpleBoard() {
-    const simpleBoard = this._simpleBoard = new SimpleBoard();
-    this.add(simpleBoard);
   }
 
   _initMaps() {
@@ -445,7 +434,5 @@ export default class GameField extends THREE.Group {
         enemiesMap[row].push(isEnemy);
       }
     }
-
-    // this._board.updateEnemiesMap(enemiesMap);
   }
 }
