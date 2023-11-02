@@ -1,5 +1,6 @@
 import { Black, DisplayObject, Ease, Sprite, TextField, Tween } from "black-engine";
 import ScreenAbstract from "./screen-abstract";
+import SCENE_CONFIG from "../../core/configs/scene-config";
 
 export default class StartGameScreen extends ScreenAbstract {
   constructor() {
@@ -32,7 +33,9 @@ export default class StartGameScreen extends ScreenAbstract {
   }
 
   _initLogo() {
-    const logo = this._logo = new TextField('Crazy Pumpkin', 'halloween_spooky', 0xff7844, 140);
+    const size = SCENE_CONFIG.isMobile ? 120 : 140;
+
+    const logo = this._logo = new TextField('Crazy Pumpkin', 'halloween_spooky', 0xc34c04, size);
     this.add(logo);
 
     logo.dropShadow = true;
@@ -55,8 +58,8 @@ export default class StartGameScreen extends ScreenAbstract {
     tutorialText.dropShadow = true;
     tutorialText.shadowBlur = 1;
     tutorialText.shadowAlpha = 0.4;
-    tutorialText.shadowDistanceX = 4;
-    tutorialText.shadowDistanceY = 4;
+    tutorialText.shadowDistanceX = 3;
+    tutorialText.shadowDistanceY = 3;
 
     tutorialText.alignAnchor(0.5, 0.5);
     tutorialText.touchable = true;

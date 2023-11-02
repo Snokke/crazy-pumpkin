@@ -180,11 +180,12 @@ export default class Player extends THREE.Group {
 
   showIntro() {
     this.show();
-    this._viewGroup.position.y = 8;
+    this._viewGroup.position.y = 11.5;
 
     new TWEEN.Tween(this._viewGroup.position)
-      .to({ y: PLAYER_CONFIG.halfHeight }, 600)
+      .to({ y: PLAYER_CONFIG.halfHeight }, 700)
       .easing(TWEEN.Easing.Cubic.In)
+      .delay(200)
       .start()
       .onComplete(() => {
         const squeezeTween = this._squeezeOnGround(0.6, 50, TWEEN.Easing.Sinusoidal.Out);

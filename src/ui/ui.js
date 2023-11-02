@@ -2,7 +2,7 @@ import { Black, DisplayObject, Message } from "black-engine";
 import Overlay from "./overlay";
 import SoundIcon from "./sound-icon";
 import StartGameScreen from "./screens/start-game-screen";
-import GameplayScreen from "./screens/gameplay-screen";
+import GameplayScreen from "./screens/gameplay-screen/gameplay-screen";
 import GameOverScreen from "./screens/game-over-screen";
 import DEBUG_CONFIG from "../core/configs/debug-config";
 
@@ -20,6 +20,10 @@ export default class UI extends DisplayObject {
     this._allScreens = [];
 
     this.touchable = true;
+  }
+
+  update(dt) {
+    this._gameplayScreen.update(dt);
   }
 
   updateSoundIcon() {
@@ -108,6 +112,11 @@ export default class UI extends DisplayObject {
 
     this._startGameScreen.on('onStartGame', () => this._onStartGame());
     this._gameOverScreen.on('onRestartGame', () => this._onRestartGame());
+
+    this._gameplayScreen.on('onLeft', () => this.post('onLeft'));
+    this._gameplayScreen.on('onRight', () => this.post('onRight'));
+    this._gameplayScreen.on('onUp', () => this.post('onUp'));
+    this._gameplayScreen.on('onDown', () => this.post('onDown'));
 
     this._onPressDownSignal = this._onPressDownSignal.bind(this);
     window.addEventListener("keydown", this._onPressDownSignal);

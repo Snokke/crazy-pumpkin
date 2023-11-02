@@ -74,13 +74,6 @@ export default class GameField extends THREE.Group {
     });
   }
 
-  _startGameplay() {
-    GLOBAL_VARIABLES.gameState = GAME_STATE.Gameplay;
-    this._enemiesController.activateSpawnEnemies();
-    this._consumablesController.activateSpawnConsumables();
-    this.events.post('gameplayStarted');
-  }
-
   restartGame() {
     this.initLevel(LEVEL_TYPE.Level001);
     this.startGame();
@@ -95,6 +88,26 @@ export default class GameField extends THREE.Group {
     this._enemiesController.debugChangedHelper();
   }
 
+  onRoundChanged() {
+    this._player.onRoundChanged();
+    this._enemiesController.onRoundChanged();
+  }
+
+  onButtonPressed(buttonType) {
+    if (GLOBAL_VARIABLES.gameState !== GAME_STATE.Gameplay) {
+      return;
+    }
+
+    this._onButtonPress(buttonType);
+  }
+
+  _startGameplay() {
+    GLOBAL_VARIABLES.gameState = GAME_STATE.Gameplay;
+    this._enemiesController.activateSpawnEnemies();
+    this._consumablesController.activateSpawnConsumables();
+    this.events.post('gameplayStarted');
+  }
+
   _roundUp() {
     if (GLOBAL_VARIABLES.round >= ROUND_CONFIG.maxRound) {
       return;
@@ -102,11 +115,6 @@ export default class GameField extends THREE.Group {
     
     GLOBAL_VARIABLES.round++;
     this.events.post('roundUp');
-  }
-
-  onRoundChanged() {
-    this._player.onRoundChanged();
-    this._enemiesController.onRoundChanged();
   }
 
   _initPlayerForLevel() {

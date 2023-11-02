@@ -34,6 +34,10 @@ export default class Scene3D extends THREE.Group {
     this._gameScene.onRestartGame();
   }
 
+  onButtonPressed(buttonType) {
+    this._gameScene.onButtonPressed(buttonType);
+  }
+
   _init() {
     this._initGameScene();
     this._initSignals();

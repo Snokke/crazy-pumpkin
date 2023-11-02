@@ -7,6 +7,8 @@ export default class ScreenAbstract extends DisplayObject {
     this.touchable = true;
   }
 
+  update(dt) { }
+
   show() {
     this.visible = true;
   }

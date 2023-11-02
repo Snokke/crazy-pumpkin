@@ -124,10 +124,13 @@ export default class BaseScene {
   }
 
   _initCamera() {
-    const camera = this._camera = new THREE.PerspectiveCamera(50, this._windowSizes.width / this._windowSizes.height, 0.5, 70);
+    const camera = this._camera = new THREE.PerspectiveCamera(SCENE_CONFIG.fov.desktop, this._windowSizes.width / this._windowSizes.height, 0.5, 40);
     this._scene.add(camera);
 
-    camera.position.set(0, 0, 6);
+    if (SCENE_CONFIG.isMobile) {
+      this._camera.fov = this._windowSizes.width < this._windowSizes.height ? SCENE_CONFIG.fov.mobile.portrait : SCENE_CONFIG.fov.mobile.landscape;
+      this._camera.updateProjectionMatrix();
+    }
   }
 
   _initLights() {
@@ -185,6 +188,11 @@ export default class BaseScene {
 
     this._renderer.setSize(this._windowSizes.width, this._windowSizes.height);
     this._renderer.setPixelRatio(pixelRatio);
+
+    if (SCENE_CONFIG.isMobile) {
+      this._camera.fov = this._windowSizes.width < this._windowSizes.height ? SCENE_CONFIG.fov.mobile.portrait : SCENE_CONFIG.fov.mobile.landscape;
+      this._camera.updateProjectionMatrix();
+    }
   }
 
   _setupBackgroundColor() {

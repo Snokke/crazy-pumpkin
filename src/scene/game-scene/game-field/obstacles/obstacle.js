@@ -31,10 +31,10 @@ export default class Obstacle extends THREE.Group {
   }
 
   showIntro(delay = 0) {
-    this._viewGroup.position.y = 8;
+    this._viewGroup.position.y = 11.5;
 
     new TWEEN.Tween(this._viewGroup.position)
-      .to({ y: 0.4 }, 600)
+      .to({ y: 0.4 }, 700)
       .delay(delay)
       .easing(TWEEN.Easing.Cubic.In)
       .start()

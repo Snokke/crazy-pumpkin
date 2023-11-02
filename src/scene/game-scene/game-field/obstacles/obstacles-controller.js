@@ -27,7 +27,7 @@ export default class ObstaclesController extends THREE.Group {
 
   showIntro() {
     let delay = 0;
-    const delayStep = 80;
+    const delayStep = 130;
 
     const obstacleMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Obstacle];
 

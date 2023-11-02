@@ -16,7 +16,6 @@ const models = [
   'ghost.glb',
   'player-pumpkin.glb',
   'evil-pumpkin.glb',
-  'tile.glb',
   'grave-01.glb',
   'grave-02.glb',
   'grave-03.glb',
@@ -36,6 +35,7 @@ const images = [
   'overlay.png',
   'sound-icon.png',
   'sound-icon-mute.png',
+  'arrow.png',
 ];
 
 const sounds = [

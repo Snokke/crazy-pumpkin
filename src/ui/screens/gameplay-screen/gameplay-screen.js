@@ -1,23 +1,32 @@
 import { Black, DisplayObject, Ease, TextField, Tween } from "black-engine";
-import ScreenAbstract from "./screen-abstract";
-import { GLOBAL_VARIABLES } from "../../scene/game-scene/game-field/data/global-variables";
-import { CONSUMABLES_CONFIG, CONSUMABLE_TYPE } from "../../scene/game-scene/game-field/consumables/data/consumables-config";
-import { SCORE_CONFIG } from "../../scene/game-scene/game-field/data/score-config";
-import ProgressBar from "../progress-bar";
-import { GAME_CONFIG, ROUND_CONFIG } from "../../scene/game-scene/game-field/data/game-config";
+import ScreenAbstract from "../screen-abstract";
+import { GLOBAL_VARIABLES } from "../../../scene/game-scene/game-field/data/global-variables";
+import { CONSUMABLES_CONFIG, CONSUMABLE_TYPE } from "../../../scene/game-scene/game-field/consumables/data/consumables-config";
+import { SCORE_CONFIG } from "../../../scene/game-scene/game-field/data/score-config";
+import ProgressBar from "../../progress-bar";
+import { ROUND_CONFIG } from "../../../scene/game-scene/game-field/data/game-config";
+import SCENE_CONFIG from "../../../core/configs/scene-config";
+import DPad from "./d-pad";
 
 export default class GameplayScreen extends ScreenAbstract {
   constructor() {
     super();
 
-    this._scoreText = null;
+    this._scoreNumberText = null;
     this._goText = null;
-    this._round = null;
+    this._roundNumberText = null;
     this._collectedScore = null;
     this._boosterText = null;
     this._boosterGroup = null;
     this._powerUpProgressBar = null;
     this._roundProgressBar = null;
+    this._roundGroup = null;
+    this._newRoundText = null;
+    this._dPad = null;
+  }
+
+  update(dt) {
+    this._roundProgressBar.update(dt);
   }
 
   show() {
@@ -25,30 +34,24 @@ export default class GameplayScreen extends ScreenAbstract {
 
     const duration = ROUND_CONFIG.roundDuration;
     this._roundProgressBar.show(0x000000, 140, duration);
+
+    this._showNewRound();
   }
 
   updateRound() {
     const currentRound = GLOBAL_VARIABLES.round;
-    this._round.text = `${currentRound + 1}`;
-
-    this._round.removeComponent(this._round.getComponent(Tween));
-
-    const tween = new Tween({ scale: 1.7 }, 0.3, { ease: Ease.sinusoidalOut, });
-    this._round.add(tween);
-
-    tween.on('complete', () => {
-      const tween = new Tween({ scale: 1 }, 0.3, { ease: Ease.sinusoidalIn, });
-      this._round.add(tween);
-    });
+    this._roundNumberText.text = `${currentRound + 1}`;
 
     if (currentRound !== ROUND_CONFIG.maxRound) {
       const duration = ROUND_CONFIG.roundDuration;
       this._roundProgressBar.show(0x000000, 140, duration);
     }
+
+    this._showNewRound();
   }
 
   setScore(value) {
-    this._scoreText.text = `Score: ${value}`;
+    this._scoreNumberText.text = `${value}`;
   }
 
   onConsumableCollect(consumableType, position) {
@@ -89,7 +92,7 @@ export default class GameplayScreen extends ScreenAbstract {
     this._goText.alpha = 1;
     this._goText.scale = 0;
 
-    const showTween = new Tween({ scale: 1 }, 0.4, { ease: Ease.backOut });
+    const showTween = new Tween({ scale: 1 }, 0.4, { ease: Ease.backOut, delay: 0.2 });
     this._goText.add(showTween);
 
     showTween.on('complete', () => {
@@ -98,6 +101,26 @@ export default class GameplayScreen extends ScreenAbstract {
 
       hideTween.on('complete', () => {
         this._goText.visible = false;
+      });
+    });
+  }
+
+  _showNewRound() {
+    this._newRoundText.text = `Round: ${GLOBAL_VARIABLES.round + 1}`;
+
+    this._newRoundText.visible = true;
+    this._newRoundText.alpha = 0.75;
+    this._newRoundText.scale = 0;
+
+    const showTween = new Tween({ scale: 1 }, 0.4, { ease: Ease.backOut, delay: 0.2 });
+    this._newRoundText.add(showTween);
+
+    showTween.on('complete', () => {
+      const hideTween = new Tween({ alpha: 0 }, 0.3, { ease: Ease.sinusoidalIn, delay: 0.4 });
+      this._newRoundText.add(hideTween);
+
+      hideTween.on('complete', () => {
+        this._newRoundText.visible = false;
       });
     });
   }
@@ -126,25 +149,43 @@ export default class GameplayScreen extends ScreenAbstract {
     this._initCollectedScore();
     this._initBoosterGroup();
     this._initRoundProgressBar();
+    this._initNewRoundText();
+    this._initDPad();
   }
 
   _initScore() {
-    const score = this._scoreText = new TextField('Score: 0', 'halloween_spooky', 0x000000, 50);
+    const scoreGroup = this._scoreGroup = new DisplayObject();
+    this.add(scoreGroup);
 
-    score.alignAnchor(0, 0.5);
-    this.add(score);
+    const scoreCaption = new TextField('Score:', 'halloween_spooky', 0x000000, 50);
+
+    scoreCaption.alignAnchor(0, 0.5);
+    scoreGroup.add(scoreCaption);
+    scoreCaption.x = -60
+
+    const scoreNumberText = this._scoreNumberText = new TextField('0', 'halloween_spooky', 0x000000, 50);
+
+    scoreNumberText.alignAnchor(0, 0.5);
+    scoreGroup.add(scoreNumberText);
+    scoreNumberText.x = 45;
   }
 
   _initRoundText() {
+    const roundGroup = this._roundGroup = new DisplayObject();
+    this.add(roundGroup);
+
     const roundCaption = this._roundCaption = new TextField('Round:', 'halloween_spooky', 0x000000, 50);
-    this.add(roundCaption);
+    roundGroup.add(roundCaption);
 
-    roundCaption.alignAnchor(0.5, 0.5);
+    roundCaption.alignAnchor(0, 0.5);
+    roundCaption.x = -70;
 
-    const round = this._round = new TextField('1', 'halloween_spooky', 0x000000, 50);
-    this.add(round);
+    const roundNumberText = this._roundNumberText = new TextField('1', 'halloween_spooky', 0x000000, 50);
+    roundGroup.add(roundNumberText);
 
-    round.alignAnchor(0.5, 0.5);
+    roundNumberText.alignAnchor(0, 0.5);
+
+    roundNumberText.x = 45;
   }
 
   _initGoText() {
@@ -197,7 +238,7 @@ export default class GameplayScreen extends ScreenAbstract {
   }
 
   _initBoosterProgressBar() {
-    const powerUpProgressBar = this._powerUpProgressBar = new ProgressBar();
+    const powerUpProgressBar = this._powerUpProgressBar = new ProgressBar(true);
     this._boosterGroup.add(powerUpProgressBar);
 
     powerUpProgressBar.on('complete', () => {
@@ -206,29 +247,79 @@ export default class GameplayScreen extends ScreenAbstract {
   }
 
   _initRoundProgressBar() {
-    const roundProgressBar = this._roundProgressBar = new ProgressBar();
-    this.add(roundProgressBar);
+    const roundProgressBar = this._roundProgressBar = new ProgressBar(false);
+    this._roundGroup.add(roundProgressBar);
+
+    roundProgressBar.x = -70;
+    roundProgressBar.y = 2;
+  }
+
+  _initNewRoundText() {
+    const newRoundText = this._newRoundText = new TextField('Round', 'halloween_spooky', 0x008800, 110);
+    this.add(newRoundText);
+
+    newRoundText.alignAnchor(0.5, 0.5);
+
+    newRoundText.dropShadow = true;
+    newRoundText.shadowBlur = 1;
+    newRoundText.shadowAlpha = 0.4;
+    newRoundText.shadowDistanceX = 4;
+    newRoundText.shadowDistanceY = 4;
+
+    newRoundText.visible = false;
+  }
+
+  _initDPad() {
+    if (!SCENE_CONFIG.isMobile) {
+      return;
+    }
+
+    const dPad = this._dPad = new DPad();
+    this.add(dPad);
+
+    dPad.on('onLeft', () => this.post('onLeft'));
+    dPad.on('onRight', () => this.post('onRight'));
+    dPad.on('onUp', () => this.post('onUp'));
+    dPad.on('onDown', () => this.post('onDown'));
   }
 
   _onResize() {
     const bounds = Black.stage.bounds;
 
-    this._scoreText.x = bounds.right - 300;
-    this._scoreText.y = bounds.top + 70;
-
     this._goText.x = bounds.left + bounds.width * 0.5;
     this._goText.y = bounds.top + bounds.height * 0.5;
 
-    this._roundCaption.x = bounds.left + bounds.width * 0.5 - 35;
-    this._roundCaption.y = bounds.top + 70;
+    this._scoreGroup.x = bounds.right - 300;
+    this._scoreGroup.y = bounds.top + 70;
 
-    this._round.x = bounds.left + bounds.width * 0.5 + 35;
-    this._round.y = bounds.top + 70;
-
-    this._roundProgressBar.x = bounds.left + bounds.width * 0.5 - 20;
-    this._roundProgressBar.y = bounds.top + 72;
+    this._roundGroup.x = bounds.left + bounds.width * 0.5;
+    this._roundGroup.y = bounds.top + 70;
 
     this._boosterGroup.x = bounds.left + 300;
     this._boosterGroup.y = bounds.top + 70;
+
+    this._newRoundText.x = bounds.left + bounds.width * 0.5;
+    this._newRoundText.y = bounds.top + bounds.height * 0.5;
+
+    if (SCENE_CONFIG.isMobile) {
+      if (window.innerWidth < window.innerHeight) {
+        this._scoreGroup.x = bounds.left + bounds.width * 0.7 - 10;
+        this._scoreGroup.y = bounds.top + 60;
+  
+        this._roundGroup.x = bounds.left + bounds.width * 0.3;
+        this._roundGroup.y = bounds.top + 60;
+  
+        this._boosterGroup.x = bounds.left + bounds.width * 0.5;
+        this._boosterGroup.y = bounds.top + 140;
+
+        this._dPad.scale = 1;
+        this._dPad.x = bounds.right - 200;
+        this._dPad.y = bounds.bottom - 190;
+      } else {
+        this._dPad.scale = 1.5;
+        this._dPad.x = bounds.right - 240;
+        this._dPad.y = bounds.bottom - 230;
+      }
+    }
   }
 }

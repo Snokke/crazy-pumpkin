@@ -30,10 +30,6 @@ export default class GameScene extends THREE.Group {
   }
 
   update(dt) {
-    if (dt > 0.1) {
-      dt = 0.1;
-    }
-
     this._gameField.update(dt);
   }
 
@@ -52,6 +48,10 @@ export default class GameScene extends THREE.Group {
   onRestartGame() {
     this._gameField.restartGame();
     this._unBlurScene();
+  }
+
+  onButtonPressed(buttonType) {
+    this._gameField.onButtonPressed(buttonType);
   }
 
   _blurScene(instant = false) {
