@@ -8,6 +8,7 @@ import Loader from '../../../../core/loader';
 import Materials from '../../../../core/materials';
 import { randomFromArray } from '../../../../core/helpers/helpers';
 import { PLAYER_CONFIG } from '../player/data/player-config';
+import SCENE_CONFIG from '../../../../core/configs/scene-config';
 
 export default class Obstacle extends THREE.Group {
   constructor(type) {
@@ -32,10 +33,12 @@ export default class Obstacle extends THREE.Group {
   }
 
   showIntro(delay = 0) {
-    this._viewGroup.position.y = PLAYER_CONFIG.spawnPositionY;
+    const spawnPositionY = SCENE_CONFIG.isMobile ? PLAYER_CONFIG.spawnAnimation.mobile.positionY : PLAYER_CONFIG.spawnAnimation.desktop.positionY;
+    const spawnDuration = SCENE_CONFIG.isMobile ? PLAYER_CONFIG.spawnAnimation.mobile.duration : PLAYER_CONFIG.spawnAnimation.desktop.duration;
+    this._viewGroup.position.y = spawnPositionY;
 
     new TWEEN.Tween(this._viewGroup.position)
-      .to({ y: 0.4 }, 700)
+      .to({ y: 0.4 }, spawnDuration)
       .delay(delay)
       .easing(TWEEN.Easing.Cubic.In)
       .start()

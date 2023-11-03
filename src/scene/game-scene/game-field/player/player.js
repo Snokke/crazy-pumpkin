@@ -4,12 +4,14 @@ import { MessageDispatcher } from 'black-engine';
 import { PLAYER_ACTIONS, PLAYER_JUMP_STATE, PLAYER_STATE } from './data/player-data';
 import { PLAYER_CONFIG } from './data/player-config';
 import { LEVEL_CONFIG } from '../data/level-config';
-import { DIRECTION, ROTATION_BY_DIRECTION } from '../data/game-data';
+import { DIRECTION, GAME_STATE, ROTATION_BY_DIRECTION } from '../data/game-data';
 import { GAME_CONFIG, ROUND_CONFIG } from '../data/game-config';
 import { GLOBAL_VARIABLES } from '../data/global-variables';
 import { getCoordinatesFromPosition } from '../../../../core/helpers/helpers';
 import { CONSUMABLES_CONFIG, CONSUMABLE_TYPE } from '../consumables/data/consumables-config';
 import Loader from '../../../../core/loader';
+import Delayed from '../../../../core/helpers/delayed-call';
+import SCENE_CONFIG from '../../../../core/configs/scene-config';
 
 export default class Player extends THREE.Group {
   constructor() {
@@ -19,6 +21,7 @@ export default class Player extends THREE.Group {
 
     this._viewGroup = null;
     this._arrowHelper = null;
+    this._grave = null;
     this._currentPosition = { row: 0, column: 0 };
     this._newPosition = { row: 0, column: 0 };
     this._jumpSpeed = 0;
@@ -131,6 +134,16 @@ export default class Player extends THREE.Group {
     this._updateJumpTime();
   }
 
+  onKill() {
+    this._state = PLAYER_STATE.DeathAnimation;
+    this._resetAllTweens();
+    this._jumpSpeed = 0;
+    this._nextAction = null;
+    this._speedBoosterTimer?.stop();
+
+    this._showDeathAnimation();
+  }
+
   show() {
     this.visible = true;
   }
@@ -180,12 +193,13 @@ export default class Player extends THREE.Group {
 
   showIntro() {
     this.show();
-    this._viewGroup.position.y = PLAYER_CONFIG.spawnPositionY;
+    const spawnPositionY = SCENE_CONFIG.isMobile ? PLAYER_CONFIG.spawnAnimation.mobile.positionY : PLAYER_CONFIG.spawnAnimation.desktop.positionY;
+    const spawnDuration = SCENE_CONFIG.isMobile ? PLAYER_CONFIG.spawnAnimation.mobile.duration : PLAYER_CONFIG.spawnAnimation.desktop.duration;
+    this._viewGroup.position.y = spawnPositionY;
 
     new TWEEN.Tween(this._viewGroup.position)
-      .to({ y: PLAYER_CONFIG.halfHeight }, 700)
+      .to({ y: PLAYER_CONFIG.halfHeight }, spawnDuration)
       .easing(TWEEN.Easing.Cubic.In)
-      .delay(200)
       .start()
       .onComplete(() => {
         const squeezeTween = this._squeezeOnGround(0.6, 50, TWEEN.Easing.Sinusoidal.Out);
@@ -210,7 +224,6 @@ export default class Player extends THREE.Group {
 
   reset() {
     this._resetAllTweens();
-    this._stopIdleAnimation();
     this._setJumpState(PLAYER_JUMP_STATE.None);
     this._state = PLAYER_STATE.Idle;
     this._currentDirection = DIRECTION.Up;
@@ -225,6 +238,47 @@ export default class Player extends THREE.Group {
     this._invulnerabilityBoosterAnimation?.stop();
     this._view.material.opacity = 1;
     this._innerCylinder.visible = true;
+    this._grave.visible = false;
+    
+  }
+
+  _showDeathAnimation() {
+    if (this._grave.visible === true) {
+      return;
+    }
+
+    const spawnPositionY = SCENE_CONFIG.isMobile ? PLAYER_CONFIG.spawnAnimation.mobile.positionY : PLAYER_CONFIG.spawnAnimation.desktop.positionY;
+    const spawnDuration = SCENE_CONFIG.isMobile ? PLAYER_CONFIG.spawnAnimation.mobile.duration : PLAYER_CONFIG.spawnAnimation.desktop.duration;
+    this._grave.position.y = spawnPositionY;
+    this._grave.position.x = this._viewGroup.position.x;
+    this._grave.position.z = this._viewGroup.position.z;
+    this._grave.visible = true;
+    this._innerCylinder.visible = false;
+
+    new TWEEN.Tween(this._grave.position)
+      .to({ y: 0 }, spawnDuration)
+      .easing(TWEEN.Easing.Cubic.In)
+      .start();
+
+    const squeezeDuration = 200;
+    const squeezeDelay = spawnDuration - 200;
+
+    Delayed.call(squeezeDelay, () => {
+      new TWEEN.Tween(this._viewGroup.position)
+        .to({ y: 0.04 }, squeezeDuration)
+        .easing(TWEEN.Easing.Sinusoidal.In)
+        .start();
+
+      new TWEEN.Tween(this._viewGroup.scale)
+        .to({ y: 0.06, x: 1.6, z: 1.6 }, squeezeDuration)
+        .easing(TWEEN.Easing.Sinusoidal.In)
+        .start()
+        .onComplete(() => {
+          Delayed.call(800, () => {
+            this.events.post('onKill');
+          });
+        });
+    })
   }
 
   _calculateCurrentPosition() {
@@ -241,21 +295,30 @@ export default class Player extends THREE.Group {
     if (this._jumpState === PLAYER_JUMP_STATE.GoingUp || this._jumpState === PLAYER_JUMP_STATE.GoingDown) {
       this._viewGroup.position.y += this._jumpSpeed * dt * PLAYER_CONFIG.speedMultiplier;
       this._jumpSpeed -= GAME_CONFIG.gravity * PLAYER_CONFIG.mass * dt * PLAYER_CONFIG.speedMultiplier;
-
       if (this._jumpSpeed < 0) {
         this._setJumpState(PLAYER_JUMP_STATE.GoingDown);
       }
 
       if (this._jumpState === PLAYER_JUMP_STATE.GoingDown && this._previousJumpState === PLAYER_JUMP_STATE.GoingUp) {
         this._resetJumpingTweens();
-        this._goingDownTween = this._squeeze(this._squeezeTop, this._jumpHalfTime, TWEEN.Easing.Sinusoidal.In);
-        this._isNextActionAllowed = true;
+
+        if (GLOBAL_VARIABLES.gameState === GAME_STATE.Gameplay) {
+          this._goingDownTween = this._squeeze(this._squeezeTop, this._jumpHalfTime, TWEEN.Easing.Sinusoidal.In);
+          this._isNextActionAllowed = true;
+        }
       }
 
       if (this._jumpState === PLAYER_JUMP_STATE.GoingDown && this._viewGroup.position.y < PLAYER_CONFIG.halfHeight * this._squeezeTop) {
         this._viewGroup.position.y = PLAYER_CONFIG.halfHeight * this._squeezeTop;
         this._jumpSpeed = 0;
-        this._showAnimationAfterJump();
+
+        if (this._state === PLAYER_STATE.DeathAnimation) {
+          this._jumpState = PLAYER_JUMP_STATE.None;
+        }
+
+        if (GLOBAL_VARIABLES.gameState === GAME_STATE.Gameplay) { 
+          this._showAnimationAfterJump();
+        }
       }
     }
   }
@@ -441,6 +504,7 @@ export default class Player extends THREE.Group {
 
   _init() {
     this._initView();
+    this._initGrave();
     this._updateJumpTime();
     this._initActions();
     this._initHelpers();
@@ -483,6 +547,25 @@ export default class Player extends THREE.Group {
 
     viewGroup.position.y = PLAYER_CONFIG.halfHeight;
     viewGroup.rotation.y = ROTATION_BY_DIRECTION[this._currentDirection];
+  }
+
+  _initGrave() {
+    const grave = this._grave = Loader.assets['player-grave'].scene.children[0].clone();
+    this.add(grave);
+
+    const scale = 0.6;
+    grave.scale.set(scale, scale, scale);
+
+    const texture = Loader.assets['grave_basecolor'];
+    texture.flipY = false;
+    texture.colorSpace = THREE.SRGBColorSpace;
+
+    const material = new THREE.MeshStandardMaterial({
+      map: texture,
+    });
+
+    grave.material = material;
+    grave.visible = false;
   }
 
   _updateJumpTime() {

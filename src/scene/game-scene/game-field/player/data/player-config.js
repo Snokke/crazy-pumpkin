@@ -12,7 +12,16 @@ const PLAYER_CONFIG = {
     squeezePower: 0.85,
     squeezeDuration: 320,
   },
-  spawnPositionY: 11.5,
+  spawnAnimation: {
+    desktop: {
+      positionY: 8,
+      duration: 400,
+    },
+    mobile: {
+      positionY: 11.5,
+      duration: 700,
+    },
+  },
 }
 
 export { PLAYER_CONFIG };

@@ -1,10 +1,10 @@
 import { Black, DisplayObject, Message } from "black-engine";
 import Overlay from "./overlay";
 import SoundIcon from "./sound-icon";
-import StartGameScreen from "./screens/start-game-screen";
-import GameplayScreen from "./screens/gameplay-screen/gameplay-screen";
-import GameOverScreen from "./screens/game-over-screen";
 import DEBUG_CONFIG from "../core/configs/debug-config";
+import StartGameScreen from "./screens/start-game-screen/start-game-screen";
+import GameOverScreen from "./screens/game-over-screen/game-over-screen";
+import GameplayScreen from "./screens/gameplay-screen/gameplay-screen";
 
 export default class UI extends DisplayObject {
   constructor() {

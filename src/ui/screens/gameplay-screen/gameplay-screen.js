@@ -300,6 +300,10 @@ export default class GameplayScreen extends ScreenAbstract {
     tutorial.shadowAlpha = 0.4;
     tutorial.shadowDistanceX = 4;
     tutorial.shadowDistanceY = 4;
+
+    if (SCENE_CONFIG.isMobile) {
+      tutorial.visible = false;
+    }
   }
 
   _onResize() {

@@ -5,7 +5,7 @@ import { LEVEL_CONFIG } from '../../data/level-config';
 import { GAME_CONFIG } from '../../data/game-config';
 import { ENEMY_STATE, ENEMY_TYPE } from '../data/enemy-data';
 import { isEqualsPositions, lerp, randomBetween } from '../../../../../core/helpers/helpers';
-import { DIRECTION, MAP_TYPE, ROTATION_BY_DIRECTION } from '../../data/game-data';
+import { DIRECTION, GAME_STATE, MAP_TYPE, ROTATION_BY_DIRECTION } from '../../data/game-data';
 import { GHOST_CONFIG, GHOST_MOVEMENT_STATE } from '../data/ghost-config';
 import { GLOBAL_VARIABLES } from '../../data/global-variables';
 import Loader from '../../../../../core/loader';
@@ -268,7 +268,9 @@ export default class Ghost extends EnemyAbstract {
       .to({ value: 1 }, lifeTime)
       .start()
       .onComplete(() => {
-        this.kill();
+        if (GLOBAL_VARIABLES.gameState === GAME_STATE.Gameplay) {
+          this.kill();
+        }
       });
   }
 

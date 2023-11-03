@@ -9,7 +9,7 @@ const textures = [
   'pumpkin004_basecolor.jpg',
   'pumpkin004_roughness.jpg',
   'halloweenbits_texture.png',
-  'ghost-shadow.png',
+  'grave_basecolor.jpg',
 ];
 
 const models = [
@@ -29,6 +29,7 @@ const models = [
   'board.glb',
   'environment.glb',
   'arch.glb',
+  'player-grave.glb',
 ];
 
 const images = [

@@ -1,5 +1,5 @@
 import { Black, Ease, TextField, Tween } from "black-engine";
-import ScreenAbstract from "./screen-abstract";
+import ScreenAbstract from "../screen-abstract";
 
 export default class GameOverScreen extends ScreenAbstract {
   constructor() {

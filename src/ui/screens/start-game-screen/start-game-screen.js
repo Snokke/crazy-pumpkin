@@ -1,6 +1,6 @@
 import { Black, Ease, Sprite, TextField, Tween } from "black-engine";
-import ScreenAbstract from "./screen-abstract";
-import SCENE_CONFIG from "../../core/configs/scene-config";
+import ScreenAbstract from "../screen-abstract";
+import SCENE_CONFIG from "../../../core/configs/scene-config";
 
 export default class StartGameScreen extends ScreenAbstract {
   constructor() {

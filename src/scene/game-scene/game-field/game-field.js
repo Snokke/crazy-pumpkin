@@ -313,16 +313,25 @@ export default class GameField extends THREE.Group {
   }
 
   _onLose() {
+    if (GLOBAL_VARIABLES.gameState === GAME_STATE.GameOver) {
+      return;
+    }
+    
     GLOBAL_VARIABLES.gameState = GAME_STATE.GameOver;
     this._enemiesController.stopTweens();
     this._consumablesController.stopTweens();
-    this.events.post('gameOver');
+    this._player.onKill();
   }
 
   _initSignals() {
     this._player.events.on('positionChanged', () => this._onPlayerPositionChanged());
     this._player.events.on('introFinished', () => this._startGameplay());
+    this._player.events.on('onKill', () => this._onPlayerKill());
     this._enemiesController.events.on('positionChanged', () => this._onEnemyPositionChanged());
+  }
+
+  _onPlayerKill() {
+    this.events.post('gameOver');
   }
 
   _onPlayerPositionChanged() {
