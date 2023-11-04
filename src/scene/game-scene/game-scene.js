@@ -35,8 +35,10 @@ export default class GameScene extends THREE.Group {
 
   onSoundChanged() {
     this._gameDebug.updateSoundController();
-    const volume = SOUNDS_CONFIG.enabled ? SOUNDS_CONFIG.masterVolume : 0;
+    const volume = SOUNDS_CONFIG.enabled ? SOUNDS_CONFIG.masterVolume * SOUNDS_CONFIG.musicVolume : 0;
     this._music.setVolume(volume);
+
+    this._gameField.onSoundChanged();
   }
 
   onStartGame() {
@@ -130,7 +132,8 @@ export default class GameScene extends THREE.Group {
   _initGameField() {
     const renderer = this._data.renderer;
     const camera = this._data.camera;
-    const gameField = this._gameField = new GameField(renderer, camera);
+    const audioListener = this._data.audioListener;
+    const gameField = this._gameField = new GameField(renderer, camera, audioListener);
     this.add(gameField);
   }
 
@@ -145,7 +148,7 @@ export default class GameScene extends THREE.Group {
     Loader.events.on('onAudioLoaded', () => {
       music.setBuffer(Loader.assets['music']);
       music.setLoop(true);
-      music.setVolume(SOUNDS_CONFIG.masterVolume);
+      music.setVolume(SOUNDS_CONFIG.masterVolume * SOUNDS_CONFIG.musicVolume);
     });
   }
 

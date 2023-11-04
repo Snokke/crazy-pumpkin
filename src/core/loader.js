@@ -42,6 +42,9 @@ const images = [
 
 const sounds = [
   'music.mp3',
+  'jump.mp3',
+  'collect.mp3',
+  'smash.mp3',
 ];
 
 const fonts = [

@@ -28,7 +28,7 @@ const CONSUMABLES_CONFIG = {
   [CONSUMABLE_TYPE.BoosterCandyPlayerInvulnerability]: {
     lifeTime: { min: 20000, max: 25000 },
     name: 'Invulnerability',
-    color: 0xcccc00,
+    color: 0xd87322,
     progressBarWidth: 250,
     duration: 12000,
   },

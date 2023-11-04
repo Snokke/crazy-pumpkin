@@ -12,12 +12,15 @@ import { CONSUMABLES_CONFIG, CONSUMABLE_TYPE } from '../consumables/data/consuma
 import Loader from '../../../../core/loader';
 import Delayed from '../../../../core/helpers/delayed-call';
 import SCENE_CONFIG from '../../../../core/configs/scene-config';
+import { SOUNDS_CONFIG } from '../../../../core/configs/sounds-config';
 
 export default class Player extends THREE.Group {
-  constructor() {
+  constructor(audioListener) {
     super();
 
     this.events = new MessageDispatcher();
+
+    this._audioListener = audioListener;
 
     this._viewGroup = null;
     this._arrowHelper = null;
@@ -48,6 +51,8 @@ export default class Player extends THREE.Group {
 
     this._isBodyActive = true;
     this._currentDirection = DIRECTION.Up;
+
+    this._globalVolume = SOUNDS_CONFIG.masterVolume;
 
     this._init();
   }
@@ -222,6 +227,14 @@ export default class Player extends THREE.Group {
     return this._isBodyActive;
   }
 
+  onSoundChanged() {
+    const jumpVolume = SOUNDS_CONFIG.enabled ? SOUNDS_CONFIG.masterVolume * SOUNDS_CONFIG.jumpSoundVolume : 0;
+    this._jumpSound.setVolume(jumpVolume);
+
+    const smashVolume = SOUNDS_CONFIG.enabled ? SOUNDS_CONFIG.masterVolume * SOUNDS_CONFIG.smashSoundVolume : 0;
+    this._smashSound.setVolume(smashVolume);
+  }
+
   reset() {
     this._resetAllTweens();
     this._setJumpState(PLAYER_JUMP_STATE.None);
@@ -264,6 +277,8 @@ export default class Player extends THREE.Group {
     const squeezeDelay = spawnDuration - 200;
 
     Delayed.call(squeezeDelay, () => {
+      this._playSound(this._smashSound);
+
       new TWEEN.Tween(this._viewGroup.position)
         .to({ y: 0.04 }, squeezeDuration)
         .easing(TWEEN.Easing.Sinusoidal.In)
@@ -341,6 +356,7 @@ export default class Player extends THREE.Group {
 
   _startJump() {
     this._state = PLAYER_STATE.Jump;
+    this._playSound(this._jumpSound);
     this._stopIdleAnimation();
     this._showAnimationBeforeJump();
   }
@@ -507,6 +523,7 @@ export default class Player extends THREE.Group {
     this._initGrave();
     this._updateJumpTime();
     this._initActions();
+    this._initSounds();
     this._initHelpers();
 
     this.hide();
@@ -585,6 +602,45 @@ export default class Player extends THREE.Group {
       [PLAYER_ACTIONS.JumpInPlaceRotateDown]: () => this._jumpInPlaceWithRotation(DIRECTION.Down),
       [PLAYER_ACTIONS.JumpInPlace]: () => this._jumpInPlace(),
     }
+  }
+
+  _initSounds() {
+    this._initJumpSound();
+    this._initSmashSound();
+  }
+
+  _initJumpSound() {
+    const jumpSound = this._jumpSound = new THREE.PositionalAudio(this._audioListener);
+    this.add(jumpSound);
+
+    jumpSound.setRefDistance(10);
+    jumpSound.position.copy(this._viewGroup.position);
+    jumpSound.setVolume(this._globalVolume * SOUNDS_CONFIG.jumpSoundVolume);
+
+    Loader.events.on('onAudioLoaded', () => {
+      jumpSound.setBuffer(Loader.assets['jump']);
+    });
+  }
+
+  _initSmashSound() {
+    const smashSound = this._smashSound = new THREE.PositionalAudio(this._audioListener);
+    this.add(smashSound);
+
+    smashSound.setRefDistance(10);
+    smashSound.position.copy(this._viewGroup.position);
+    smashSound.setVolume(this._globalVolume * SOUNDS_CONFIG.smashSoundVolume);
+
+    Loader.events.on('onAudioLoaded', () => {
+      smashSound.setBuffer(Loader.assets['smash']);
+    });
+  }
+
+  _playSound(sound) {
+    if (sound.isPlaying) {
+      sound.stop();
+    }
+
+    sound.play();
   }
 
   _initHelpers() {

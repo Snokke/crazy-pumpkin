@@ -17,15 +17,18 @@ import { CONSUMABLE_TYPE } from './consumables/data/consumables-config';
 import Board from './board/board';
 import { ENVIRONMENT_CONFIG } from '../environment/environment-config';
 import DEBUG_CONFIG from '../../../core/configs/debug-config';
+import { SOUNDS_CONFIG } from '../../../core/configs/sounds-config';
+import Loader from '../../../core/loader';
 
 export default class GameField extends THREE.Group {
-  constructor(renderer, camera) {
+  constructor(renderer, camera, audioListener) {
     super();
 
     this.events = new MessageDispatcher();
 
     this._renderer = renderer;
     this._camera = camera;
+    this._audioListener = audioListener;
 
     this._player = null;
     this._enemiesController = null;
@@ -40,6 +43,8 @@ export default class GameField extends THREE.Group {
     this._gameTime = 0;
     this._roundTime = 0;
     this._isTutorialShown = false;
+
+    this._globalVolume = SOUNDS_CONFIG.masterVolume;
 
     this._init();
   }
@@ -96,6 +101,13 @@ export default class GameField extends THREE.Group {
     }
 
     this._onButtonPress(buttonType);
+  }
+
+  onSoundChanged() {
+    const collectVolume = SOUNDS_CONFIG.enabled ? SOUNDS_CONFIG.masterVolume * SOUNDS_CONFIG.collectSoundVolume : 0;
+    this._collectSound.setVolume(collectVolume);
+
+    this._player.onSoundChanged();
   }
 
   _startGameplay() {
@@ -178,6 +190,14 @@ export default class GameField extends THREE.Group {
     this._gameTime = 0;
   }
 
+  _playSound(sound) {
+    if (sound.isPlaying) {
+      sound.stop();
+    }
+
+    sound.play();
+  }
+
   _init() {
     this._initPlayer();
     this._initEnemiesController();
@@ -186,6 +206,7 @@ export default class GameField extends THREE.Group {
     this._initPlayerPositionHelper();
     this._initBoard();
     this._initKeyboardEvents();
+    this._initCollectSound();
 
     this._initSignals();
 
@@ -193,7 +214,7 @@ export default class GameField extends THREE.Group {
   }
 
   _initPlayer() {
-    const player = this._player = new Player();
+    const player = this._player = new Player(this._audioListener);
     this.add(player);
 
     this._playerActions = {
@@ -251,6 +272,19 @@ export default class GameField extends THREE.Group {
   _initPlayerPositionHelper() {
     const playerPositionHelper = this._playerPositionHelper = new ObjectPositionHelper(GAME_OBJECT_TYPE.Player);
     this.add(playerPositionHelper);
+  }
+
+  _initCollectSound() {
+    const collectSound = this._collectSound = new THREE.PositionalAudio(this._audioListener);
+    this.add(collectSound);
+
+    collectSound.setRefDistance(10);
+    collectSound.setVolume(this._globalVolume * SOUNDS_CONFIG.collectSoundVolume);
+    this.add(collectSound);
+
+    Loader.events.on('onAudioLoaded', () => {
+      collectSound.setBuffer(Loader.assets['collect']);
+    });
   }
 
   _initKeyboardEvents() {
@@ -392,6 +426,9 @@ export default class GameField extends THREE.Group {
       const screenPosition = vector3ToBlackPosition(consumablePosition, this._renderer, this._camera);
       this._addScore(score);
       this.events.post('onConsumableCollect', consumableType, screenPosition);
+
+      this._collectSound.position.copy(consumablePosition);
+      this._playSound(this._collectSound);
 
       if (consumableType === CONSUMABLE_TYPE.BoosterCandyEnemiesSlow || consumableType === CONSUMABLE_TYPE.BoosterCandyPlayerInvulnerability || consumableType === CONSUMABLE_TYPE.BoosterCandyPlayerSpeed) {
         this._startBooster(consumableType);
