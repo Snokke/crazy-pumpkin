@@ -2,6 +2,7 @@ import { Black, Vector } from "black-engine";
 import { GAME_CONFIG } from "../../scene/game-scene/game-field/data/game-config";
 import { GLOBAL_VARIABLES } from "../../scene/game-scene/game-field/data/global-variables";
 import { LEVEL_CONFIG } from "../../scene/game-scene/game-field/data/level-config";
+import SCENE_CONFIG from "../configs/scene-config";
 
 export const deepCopyArray = (array) => {
   const newArray = [];
@@ -40,7 +41,7 @@ export const getCoordinatesFromPosition = (position) => {
 }
 
 export const vector3ToBlackPosition = (vector3, renderer, camera) => {
-  const dpr = Black.device.getDevicePixelRatio();
+  const dpr = Math.min(window.devicePixelRatio, SCENE_CONFIG.maxPixelRatio)
   const width = renderer.getContext().canvas.width / dpr;
   const height = renderer.getContext().canvas.height / dpr;
 
