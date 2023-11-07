@@ -29,6 +29,18 @@ export default class Overlay extends DisplayObject {
     this._view.on('pointerMove', (msg, pointer) => {
       this.post('onPointerMove', pointer.x, pointer.y);
     });
+
+    this._view.on('pointerDown', () => {
+      if (Black.engine.containerElement.style.cursor === 'grab') {
+        Black.engine.containerElement.style.cursor = 'grabbing';
+      }
+    });
+
+    this._view.on('pointerUp', () => {
+      if (Black.engine.containerElement.style.cursor === 'grabbing') {
+        Black.engine.containerElement.style.cursor = 'grab';
+      }
+    });
   }
 
   _onResize() {

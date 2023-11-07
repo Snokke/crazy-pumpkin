@@ -1,6 +1,7 @@
 const ENEMY_TYPE = {
   Ghost: 'GHOST',
   EvilPumpkin: 'EVIL_PUMPKIN',
+  Skeleton: 'SKELETON',
 }
 
 const ENEMY_STATE = {

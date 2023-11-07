@@ -12,6 +12,7 @@ const GLOBAL_VARIABLES = {
     [MAP_TYPE.Obstacle]: [],
     [MAP_TYPE.Ghost]: [],
     [MAP_TYPE.EvilPumpkin]: [],
+    [MAP_TYPE.Skeleton]: [],
   }
 }
 

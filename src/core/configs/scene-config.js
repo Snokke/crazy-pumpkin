@@ -11,6 +11,15 @@ const SCENE_CONFIG = {
       landscape: 38,
     },
   },
+  fog: {
+    enabled: true,
+    color: 0xffffff,
+    desktop: { near: 16, far: 20 },
+    mobile: { 
+      portrait: { near: 21, far: 25.5 },
+      landscape: { near: 16, far: 20 },
+    },
+  }
 };
 
 export default SCENE_CONFIG;

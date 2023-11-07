@@ -82,6 +82,10 @@ export default class Obstacle extends THREE.Group {
   }
 
   _init() {
+    this._initView();
+  }
+
+  _initView() {
     const viewGroup = this._viewGroup = new THREE.Group();
     this.add(viewGroup);
 

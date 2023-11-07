@@ -1,4 +1,6 @@
 import { Black, DisplayObject } from "black-engine";
+import { GLOBAL_VARIABLES } from "../../scene/game-scene/game-field/data/global-variables";
+import { GAME_STATE } from "../../scene/game-scene/game-field/data/game-data";
 
 export default class ScreenAbstract extends DisplayObject {
   constructor() {
@@ -18,7 +20,7 @@ export default class ScreenAbstract extends DisplayObject {
   }
 
   onOverlayMove() {
-    if (Black.engine.containerElement.style.cursor !== 'auto') {
+    if (this.visible && Black.engine.containerElement.style.cursor !== 'auto') {
       Black.engine.containerElement.style.cursor = 'auto';
     }
   }

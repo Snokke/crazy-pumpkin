@@ -4,6 +4,7 @@ const ENVIRONMENT_CONFIG = {
       { row: 7, column: 2 },
       { row: 7, column: 3 },
       { row: 7, column: 4 },
+      { row: 7, column: 5 },
     ]
   },
 }

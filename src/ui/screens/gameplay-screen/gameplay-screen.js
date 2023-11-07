@@ -116,6 +116,12 @@ export default class GameplayScreen extends ScreenAbstract {
     this._tutorial.add(hideTween);
   }
 
+  onOverlayMove() {
+    if (this.visible && Black.engine.containerElement.style.cursor !== 'grab' && Black.engine.containerElement.style.cursor !== 'grabbing') {
+      Black.engine.containerElement.style.cursor = 'grab';
+    }
+  }
+
   _showNewRound() {
     this._newRoundText.text = `Round: ${GLOBAL_VARIABLES.round + 1}`;
 
@@ -340,7 +346,7 @@ export default class GameplayScreen extends ScreenAbstract {
 
         this._dPad.scale = 1;
         this._dPad.x = bounds.right - 200;
-        this._dPad.y = bounds.bottom - 200;
+        this._dPad.y = bounds.bottom - 240;
       } else {
         this._dPad.scale = 1.5;
         this._dPad.x = bounds.right - 240;

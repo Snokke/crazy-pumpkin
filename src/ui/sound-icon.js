@@ -1,4 +1,4 @@
-import { DisplayObject, Sprite } from "black-engine";
+import { Black, DisplayObject, Sprite } from "black-engine";
 import DEBUG_CONFIG from "../core/configs/debug-config";
 import { SOUNDS_CONFIG } from "../core/configs/sounds-config";
 
@@ -43,6 +43,10 @@ export default class SoundIcon extends DisplayObject {
       SOUNDS_CONFIG.enabled = !SOUNDS_CONFIG.enabled;
       this.updateTexture();
       this.post('onSoundChanged');
+    });
+
+    this._view.on('pointerMove', () => {
+      Black.engine.containerElement.style.cursor = 'pointer';
     });
   }
 }

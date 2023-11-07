@@ -82,6 +82,7 @@ export default class BaseScene {
     this._initRenderer();
     this._initCamera();
     this._initLights();
+    this._initFog();
     this._initAxesHelper();
     this._initLoadingOverlay();
     this._initOnResize();
@@ -162,6 +163,20 @@ export default class BaseScene {
     // this._scene.add(directionalLightCameraHelper);
   }
 
+  _initFog() {
+    if (SCENE_CONFIG.fog.enabled) {
+      let near = SCENE_CONFIG.fog.desktop.near;
+      let far = SCENE_CONFIG.fog.desktop.far;
+
+      if (SCENE_CONFIG.isMobile) {
+        near = this._windowSizes.width < this._windowSizes.height ? SCENE_CONFIG.fog.mobile.portrait.near : SCENE_CONFIG.fog.mobile.landscape.near;
+        far = this._windowSizes.width < this._windowSizes.height ? SCENE_CONFIG.fog.mobile.portrait.far : SCENE_CONFIG.fog.mobile.landscape.far;
+      }
+
+      this._scene.fog = new THREE.Fog(SCENE_CONFIG.backgroundColor, near, far);
+    }
+  }
+
   _initAxesHelper() {
     if (DEBUG_CONFIG.axesHelper) {
       const axesHelper = new THREE.AxesHelper(5);
@@ -192,6 +207,11 @@ export default class BaseScene {
     if (SCENE_CONFIG.isMobile) {
       this._camera.fov = this._windowSizes.width < this._windowSizes.height ? SCENE_CONFIG.fov.mobile.portrait : SCENE_CONFIG.fov.mobile.landscape;
       this._camera.updateProjectionMatrix();
+
+      if (SCENE_CONFIG.fog.enabled) {
+        this._scene.fog.near = this._windowSizes.width < this._windowSizes.height ? SCENE_CONFIG.fog.mobile.portrait.near : SCENE_CONFIG.fog.mobile.landscape.near;
+        this._scene.fog.far = this._windowSizes.width < this._windowSizes.height ? SCENE_CONFIG.fog.mobile.portrait.far : SCENE_CONFIG.fog.mobile.landscape.far;
+      }
     }
   }
 

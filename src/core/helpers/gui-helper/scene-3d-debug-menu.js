@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import { Black } from 'black-engine';
 import DEBUG_CONFIG from "../../configs/debug-config";
 import RendererStats from 'three-webgl-stats';
@@ -109,8 +110,6 @@ export default class Scene3DDebugMenu {
 
     orbitControls.enableDamping = true;
     orbitControls.dampingFactor = 0.07;
-    // orbitControls.rotateSpeed = 0.5;
-    orbitControls.panSpeed = 0.5;
 
     if (!this._isAssetsLoaded) {
       orbitControls.enabled = false;

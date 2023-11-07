@@ -19,6 +19,7 @@ import { ENVIRONMENT_CONFIG } from '../environment/environment-config';
 import DEBUG_CONFIG from '../../../core/configs/debug-config';
 import { SOUNDS_CONFIG } from '../../../core/configs/sounds-config';
 import Loader from '../../../core/loader';
+import BossesController from './bosses/bosses-controller';
 
 export default class GameField extends THREE.Group {
   constructor(renderer, camera, audioListener) {
@@ -34,6 +35,7 @@ export default class GameField extends THREE.Group {
     this._enemiesController = null;
     this._obstaclesController = null;
     this._consumablesController = null;
+    this._bossesController = null;
     this._board = null;
 
     this._playerActions = null;
@@ -54,6 +56,7 @@ export default class GameField extends THREE.Group {
     this._enemiesController.update(dt);
     this._updateGameTime(dt);
     this._updateRoundTime(dt);
+    // this._bossesController.update(dt);
   }
 
   initLevel(level) {
@@ -69,6 +72,8 @@ export default class GameField extends THREE.Group {
 
     this._initMaps();
     this._obstaclesController.createObstacles();
+
+    // this._bossesController.spawnBosses();
   }
 
   startGame() {
@@ -108,6 +113,7 @@ export default class GameField extends THREE.Group {
     this._collectSound.setVolume(collectVolume);
 
     this._player.onSoundChanged();
+    this._obstaclesController.onSoundChanged();
   }
 
   _startGameplay() {
@@ -201,6 +207,7 @@ export default class GameField extends THREE.Group {
   _init() {
     this._initPlayer();
     this._initEnemiesController();
+    this._initBossesController();
     this._initObstaclesController();
     this._initConsumablesController();
     this._initPlayerPositionHelper();
@@ -231,8 +238,13 @@ export default class GameField extends THREE.Group {
     this.add(enemiesController);
   }
 
+  _initBossesController() {
+    // const bossesController = this._bossesController = new BossesController();
+    // this.add(bossesController);
+  }
+
   _initObstaclesController() {
-    const obstaclesController = this._obstaclesController = new ObstaclesController();
+    const obstaclesController = this._obstaclesController = new ObstaclesController(this._audioListener);
     this.add(obstaclesController);
   }
 
@@ -253,18 +265,21 @@ export default class GameField extends THREE.Group {
     const obstacleMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Obstacle] = [];
     const consumableMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Consumable] = [];
     const evilPumpkinMap = GLOBAL_VARIABLES.maps[MAP_TYPE.EvilPumpkin] = [];
+    const skeletonMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Skeleton] = [];
 
     for (let row = 0; row < fieldConfig.rows; row++) {
       obstacleMap.push([]);
       ghostMap.push([]);
       consumableMap.push([]);
       evilPumpkinMap.push([]);
+      skeletonMap.push([]);
 
       for (let column = 0; column < fieldConfig.columns; column++) {
         obstacleMap[row].push(null);
         consumableMap[row].push(null);
         ghostMap[row].push([]);
         evilPumpkinMap[row].push(null);
+        skeletonMap[row].push(null);
       }
     }
   }
@@ -461,7 +476,7 @@ export default class GameField extends THREE.Group {
       this._checkEvilPumpkinCollide();
     }
     
-    this._updateBoardColors();
+    // this._updateBoardColors();
   }
 
   _updateBoardColors() {

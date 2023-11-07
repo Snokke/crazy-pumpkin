@@ -23,6 +23,7 @@ const MAP_TYPE = {
   Obstacle: 'OBSTACLE',
   Ghost: 'GHOST',
   EvilPumpkin: 'EVIL_PUMPKIN',
+  Skeleton: 'SKELETON',
 }
 
 const ROTATION_BY_DIRECTION = {

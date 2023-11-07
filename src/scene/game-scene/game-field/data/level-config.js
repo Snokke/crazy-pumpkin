@@ -11,7 +11,7 @@ const LEVEL_CONFIG = {
     field: { rows: 8, columns: 8 },
     player: {
       startPosition: { row: 4, column: 3 },
-      direction: DIRECTION.Right,
+      direction: DIRECTION.Down,
     },
     obstacles: {
       randomMap: true,

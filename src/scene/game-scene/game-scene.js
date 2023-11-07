@@ -45,11 +45,13 @@ export default class GameScene extends THREE.Group {
     this._unBlurScene();
     this._gameField.startGame();
     this._music.play();
+    this._cameraController.enableOrbitControls();
   }
 
   onRestartGame() {
     this._gameField.restartGame();
     this._unBlurScene();
+    this._cameraController.enableOrbitControls();
   }
 
   onButtonPressed(buttonType) {
@@ -125,7 +127,9 @@ export default class GameScene extends THREE.Group {
   }
 
   _initCameraController() {
-    const cameraController = this._cameraController = new CameraController(this._data.camera);
+    const camera = this._data.camera;
+    const orbitControls = this._data.orbitControls;
+    const cameraController = this._cameraController = new CameraController(camera, orbitControls);
     this.add(cameraController);
   }
 
@@ -203,7 +207,8 @@ export default class GameScene extends THREE.Group {
 
   _onGameOver() {
     this._blurScene();
-    this.events.post('gameOver')
+    this._cameraController.disableOrbitControls();
+    this.events.post('gameOver');
   }
 
   _onOrbitControlsChanged() {

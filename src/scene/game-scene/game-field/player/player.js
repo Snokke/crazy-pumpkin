@@ -207,6 +207,7 @@ export default class Player extends THREE.Group {
       .easing(TWEEN.Easing.Cubic.In)
       .start()
       .onComplete(() => {
+        this._playSound(this._jumpSound);
         const squeezeTween = this._squeezeOnGround(0.6, 50, TWEEN.Easing.Sinusoidal.Out);
         squeezeTween.positionTween?.onComplete(() => {
           this._startIdleAnimation(true);

@@ -39,6 +39,7 @@ export default class EnemiesController extends THREE.Group {
   activateSpawnEnemies() {
     this._ghostSpawn();
     this._spawnFirstEvilPumpkin();
+    // this._spawnSkeleton();
 }
 
   stopTweens() {
@@ -177,6 +178,10 @@ export default class EnemiesController extends THREE.Group {
       this._spawnEnemy(ENEMY_TYPE.EvilPumpkin);
       this._evilPumpkinSpawn();
     });
+  }
+
+  _spawnSkeleton() {
+    this._spawnEnemy(ENEMY_TYPE.Skeleton);
   }
 
   _ghostSpawn() {
