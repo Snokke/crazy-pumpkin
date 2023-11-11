@@ -25,6 +25,7 @@ export default class Player extends THREE.Group {
     this._viewGroup = null;
     this._arrowHelper = null;
     this._grave = null;
+    this._ghostView = null;
     this._currentPosition = { row: 0, column: 0 };
     this._newPosition = { row: 0, column: 0 };
     this._jumpSpeed = 0;
@@ -172,8 +173,10 @@ export default class Player extends THREE.Group {
       });
   }
 
-  startInvulnerabilityBooster() {
-    const boosterConfig = CONSUMABLES_CONFIG[CONSUMABLE_TYPE.BoosterCandyPlayerInvulnerability];
+  startInvulnerabilityBooster(duration) {
+    this._invulnerabilityBoosterAnimation?.stop();
+    this._invulnerabilityBoosterTimer?.stop();
+
     this._isBodyActive = false;
     this._view.material.opacity = 0.8;
     this._innerCylinder.visible = false;
@@ -185,7 +188,7 @@ export default class Player extends THREE.Group {
       .start();
 
     this._invulnerabilityBoosterTimer = new TWEEN.Tween({ value: 0 })
-      .to({ value: 1 }, boosterConfig.duration)
+      .to({ value: 1 }, duration)
       .start()
       .onComplete(() => {
         GLOBAL_VARIABLES.activeBooster = null;
@@ -196,7 +199,9 @@ export default class Player extends THREE.Group {
       });
   }
 
-  showIntro() {
+  spawn(postEvent = true) {
+    this._state = PLAYER_STATE.spawnAnimation;
+
     this.show();
     const spawnPositionY = SCENE_CONFIG.isMobile ? PLAYER_CONFIG.spawnAnimation.mobile.positionY : PLAYER_CONFIG.spawnAnimation.desktop.positionY;
     const spawnDuration = SCENE_CONFIG.isMobile ? PLAYER_CONFIG.spawnAnimation.mobile.duration : PLAYER_CONFIG.spawnAnimation.desktop.duration;
@@ -210,8 +215,12 @@ export default class Player extends THREE.Group {
         this._playSound(this._jumpSound);
         const squeezeTween = this._squeezeOnGround(0.6, 50, TWEEN.Easing.Sinusoidal.Out);
         squeezeTween.positionTween?.onComplete(() => {
+          this._state = PLAYER_STATE.Idle;
           this._startIdleAnimation(true);
-          this.events.post('introFinished');
+
+          if (postEvent) {
+            this.events.post('introFinished');
+          }
         });
       });
   }
@@ -236,6 +245,34 @@ export default class Player extends THREE.Group {
     this._smashSound.setVolume(smashVolume);
   }
 
+  onLoseLive() {
+    this._ghostView.position.y = this._viewGroup.position.y - PLAYER_CONFIG.halfHeight;
+    this.reset();
+    this._isBodyActive = false;
+
+    this._speedBoosterTimer?.stop();
+    this._invulnerabilityBoosterTimer?.stop();
+    this._invulnerabilityBoosterAnimation?.stop();
+    this.onRoundChanged();
+
+    this._showLoseLiveAnimation().onComplete(() => {
+      this._view.visible = true;
+      this._innerCylinder.visible = true;
+      this._ghostView.visible = false;
+
+      const playerConfig = LEVEL_CONFIG[GLOBAL_VARIABLES.currentLevel].player;
+      this.setPosition(playerConfig.startPosition);
+      this.setDirection(playerConfig.direction);
+
+      const playerInvulnerabilityDuration = PLAYER_CONFIG.invulnerabilityAfterDeathDuration;
+      this.events.post('startInvulnerabilityBooster', playerInvulnerabilityDuration);
+      this.startInvulnerabilityBooster(playerInvulnerabilityDuration);
+      GLOBAL_VARIABLES.activeBooster = CONSUMABLE_TYPE.BoosterCandyPlayerInvulnerability;
+
+      this.spawn(false);
+    });
+  }
+
   reset() {
     this._resetAllTweens();
     this._setJumpState(PLAYER_JUMP_STATE.None);
@@ -253,7 +290,28 @@ export default class Player extends THREE.Group {
     this._view.material.opacity = 1;
     this._innerCylinder.visible = true;
     this._grave.visible = false;
-    
+    this._ghostView.visible = false;
+  }
+
+  _showLoseLiveAnimation() {
+    const duration = 1000;
+
+    this._view.visible = false;
+    this._innerCylinder.visible = false;
+    this._ghostView.visible = true;
+    this._ghostView.material.opacity = 0.5;
+
+    const positionTween = new TWEEN.Tween(this._ghostView.position)
+      .to({ y: this._ghostView.position.y + 1.5 }, duration)
+      .easing(TWEEN.Easing.Sinusoidal.In)
+      .start();
+
+    new TWEEN.Tween(this._ghostView.material)
+      .to({ opacity: 0 }, duration)
+      .easing(TWEEN.Easing.Sinusoidal.In)
+      .start();
+
+    return positionTween;
   }
 
   _showDeathAnimation() {
@@ -522,6 +580,7 @@ export default class Player extends THREE.Group {
   _init() {
     this._initView();
     this._initGrave();
+    this._initGhostView();
     this._updateJumpTime();
     this._initActions();
     this._initSounds();
@@ -587,6 +646,24 @@ export default class Player extends THREE.Group {
     grave.visible = false;
 
     grave.castShadow = true;
+  }
+
+  _initGhostView() {
+    const ghostView = this._ghostView = Loader.assets['player-pumpkin'].scene.children[0].clone();
+    this._viewGroup.add(ghostView);
+
+    const scale = 0.6;
+    ghostView.scale.set(scale, scale, scale);
+
+    const material = new THREE.MeshStandardMaterial({
+      transparent: true,
+      opacity: 0.5,
+    });
+
+    ghostView.material = material;
+    ghostView.castShadow = true;
+
+    ghostView.visible = false;
   }
 
   _updateJumpTime() {

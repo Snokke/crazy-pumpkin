@@ -13,13 +13,12 @@ import { SCORE_CONFIG } from './data/score-config';
 import ConsumablesController from './consumables/consumables-controller';
 import { GLOBAL_VARIABLES } from './data/global-variables';
 import { vector3ToBlackPosition } from '../../../core/helpers/helpers';
-import { CONSUMABLE_TYPE } from './consumables/data/consumables-config';
+import { CONSUMABLES_CONFIG, CONSUMABLE_TYPE } from './consumables/data/consumables-config';
 import Board from './board/board';
 import { ENVIRONMENT_CONFIG } from '../environment/environment-config';
 import DEBUG_CONFIG from '../../../core/configs/debug-config';
 import { SOUNDS_CONFIG } from '../../../core/configs/sounds-config';
 import Loader from '../../../core/loader';
-import BossesController from './bosses/bosses-controller';
 
 export default class GameField extends THREE.Group {
   constructor(renderer, camera, audioListener) {
@@ -79,7 +78,7 @@ export default class GameField extends THREE.Group {
 
   startGame() {
     this._obstaclesController.showIntro().on('complete', () => {
-      this._player.showIntro();
+      this._player.spawn();
     });
   }
 
@@ -153,6 +152,7 @@ export default class GameField extends THREE.Group {
 
     GLOBAL_VARIABLES.boosterSpawned = false;
     GLOBAL_VARIABLES.activeBooster = null;
+    GLOBAL_VARIABLES.playerLives = 3;
     this._roundTime = 0;
     this._resetGameTime();
     this._setScore(0);
@@ -362,6 +362,30 @@ export default class GameField extends THREE.Group {
     return true;
   }
 
+  _onLoseLive() {
+    if (GLOBAL_VARIABLES.gameState === GAME_STATE.GameOver) {
+      return;
+    }
+
+    GLOBAL_VARIABLES.playerLives--;
+    this.events.post('livesChanged');
+
+    console.log(GLOBAL_VARIABLES.playerLives);
+
+    if (GLOBAL_VARIABLES.playerLives <= 0) {
+      this._onLose();
+      return;
+    }
+
+    if (GLOBAL_VARIABLES.activeBooster) {
+      this.events.post('stopBooster');
+      GLOBAL_VARIABLES.activeBooster = null;
+      this._enemiesController.stopEnemiesSlowBooster();
+    }
+
+    this._player.onLoseLive();
+  }
+
   _onLose() {
     if (GLOBAL_VARIABLES.gameState === GAME_STATE.GameOver) {
       return;
@@ -378,6 +402,7 @@ export default class GameField extends THREE.Group {
     this._player.events.on('positionChanged', () => this._onPlayerPositionChanged());
     this._player.events.on('introFinished', () => this._startGameplay());
     this._player.events.on('onKill', () => this._onPlayerKill());
+    this._player.events.on('startInvulnerabilityBooster', (msg, duration) => this.events.post('startInvulnerabilityBooster', duration));
     this._enemiesController.events.on('positionChanged', () => this._onEnemyPositionChanged());
   }
 
@@ -413,7 +438,7 @@ export default class GameField extends THREE.Group {
     const ghostMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Ghost];
 
     if (ghostMap[playerPosition.row][playerPosition.column] && ghostMap[playerPosition.row][playerPosition.column].length > 0) {
-      this._onLose();
+      this._onLoseLive();
       return;
     }
   }
@@ -423,7 +448,7 @@ export default class GameField extends THREE.Group {
     const evilPumpkinMap = GLOBAL_VARIABLES.maps[MAP_TYPE.EvilPumpkin];
 
     if (evilPumpkinMap[playerPosition.row][playerPosition.column]) {
-      this._onLose();
+      this._onLoseLive();
       return;
     }
   }
@@ -468,7 +493,8 @@ export default class GameField extends THREE.Group {
     }
 
     if (type === CONSUMABLE_TYPE.BoosterCandyPlayerInvulnerability) {
-      this._player.startInvulnerabilityBooster();
+      const boosterConfig = CONSUMABLES_CONFIG[CONSUMABLE_TYPE.BoosterCandyPlayerInvulnerability];
+      this._player.startInvulnerabilityBooster(boosterConfig.duration);
     }
   }
 
@@ -476,32 +502,6 @@ export default class GameField extends THREE.Group {
     if (!DEBUG_CONFIG.invulnerability && this._player.isBodyActive()) {
       this._checkGhostCollide();
       this._checkEvilPumpkinCollide();
-    }
-    
-    // this._updateBoardColors();
-  }
-
-  _updateBoardColors() {
-    const ghostMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Ghost];
-    const evilPumpkinMap = GLOBAL_VARIABLES.maps[MAP_TYPE.EvilPumpkin];
-    const obstacleMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Obstacle];
-
-    const enemiesMap = [];
-
-    for (let row = 0; row < ghostMap.length; row++) {
-      enemiesMap.push([]);
-
-      for (let column = 0; column < ghostMap[0].length; column++) {
-        let isEnemy = 0;
-
-        if (obstacleMap[row][column]) {
-          isEnemy = 0;
-        } else {
-          isEnemy = ghostMap[row][column].length > 0 || evilPumpkinMap[row][column] ? 1 : 0;
-        }
-
-        enemiesMap[row].push(isEnemy);
-      }
     }
   }
 }

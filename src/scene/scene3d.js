@@ -69,5 +69,7 @@ export default class Scene3D extends THREE.Group {
     this._gameScene.events.on('gameplayStarted', () => this.events.post('gameplayStarted'));
     this._gameScene.events.on('onRoundChanged', () => this.events.post('onRoundChanged'));
     this._gameScene.events.on('onButtonPress', () => this.events.post('onButtonPress'));
+    this._gameScene.events.on('stopBooster', () => this.events.post('stopBooster'));
+    this._gameScene.events.on('startInvulnerabilityBooster', (msg, duration) => this.events.post('startInvulnerabilityBooster', duration));
   }
 }

@@ -3,6 +3,7 @@ const PLAYER_CONFIG = {
   halfHeight: 0.3,
   jumpImpulse: 6,
   speedMultiplier: 1,
+  invulnerabilityAfterDeathDuration: 4000,
   jumpAnimation: {
     squeezePower: 0.03,
     squeezeDuration: 180,

@@ -189,6 +189,8 @@ export default class GameScene extends THREE.Group {
     this._gameField.events.on('initLevel', () => this._environment.setArchVisible());
     this._gameField.events.on('onButtonPress', () => this.events.post('onButtonPress'));
     this._gameField.events.on('focusCameraOnPlayer', () => this._onfocusCameraOnPlayer());
+    this._gameField.events.on('stopBooster', () => this.events.post('stopBooster'));
+    this._gameField.events.on('startInvulnerabilityBooster', (msg, duration) => this.events.post('startInvulnerabilityBooster', duration));
   }
 
   _onRoundUp() {

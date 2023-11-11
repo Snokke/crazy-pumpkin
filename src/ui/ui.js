@@ -57,6 +57,14 @@ export default class UI extends DisplayObject {
     this._gameplayScreen.hideTutorial();
   }
 
+  stopBooster() {
+    this._gameplayScreen.stopBooster();
+  }
+
+  startInvulnerabilityBooster(duration) {
+    this._gameplayScreen.startInvulnerabilityBooster(duration);
+  }
+
   onAdded() {
     this._initOverlay();
     this._initSoundIcon();

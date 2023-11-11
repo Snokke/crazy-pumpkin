@@ -58,5 +58,7 @@ export default class MainScene {
     this._scene3D.events.on('gameplayStarted', () => this._ui.onGameplayStarted());
     this._scene3D.events.on('onRoundChanged', () => this._ui.onRoundChanged());
     this._scene3D.events.on('onButtonPress', () => this._ui.hideTutorial());
+    this._scene3D.events.on('stopBooster', () => this._ui.stopBooster());
+    this._scene3D.events.on('startInvulnerabilityBooster', (msg, duration) => this._ui.startInvulnerabilityBooster(duration));
   }
 }

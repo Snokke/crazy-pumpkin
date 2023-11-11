@@ -87,6 +87,18 @@ export default class GameplayScreen extends ScreenAbstract {
     });
   }
 
+  startInvulnerabilityBooster(duration) {
+    const type = CONSUMABLE_TYPE.BoosterCandyPlayerInvulnerability;
+    const config = CONSUMABLES_CONFIG[type];
+
+    this._boosterGroup.visible = true;
+
+    this._boosterText.text = config.name;
+    this._boosterText.textColor = config.color;
+
+    this._powerUpProgressBar.show(config.color, config.progressBarWidth, duration);
+  }
+
   showGoText() {
     this._goText.visible = true;
     this._goText.alpha = 1;
@@ -116,6 +128,11 @@ export default class GameplayScreen extends ScreenAbstract {
     this._tutorial.add(hideTween);
   }
 
+  stopBooster() {
+    this._boosterGroup.visible = false;
+    this._powerUpProgressBar.reset();
+  }
+
   onOverlayMove() {
     if (this.visible && Black.engine.containerElement.style.cursor !== 'grab' && Black.engine.containerElement.style.cursor !== 'grabbing') {
       Black.engine.containerElement.style.cursor = 'grab';
@@ -143,6 +160,9 @@ export default class GameplayScreen extends ScreenAbstract {
   }
 
   _showBoosterProgressBar(type) {
+    this._boosterGroup.visible = false;
+    this._powerUpProgressBar.reset();
+
     const config = CONSUMABLES_CONFIG[type];
 
     this._boosterGroup.visible = true;

@@ -5,6 +5,7 @@ const GLOBAL_VARIABLES = {
   gameState: GAME_STATE.Idle,
   round: 0,
   playerPosition: { row: 0, column: 0 },
+  playerLives: 3,
   activeBooster: null,
   boosterSpawned: false,
   maps: {

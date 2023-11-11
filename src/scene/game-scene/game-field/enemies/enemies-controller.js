@@ -40,7 +40,7 @@ export default class EnemiesController extends THREE.Group {
     this._ghostSpawn();
     this._spawnFirstEvilPumpkin();
     // this._spawnSkeleton();
-}
+  }
 
   stopTweens() {
     this._iterateActiveEnemies((enemy) => enemy.stopTweens());
@@ -76,26 +76,10 @@ export default class EnemiesController extends THREE.Group {
     return positions;
   }
 
-  _updateSpeedMultiplier() {
-    const round = GLOBAL_VARIABLES.round;
-    const ghostRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.Ghost][round];
-    const evilPumpkinRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.EvilPumpkin][round];
-
-    GHOST_CONFIG.speedMultiplier = ghostRoundConfig.speedMultiplier;
-    EVIL_PUMPKIN_CONFIG.speedMultiplier = evilPumpkinRoundConfig.speedMultiplier;
-
-    this._iterateActiveEnemies((enemy) => {
-      if (enemy.getType() === ENEMY_TYPE.EvilPumpkin) {
-        enemy.updateJumpTime();
-      }
-    });
-
-    this._iteratePoolEnemies((enemy) => {
-      if (enemy.getType() === ENEMY_TYPE.EvilPumpkin) {
-        enemy.updateJumpTime();
-      }
-    });
-  }
+  stopEnemiesSlowBooster() {
+    this._enemiesSlowBoosterTimer?.stop();
+    this._updateSpeedMultiplier();
+  }  
 
   startEnemiesSlowBooster() {
     const boosterConfig = CONSUMABLES_CONFIG[CONSUMABLE_TYPE.BoosterCandyEnemiesSlow];
@@ -121,6 +105,27 @@ export default class EnemiesController extends THREE.Group {
         this._updateSpeedMultiplier();
         GLOBAL_VARIABLES.activeBooster = null;
       });
+  }
+
+  _updateSpeedMultiplier() {
+    const round = GLOBAL_VARIABLES.round;
+    const ghostRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.Ghost][round];
+    const evilPumpkinRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.EvilPumpkin][round];
+
+    GHOST_CONFIG.speedMultiplier = ghostRoundConfig.speedMultiplier;
+    EVIL_PUMPKIN_CONFIG.speedMultiplier = evilPumpkinRoundConfig.speedMultiplier;
+
+    this._iterateActiveEnemies((enemy) => {
+      if (enemy.getType() === ENEMY_TYPE.EvilPumpkin) {
+        enemy.updateJumpTime();
+      }
+    });
+
+    this._iteratePoolEnemies((enemy) => {
+      if (enemy.getType() === ENEMY_TYPE.EvilPumpkin) {
+        enemy.updateJumpTime();
+      }
+    });
   }
 
   _updateGhostOnRoundChanged() {
