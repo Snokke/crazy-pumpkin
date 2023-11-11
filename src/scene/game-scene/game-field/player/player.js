@@ -557,6 +557,7 @@ export default class Player extends THREE.Group {
 
     view.material = material;
     view.castShadow = true;
+    view.receiveShadow = true;
 
     const innerCylinderGeometry = new THREE.CylinderGeometry(0.38, 0.38, 0.37, 32, 1, true);
     const cylinderMaterial = new THREE.MeshBasicMaterial({ color: 0xffd700 });
@@ -584,6 +585,8 @@ export default class Player extends THREE.Group {
 
     grave.material = material;
     grave.visible = false;
+
+    grave.castShadow = true;
   }
 
   _updateJumpTime() {

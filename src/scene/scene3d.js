@@ -38,6 +38,18 @@ export default class Scene3D extends THREE.Group {
     this._gameScene.onButtonPressed(buttonType);
   }
 
+  onPointerMove(x, y) {
+    this._gameScene.onPointerMove(x, y);
+  }
+
+  onPointerDown() {
+    this._gameScene.onPointerDown();
+  }
+
+  onPointerUp() {
+    this._gameScene.onPointerUp();
+  }
+
   _init() {
     this._initGameScene();
     this._initSignals();

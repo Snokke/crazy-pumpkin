@@ -11,6 +11,7 @@ import { GLOBAL_VARIABLES } from './game-field/data/global-variables';
 import Environment from './environment/environment';
 import Loader from '../../core/loader';
 import { SOUNDS_CONFIG } from '../../core/configs/sounds-config';
+import { getCoordinatesFromPosition } from '../../core/helpers/helpers';
 
 export default class GameScene extends THREE.Group {
   constructor(data) {
@@ -31,6 +32,8 @@ export default class GameScene extends THREE.Group {
 
   update(dt) {
     this._gameField.update(dt);
+    this._cameraController.update(dt);
+    this._environment.update(dt);
   }
 
   onSoundChanged() {
@@ -45,17 +48,29 @@ export default class GameScene extends THREE.Group {
     this._unBlurScene();
     this._gameField.startGame();
     this._music.play();
-    this._cameraController.enableOrbitControls();
+    this._cameraController.enableRotation();
   }
 
   onRestartGame() {
     this._gameField.restartGame();
     this._unBlurScene();
-    this._cameraController.enableOrbitControls();
+    this._cameraController.backToPosition();
   }
 
   onButtonPressed(buttonType) {
     this._gameField.onButtonPressed(buttonType);
+  }
+
+  onPointerMove(x, y) {
+    this._cameraController.onPointerMove(x, y);
+  }
+
+  onPointerDown() {
+    this._cameraController.onPointerDown();
+  }
+
+  onPointerUp() {
+    this._cameraController.onPointerUp();
   }
 
   _blurScene(instant = false) {
@@ -173,6 +188,7 @@ export default class GameScene extends THREE.Group {
     this._gameField.events.on('onPlayerOutArch', () => this._environment.setArchVisible());
     this._gameField.events.on('initLevel', () => this._environment.setArchVisible());
     this._gameField.events.on('onButtonPress', () => this.events.post('onButtonPress'));
+    this._gameField.events.on('focusCameraOnPlayer', () => this._onfocusCameraOnPlayer());
   }
 
   _onRoundUp() {
@@ -207,8 +223,13 @@ export default class GameScene extends THREE.Group {
 
   _onGameOver() {
     this._blurScene();
-    this._cameraController.disableOrbitControls();
     this.events.post('gameOver');
+  }
+
+  _onfocusCameraOnPlayer() {
+    const coordinates = getCoordinatesFromPosition(GLOBAL_VARIABLES.playerPosition);
+    const playerPosition = new THREE.Vector3(coordinates.x, 0, coordinates.z);
+    this._cameraController.focusCameraOnObject(playerPosition);
   }
 
   _onOrbitControlsChanged() {

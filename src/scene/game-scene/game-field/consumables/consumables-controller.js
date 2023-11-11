@@ -17,6 +17,11 @@ export default class ConsumablesController extends THREE.Group {
     this._spawnBoosterTimer = null;
   }
 
+  update(dt) {
+    this._activeConsumables.forEach(consumable => consumable.update(dt));
+    this._consumablesPool.forEach(consumable => consumable.update(dt));
+  }
+
   activateSpawnConsumables() {
     this._spawnCandy(CONSUMABLE_TYPE.BigCandy);
     this._spawnCandy(CONSUMABLE_TYPE.SmallCandy);

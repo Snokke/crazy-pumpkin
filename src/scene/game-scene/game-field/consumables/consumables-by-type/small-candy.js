@@ -24,5 +24,6 @@ export default class SmallCandy extends ConsumableAbstract {
     view.material = material;
 
     view.castShadow = true;
+    view.receiveShadow = true;
   }
 }

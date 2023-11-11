@@ -31,6 +31,8 @@ export default class ConsumableAbstract extends THREE.Group {
     this._initViewGroup();
   }
 
+  update(dt) { }
+
   show() {
     this.visible = true;
 

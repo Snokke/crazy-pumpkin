@@ -3,6 +3,7 @@ import ConsumableAbstract from './consumable-abstract';
 import { CONSUMABLES_CONFIG, CONSUMABLE_TYPE } from '../data/consumables-config';
 import Loader from '../../../../../core/loader';
 import Materials from '../../../../../core/materials';
+import PowerUpParticles from './power-up-particles/power-up-particles';
 
 export default class BoosterCandyEnemiesSlow extends ConsumableAbstract {
   constructor() {
@@ -17,7 +18,26 @@ export default class BoosterCandyEnemiesSlow extends ConsumableAbstract {
     this._init();
   }
 
+  update(dt) {
+    this._particles.update(dt);
+  }
+
+  show() {
+    super.show();
+    this._particles.show();
+  }
+
+  hide() {
+    super.hide();
+    this._particles.hide();
+  }
+
   _init() {
+    this._initView();
+    this._initParticles();
+  }
+
+  _initView() {
     const view = Loader.assets['power-up-blue'].scene.children[0].clone();
     this._viewGroup.add(view);
 
@@ -26,5 +46,11 @@ export default class BoosterCandyEnemiesSlow extends ConsumableAbstract {
 
     view.rotation.x = Math.PI * 0.15;
     view.castShadow = true;
+    view.receiveShadow = true;
+  }
+
+  _initParticles() {
+    const particles = this._particles = new PowerUpParticles(this._type);
+    this.add(particles);
   }
 }

@@ -149,13 +149,13 @@ export default class BaseScene {
     directionalLight.shadow.mapSize.width = 1024;
     directionalLight.shadow.mapSize.height = 1024;
 
-    directionalLight.shadow.camera.near = 0.5;
-    directionalLight.shadow.camera.far = 50;
+    directionalLight.shadow.camera.near = 1;
+    directionalLight.shadow.camera.far = 15;
 
-    directionalLight.shadow.camera.left = -10;
-    directionalLight.shadow.camera.right = 10;
-    directionalLight.shadow.camera.top = 10;
-    directionalLight.shadow.camera.bottom = -10;
+    directionalLight.shadow.camera.left = -9;
+    directionalLight.shadow.camera.right = 8;
+    directionalLight.shadow.camera.top = 7.5;
+    directionalLight.shadow.camera.bottom = -5.5;
 
     // directionalLight.shadow.bias = 0.0001;
 

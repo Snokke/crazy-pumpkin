@@ -31,12 +31,14 @@ export default class Overlay extends DisplayObject {
     });
 
     this._view.on('pointerDown', () => {
+      this.post('onPointerDown');
       if (Black.engine.containerElement.style.cursor === 'grab') {
         Black.engine.containerElement.style.cursor = 'grabbing';
       }
     });
 
     this._view.on('pointerUp', () => {
+      this.post('onPointerUp');
       if (Black.engine.containerElement.style.cursor === 'grabbing') {
         Black.engine.containerElement.style.cursor = 'grab';
       }

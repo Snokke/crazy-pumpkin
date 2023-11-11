@@ -25,5 +25,6 @@ export default class BigCandy extends ConsumableAbstract {
     view.material = material;
 
     view.castShadow = true;
+    view.receiveShadow = true;
   }
 }

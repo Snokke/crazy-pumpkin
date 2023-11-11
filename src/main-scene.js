@@ -46,6 +46,9 @@ export default class MainScene {
     this._ui.on('onRight', () => this._scene3D.onButtonPressed(BUTTON_TYPE.Right));
     this._ui.on('onUp', () => this._scene3D.onButtonPressed(BUTTON_TYPE.Up));
     this._ui.on('onDown', () => this._scene3D.onButtonPressed(BUTTON_TYPE.Down));
+    this._ui.on('onPointerMove', (msg, x, y) => this._scene3D.onPointerMove(x, y));
+    this._ui.on('onPointerDown', () => this._scene3D.onPointerDown());
+    this._ui.on('onPointerUp', () => this._scene3D.onPointerUp());
 
     this._scene3D.events.on('fpsMeterChanged', () => this.events.post('fpsMeterChanged'));
     this._scene3D.events.on('onSoundsEnabledChanged', () => this._ui.updateSoundIcon());

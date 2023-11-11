@@ -54,6 +54,7 @@ export default class GameField extends THREE.Group {
   update(dt) {
     this._player.update(dt);
     this._enemiesController.update(dt);
+    this._consumablesController.update(dt);
     this._updateGameTime(dt);
     this._updateRoundTime(dt);
     // this._bossesController.update(dt);
@@ -370,6 +371,7 @@ export default class GameField extends THREE.Group {
     this._enemiesController.stopTweens();
     this._consumablesController.stopTweens();
     this._player.onKill();
+    this.events.post('focusCameraOnPlayer');
   }
 
   _initSignals() {

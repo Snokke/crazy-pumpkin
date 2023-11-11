@@ -1,14 +1,21 @@
 import * as THREE from "three";
 import Loader from "../../../core/loader";
 import Materials from "../../../core/materials";
+import Fireflies from "./fireflies/fireflies";
 
 export default class Environment extends THREE.Group {
   constructor() {
     super();
 
+    this._view = null;
     this._arch = null;
+    this._fireflies = null;
 
     this._init();
+  }
+
+  update(dt) {
+    this._fireflies.update(dt);
   }
 
   setArchInvisible() {
@@ -22,10 +29,11 @@ export default class Environment extends THREE.Group {
   _init() {
     this._initEnvironment();
     this._initArch();
+    this._initFireflies();
   }
 
   _initEnvironment() {
-    const view = Loader.assets['environment'].scene.children[0].clone();
+    const view = this._view =  Loader.assets['environment'].scene.children[0].clone();
     this.add(view);
 
     const material = Materials.getMaterial(Materials.type.HalloweenBits);
@@ -57,5 +65,10 @@ export default class Environment extends THREE.Group {
     arch.scale.set(scale, scale, scale);
 
     arch.castShadow = true;
+  }
+
+  _initFireflies() {
+    const fireflies = this._fireflies = new Fireflies();
+    this.add(fireflies);
   }
 }

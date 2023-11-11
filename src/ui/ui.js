@@ -112,6 +112,8 @@ export default class UI extends DisplayObject {
 
   _initSignals() {
     this._overlay.on('onPointerMove', (msg, x, y) => this._onOverlayPointerMove(x, y));
+    this._overlay.on('onPointerDown', () => this.post('onPointerDown'));
+    this._overlay.on('onPointerUp', () => this.post('onPointerUp'));
     this._soundIcon.on('onSoundChanged', () => this.post('onSoundChanged'));
 
     this._startGameScreen.on('onStartGame', () => this._onStartGame());
@@ -144,6 +146,7 @@ export default class UI extends DisplayObject {
 
   _onOverlayPointerMove(x, y) {
     this._allScreens.forEach(screen => screen.onOverlayMove());
+    this.post('onPointerMove', x, y);
   }
 
   _onStartGame() {

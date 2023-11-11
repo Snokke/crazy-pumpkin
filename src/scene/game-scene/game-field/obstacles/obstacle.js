@@ -100,6 +100,7 @@ export default class Obstacle extends THREE.Group {
     view.position.y = this._config.offsetY;
 
     view.castShadow = true;
+    view.receiveShadow = true;
 
     const randomAngleY = randomFromArray(this._config.availableRotation);
     viewGroup.rotation.y = randomAngleY;

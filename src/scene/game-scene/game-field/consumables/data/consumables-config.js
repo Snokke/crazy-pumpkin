@@ -21,6 +21,7 @@ const CONSUMABLES_CONFIG = {
     lifeTime: { min: 20000, max: 25000 },
     name: 'Speed Bonus',
     color: 0x00aa00,
+    particlesColor: 0x00aa00,
     progressBarWidth: 200,
     duration: 18000,
     speedMultiplier: 1.8,
@@ -28,7 +29,8 @@ const CONSUMABLES_CONFIG = {
   [CONSUMABLE_TYPE.BoosterCandyPlayerInvulnerability]: {
     lifeTime: { min: 20000, max: 25000 },
     name: 'Invulnerability',
-    color: 0xd87322,
+    color: 0xd43733,
+    particlesColor: 0xd43733,
     progressBarWidth: 250,
     duration: 12000,
   },
@@ -36,13 +38,14 @@ const CONSUMABLES_CONFIG = {
     lifeTime: { min: 20000, max: 25000 },
     name: 'Enemies Slow',
     color: 0x0000bb,
+    particlesColor: 0x1aa0dc,
     progressBarWidth: 210,
     duration: 18000,
     speedMultiplier: 0.4,
   },
   boosterCandyConfig: {
     spawnTime: { min: 10000, max: 15000 },
-    chanceToSpawn: 0.5,
+    chanceToSpawn: 0.65,
   },
 }
 
