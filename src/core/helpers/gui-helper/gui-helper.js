@@ -1,6 +1,7 @@
 import { Pane } from 'tweakpane';
 import isMobile from 'ismobilejs';
 import DEBUG_CONFIG from '../../configs/debug-config';
+import queryString from 'query-string';
 
 export default class GUIHelper {
   constructor() {
@@ -14,7 +15,7 @@ export default class GUIHelper {
     const isMobileDevice = isMobile(window.navigator).any;
 
     // if (isMobileDevice) {
-      this.gui.expanded = false;
+      this.gui.expanded = true;
     // }
 
     GUIHelper.instance = this;
@@ -59,7 +60,9 @@ export default class GUIHelper {
   }
 
   showAfterAssetsLoad() {
-    if (DEBUG_CONFIG.showControlPanel) {
+    const parsed = queryString.parse(location.search);
+
+    if ('debug' in parsed || DEBUG_CONFIG.showControlPanel) {
       this.gui.hidden = false;
     }
   }
