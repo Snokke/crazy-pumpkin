@@ -1,10 +1,11 @@
 import { DIRECTION } from "../../data/game-data"
 
 const PLAYER_STATE = {
-  spawnAnimation: 'SPAWN_ANIMATION',
+  SpawnAnimation: 'SPAWN_ANIMATION',
   Idle: 'IDLE',
   Jump: 'JUMP',
-  DeathAnimation: 'DEATH_ANIMATION',
+  DeathAnimationLoseGame: 'DEATH_ANIMATION_LOSE_GAME',
+  DeathAnimationLoseLive: 'DEATH_ANIMATION_LOSE_LIVE',
 }
 
 const PLAYER_JUMP_STATE = {

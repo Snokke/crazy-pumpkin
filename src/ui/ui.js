@@ -65,6 +65,10 @@ export default class UI extends DisplayObject {
     this._gameplayScreen.startInvulnerabilityBooster(duration);
   }
 
+  onLivesChanged() {
+    this._gameplayScreen.updateLives();
+  }
+
   onAdded() {
     this._initOverlay();
     this._initSoundIcon();

@@ -20,6 +20,8 @@ export default class MainScene {
   afterAssetsLoad() {
     Black.stage.addChild(this._ui);
     this._scene.add(this._scene3D);
+
+    this._scene3D.initLevel();
   }
 
   update(dt) {
@@ -60,5 +62,6 @@ export default class MainScene {
     this._scene3D.events.on('onButtonPress', () => this._ui.hideTutorial());
     this._scene3D.events.on('stopBooster', () => this._ui.stopBooster());
     this._scene3D.events.on('startInvulnerabilityBooster', (msg, duration) => this._ui.startInvulnerabilityBooster(duration));
+    this._scene3D.events.on('livesChanged', () => this._ui.onLivesChanged());
   }
 }

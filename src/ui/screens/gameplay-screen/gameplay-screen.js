@@ -33,9 +33,14 @@ export default class GameplayScreen extends ScreenAbstract {
     super.show();
 
     const duration = ROUND_CONFIG.roundDuration;
-    this._roundProgressBar.show(0x000000, 140, duration);
+    this._roundProgressBar.show(0x000000, 160, duration);
 
     this._showNewRound();
+  }
+
+  updateLives() {
+    const lives = GLOBAL_VARIABLES.playerLives;
+    this._livesNumberText.text = `${lives}`;
   }
 
   updateRound() {
@@ -44,7 +49,7 @@ export default class GameplayScreen extends ScreenAbstract {
 
     if (currentRound !== ROUND_CONFIG.maxRound) {
       const duration = ROUND_CONFIG.roundDuration;
-      this._roundProgressBar.show(0x000000, 140, duration);
+      this._roundProgressBar.show(0x000000, 160, duration);
     }
 
     this._showNewRound();
@@ -183,6 +188,7 @@ export default class GameplayScreen extends ScreenAbstract {
     this._initNewRoundText();
     this._initDPad();
     this._initTutorial();
+    this._initLives();
   }
 
   _initScore() {
@@ -206,18 +212,18 @@ export default class GameplayScreen extends ScreenAbstract {
     const roundGroup = this._roundGroup = new DisplayObject();
     this.add(roundGroup);
 
-    const roundCaption = this._roundCaption = new TextField('Round:', 'halloween_spooky', 0x000000, 50);
+    const roundCaption = this._roundCaption = new TextField('Round:', 'halloween_spooky', 0x000000, 60);
     roundGroup.add(roundCaption);
 
     roundCaption.alignAnchor(0, 0.5);
-    roundCaption.x = -70;
+    roundCaption.x = -75;
 
-    const roundNumberText = this._roundNumberText = new TextField('1', 'halloween_spooky', 0x000000, 50);
+    const roundNumberText = this._roundNumberText = new TextField('1', 'halloween_spooky', 0x000000, 60);
     roundGroup.add(roundNumberText);
 
     roundNumberText.alignAnchor(0, 0.5);
 
-    roundNumberText.x = 45;
+    roundNumberText.x = 60;
   }
 
   _initGoText() {
@@ -241,8 +247,8 @@ export default class GameplayScreen extends ScreenAbstract {
     collectedScore.dropShadow = true;
     collectedScore.shadowBlur = 1;
     collectedScore.shadowAlpha = 0.4;
-    collectedScore.shadowDistanceX = 4;
-    collectedScore.shadowDistanceY = 4;
+    collectedScore.shadowDistanceX = 3;
+    collectedScore.shadowDistanceY = 3;
 
     collectedScore.alignAnchor(0.5, 0.5);
     collectedScore.visible = false;
@@ -267,6 +273,12 @@ export default class GameplayScreen extends ScreenAbstract {
     const config = CONSUMABLES_CONFIG[CONSUMABLE_TYPE.BoosterCandyEnemiesSlow];
     const color = config.color;
     boosterText.textColor = color;
+
+    boosterText.dropShadow = true;
+    boosterText.shadowBlur = 1;
+    boosterText.shadowAlpha = 0.4;
+    boosterText.shadowDistanceX = 2;
+    boosterText.shadowDistanceY = 2;
   }
 
   _initBoosterProgressBar() {
@@ -282,8 +294,8 @@ export default class GameplayScreen extends ScreenAbstract {
     const roundProgressBar = this._roundProgressBar = new ProgressBar(false);
     this._roundGroup.add(roundProgressBar);
 
-    roundProgressBar.x = -70;
-    roundProgressBar.y = 2;
+    roundProgressBar.x = -76;
+    roundProgressBar.y = 8;
   }
 
   _initNewRoundText() {
@@ -332,6 +344,23 @@ export default class GameplayScreen extends ScreenAbstract {
     }
   }
 
+  _initLives() {
+    const livesGroup = this._livesGroup = new DisplayObject();
+    this.add(livesGroup);
+
+    const livesCaption = new TextField('Lives:', 'halloween_spooky', 0x000000, 50);
+
+    livesCaption.alignAnchor(0, 0.5);
+    livesGroup.add(livesCaption);
+    livesCaption.x = -55;
+
+    const livesNumberText = this._livesNumberText = new TextField('0', 'halloween_spooky', 0x000000, 50);
+
+    livesNumberText.alignAnchor(0, 0.5);
+    livesGroup.add(livesNumberText);
+    livesNumberText.x = 45;
+  }
+
   _onResize() {
     const bounds = Black.stage.bounds;
 
@@ -344,8 +373,8 @@ export default class GameplayScreen extends ScreenAbstract {
     this._roundGroup.x = bounds.left + bounds.width * 0.5;
     this._roundGroup.y = bounds.top + 70;
 
-    this._boosterGroup.x = bounds.left + 300;
-    this._boosterGroup.y = bounds.top + 70;
+    this._boosterGroup.x = bounds.left + bounds.width * 0.5;
+    this._boosterGroup.y = bounds.top + 160;
 
     this._newRoundText.x = bounds.left + bounds.width * 0.5;
     this._newRoundText.y = bounds.top + bounds.height * 0.5;
@@ -353,16 +382,22 @@ export default class GameplayScreen extends ScreenAbstract {
     this._tutorial.x = bounds.left + bounds.width * 0.5;
     this._tutorial.y = bounds.top + bounds.height * 0.8;
 
+    this._livesGroup.x = bounds.left + 300;
+    this._livesGroup.y = bounds.top + 70;
+
     if (SCENE_CONFIG.isMobile) {
       if (window.innerWidth < window.innerHeight) {
         this._scoreGroup.x = bounds.left + bounds.width * 0.7 - 10;
         this._scoreGroup.y = bounds.top + 60;
+
+        this._livesGroup.x = bounds.left + bounds.width * 0.3;
+        this._livesGroup.y = bounds.top + 60;
   
-        this._roundGroup.x = bounds.left + bounds.width * 0.3;
-        this._roundGroup.y = bounds.top + 60;
+        this._roundGroup.x = bounds.left + bounds.width * 0.5;
+        this._roundGroup.y = bounds.top + 140;
   
         this._boosterGroup.x = bounds.left + bounds.width * 0.5;
-        this._boosterGroup.y = bounds.top + 140;
+        this._boosterGroup.y = bounds.top + 235;
 
         this._dPad.scale = 1;
         this._dPad.x = bounds.right - 200;

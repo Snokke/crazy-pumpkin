@@ -12,6 +12,7 @@ import Environment from './environment/environment';
 import Loader from '../../core/loader';
 import { SOUNDS_CONFIG } from '../../core/configs/sounds-config';
 import { getCoordinatesFromPosition } from '../../core/helpers/helpers';
+import { LEVEL_TYPE } from './game-field/data/level-config';
 
 export default class GameScene extends THREE.Group {
   constructor(data) {
@@ -71,6 +72,10 @@ export default class GameScene extends THREE.Group {
 
   onPointerUp() {
     this._cameraController.onPointerUp();
+  }
+
+  initLevel() {
+    this._gameField.initLevel(LEVEL_TYPE.Level001);
   }
 
   _blurScene(instant = false) {
@@ -191,6 +196,7 @@ export default class GameScene extends THREE.Group {
     this._gameField.events.on('focusCameraOnPlayer', () => this._onfocusCameraOnPlayer());
     this._gameField.events.on('stopBooster', () => this.events.post('stopBooster'));
     this._gameField.events.on('startInvulnerabilityBooster', (msg, duration) => this.events.post('startInvulnerabilityBooster', duration));
+    this._gameField.events.on('livesChanged', () => this.events.post('livesChanged'));
   }
 
   _onRoundUp() {

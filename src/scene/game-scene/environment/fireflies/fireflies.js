@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import firefliesVertexShader from './fireflies-shaders/fireflies-vertex-shader.glsl';
 import firefliesFragmentShader from './fireflies-shaders/fireflies-fragment-shader.glsl';
 import { FIREFLIES_CONFIG } from './fireflies-config';
+import SCENE_CONFIG from '../../../../core/configs/scene-config';
 
 export default class Fireflies extends THREE.Group {
   constructor() {
@@ -39,10 +40,12 @@ export default class Fireflies extends THREE.Group {
     firefliesGeometry.setAttribute('position', new THREE.BufferAttribute(positionArray, 3));
     firefliesGeometry.setAttribute('aScale', new THREE.BufferAttribute(scaleArray, 1))
 
+    const size = SCENE_CONFIG.isMobile ? FIREFLIES_CONFIG.size.mobile : FIREFLIES_CONFIG.size.desktop;
+
     const firefliesMaterial = new THREE.ShaderMaterial({
       uniforms: {
         uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) },
-        uSize: { value: FIREFLIES_CONFIG.size },
+        uSize: { value: size },
         uTime: { value: 0 },
         uColor: { value: new THREE.Color(FIREFLIES_CONFIG.color) },
       },

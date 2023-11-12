@@ -19,6 +19,7 @@ import { ENVIRONMENT_CONFIG } from '../environment/environment-config';
 import DEBUG_CONFIG from '../../../core/configs/debug-config';
 import { SOUNDS_CONFIG } from '../../../core/configs/sounds-config';
 import Loader from '../../../core/loader';
+import Delayed from '../../../core/helpers/delayed-call';
 
 export default class GameField extends THREE.Group {
   constructor(renderer, camera, audioListener) {
@@ -67,6 +68,7 @@ export default class GameField extends THREE.Group {
     GLOBAL_VARIABLES.round = 0;
     this.events.post('roundUp');
     this.events.post('initLevel');
+    this.events.post('livesChanged');
 
     this._initPlayerForLevel();
 
@@ -111,6 +113,9 @@ export default class GameField extends THREE.Group {
   onSoundChanged() {
     const collectVolume = SOUNDS_CONFIG.enabled ? SOUNDS_CONFIG.masterVolume * SOUNDS_CONFIG.collectSoundVolume : 0;
     this._collectSound.setVolume(collectVolume);
+
+    const gameOverVolume = SOUNDS_CONFIG.enabled ? SOUNDS_CONFIG.masterVolume * SOUNDS_CONFIG.gameOverSoundVolume : 0;
+    this._gameOverSound.setVolume(gameOverVolume);
 
     this._player.onSoundChanged();
     this._obstaclesController.onSoundChanged();
@@ -215,10 +220,9 @@ export default class GameField extends THREE.Group {
     this._initBoard();
     this._initKeyboardEvents();
     this._initCollectSound();
+    this._initGameOverSound();
 
     this._initSignals();
-
-    this.initLevel(LEVEL_TYPE.Level001);
   }
 
   _initPlayer() {
@@ -303,6 +307,19 @@ export default class GameField extends THREE.Group {
     });
   }
 
+  _initGameOverSound() {
+    const gameOverSound = this._gameOverSound = new THREE.PositionalAudio(this._audioListener);
+    this.add(gameOverSound);
+
+    gameOverSound.setRefDistance(10);
+    gameOverSound.setVolume(this._globalVolume * SOUNDS_CONFIG.gameOverSoundVolume);
+    this.add(gameOverSound);
+
+    Loader.events.on('onAudioLoaded', () => {
+      gameOverSound.setBuffer(Loader.assets['game-over']);
+    });
+  }
+
   _initKeyboardEvents() {
     this._onPressDownSignal = this._onPressDownSignal.bind(this);
 
@@ -370,8 +387,6 @@ export default class GameField extends THREE.Group {
     GLOBAL_VARIABLES.playerLives--;
     this.events.post('livesChanged');
 
-    console.log(GLOBAL_VARIABLES.playerLives);
-
     if (GLOBAL_VARIABLES.playerLives <= 0) {
       this._onLose();
       return;
@@ -396,6 +411,10 @@ export default class GameField extends THREE.Group {
     this._consumablesController.stopTweens();
     this._player.onKill();
     this.events.post('focusCameraOnPlayer');
+
+    Delayed.call(700, () => {
+      this._playSound(this._gameOverSound);
+    });
   }
 
   _initSignals() {

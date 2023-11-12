@@ -50,6 +50,10 @@ export default class Scene3D extends THREE.Group {
     this._gameScene.onPointerUp();
   }
 
+  initLevel() {
+    this._gameScene.initLevel();
+  }
+
   _init() {
     this._initGameScene();
     this._initSignals();
@@ -71,5 +75,6 @@ export default class Scene3D extends THREE.Group {
     this._gameScene.events.on('onButtonPress', () => this.events.post('onButtonPress'));
     this._gameScene.events.on('stopBooster', () => this.events.post('stopBooster'));
     this._gameScene.events.on('startInvulnerabilityBooster', (msg, duration) => this.events.post('startInvulnerabilityBooster', duration));
+    this._gameScene.events.on('livesChanged', () => this.events.post('livesChanged'));
   }
 }

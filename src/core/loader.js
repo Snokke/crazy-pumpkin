@@ -47,7 +47,9 @@ const sounds = [
   'jump.mp3',
   'collect.mp3',
   'smash.mp3',
-  'obstacle-fall.mp3'
+  'obstacle-fall.mp3',
+  'death.mp3',
+  'game-over.mp3',
 ];
 
 const fonts = [

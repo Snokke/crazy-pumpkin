@@ -70,6 +70,10 @@ export default class Player extends THREE.Group {
   }
 
   startAction(action) {
+    if (this._state === PLAYER_STATE.DeathAnimationLoseLive) {
+      return;
+    }
+
     if (this._state !== PLAYER_STATE.Idle) {
       if (this._isNextActionAllowed) {
         this._nextAction = action;
@@ -141,7 +145,7 @@ export default class Player extends THREE.Group {
   }
 
   onKill() {
-    this._state = PLAYER_STATE.DeathAnimation;
+    this._state = PLAYER_STATE.DeathAnimationLoseGame;
     this._resetAllTweens();
     this._jumpSpeed = 0;
     this._nextAction = null;
@@ -200,7 +204,7 @@ export default class Player extends THREE.Group {
   }
 
   spawn(postEvent = true) {
-    this._state = PLAYER_STATE.spawnAnimation;
+    this._state = PLAYER_STATE.SpawnAnimation;
 
     this.show();
     const spawnPositionY = SCENE_CONFIG.isMobile ? PLAYER_CONFIG.spawnAnimation.mobile.positionY : PLAYER_CONFIG.spawnAnimation.desktop.positionY;
@@ -243,17 +247,23 @@ export default class Player extends THREE.Group {
 
     const smashVolume = SOUNDS_CONFIG.enabled ? SOUNDS_CONFIG.masterVolume * SOUNDS_CONFIG.smashSoundVolume : 0;
     this._smashSound.setVolume(smashVolume);
+    
+    const deathVolume = SOUNDS_CONFIG.enabled ? SOUNDS_CONFIG.masterVolume * SOUNDS_CONFIG.deathSoundVolume : 0;
+    this._deathSound.setVolume(deathVolume);
   }
 
   onLoseLive() {
     this._ghostView.position.y = this._viewGroup.position.y - PLAYER_CONFIG.halfHeight;
     this.reset();
     this._isBodyActive = false;
+    this._state = PLAYER_STATE.DeathAnimationLoseLive;
 
     this._speedBoosterTimer?.stop();
     this._invulnerabilityBoosterTimer?.stop();
     this._invulnerabilityBoosterAnimation?.stop();
     this.onRoundChanged();
+
+    this._playSound(this._deathSound);
 
     this._showLoseLiveAnimation().onComplete(() => {
       this._view.visible = true;
@@ -386,7 +396,7 @@ export default class Player extends THREE.Group {
         this._viewGroup.position.y = PLAYER_CONFIG.halfHeight * this._squeezeTop;
         this._jumpSpeed = 0;
 
-        if (this._state === PLAYER_STATE.DeathAnimation) {
+        if (this._state === PLAYER_STATE.DeathAnimationLoseGame) {
           this._jumpState = PLAYER_JUMP_STATE.None;
         }
 
@@ -688,6 +698,7 @@ export default class Player extends THREE.Group {
   _initSounds() {
     this._initJumpSound();
     this._initSmashSound();
+    this._initDeathSound();
   }
 
   _initJumpSound() {
@@ -713,6 +724,19 @@ export default class Player extends THREE.Group {
 
     Loader.events.on('onAudioLoaded', () => {
       smashSound.setBuffer(Loader.assets['smash']);
+    });
+  }
+
+  _initDeathSound() {
+    const deathSound = this._deathSound = new THREE.PositionalAudio(this._audioListener);
+    this.add(deathSound);
+
+    deathSound.setRefDistance(10);
+    deathSound.position.copy(this._viewGroup.position);
+    deathSound.setVolume(this._globalVolume * SOUNDS_CONFIG.deathSoundVolume);
+
+    Loader.events.on('onAudioLoaded', () => {
+      deathSound.setBuffer(Loader.assets['death']);
     });
   }
 
