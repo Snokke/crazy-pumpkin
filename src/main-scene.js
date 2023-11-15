@@ -2,6 +2,7 @@ import { Black, MessageDispatcher } from "black-engine";
 import UI from "./ui/ui";
 import Scene3D from "./scene/scene3d";
 import { BUTTON_TYPE } from "./scene/game-scene/game-field/data/keyboard-config";
+import DEBUG_CONFIG from "./core/configs/debug-config";
 
 export default class MainScene {
   constructor(data) {
@@ -22,6 +23,10 @@ export default class MainScene {
     this._scene.add(this._scene3D);
 
     this._scene3D.initLevel();
+
+    if (DEBUG_CONFIG.startFromGameplay) {
+      this._ui.onStartGame();
+    }
   }
 
   update(dt) {

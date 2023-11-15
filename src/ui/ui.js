@@ -95,10 +95,6 @@ export default class UI extends DisplayObject {
     this._initGameOverScreen();
 
     this._startGameScreen.show();
-
-    if (DEBUG_CONFIG.startFromGameplay) {
-      this._onStartGame();
-    }
   }
 
   _initStartGameScreen() {
@@ -128,7 +124,7 @@ export default class UI extends DisplayObject {
     this._overlay.on('onPointerUp', () => this.post('onPointerUp'));
     this._soundIcon.on('onSoundChanged', () => this.post('onSoundChanged'));
 
-    this._startGameScreen.on('onStartGame', () => this._onStartGame());
+    this._startGameScreen.on('onStartGame', () => this.onStartGame());
     this._gameOverScreen.on('onRestartGame', () => this._onRestartGame());
 
     this._gameplayScreen.on('onLeft', () => this.post('onLeft'));
@@ -147,7 +143,7 @@ export default class UI extends DisplayObject {
 
     if (e.code === 'Enter') {
       if (this._startGameScreen.visible) {
-        this._onStartGame();
+        this.onStartGame();
       }
 
       if (this._gameOverScreen.visible) {
@@ -161,7 +157,7 @@ export default class UI extends DisplayObject {
     this.post('onPointerMove', x, y);
   }
 
-  _onStartGame() {
+  onStartGame() {
     this._startGameScreen.hide();
     this._gameplayScreen.show();
     this.post('onStartGame');

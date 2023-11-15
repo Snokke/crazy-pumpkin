@@ -15,7 +15,7 @@ import { GLOBAL_VARIABLES } from './data/global-variables';
 import { vector3ToBlackPosition } from '../../../core/helpers/helpers';
 import { CONSUMABLES_CONFIG, CONSUMABLE_TYPE } from './consumables/data/consumables-config';
 import Board from './board/board';
-import { ENVIRONMENT_CONFIG } from '../environment/environment-config';
+import { ENVIRONMENT_CONFIG } from '../environment/data/environment-config';
 import DEBUG_CONFIG from '../../../core/configs/debug-config';
 import { SOUNDS_CONFIG } from '../../../core/configs/sounds-config';
 import Loader from '../../../core/loader';
@@ -119,6 +119,10 @@ export default class GameField extends THREE.Group {
 
     this._player.onSoundChanged();
     this._obstaclesController.onSoundChanged();
+  }
+
+  onEnvironmentPumpkinClick() {
+    this._enemiesController.changeGhostsColor();
   }
 
   _startGameplay() {
@@ -453,6 +457,10 @@ export default class GameField extends THREE.Group {
   }
 
   _checkGhostCollide() {
+    if (!this._player.isBodyActive()) {
+      return;
+    }
+
     const playerPosition = GLOBAL_VARIABLES.playerPosition;
     const ghostMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Ghost];
 
@@ -463,6 +471,10 @@ export default class GameField extends THREE.Group {
   }
 
   _checkEvilPumpkinCollide() {
+    if (!this._player.isBodyActive()) {
+      return;
+    }
+    
     const playerPosition = GLOBAL_VARIABLES.playerPosition;
     const evilPumpkinMap = GLOBAL_VARIABLES.maps[MAP_TYPE.EvilPumpkin];
 

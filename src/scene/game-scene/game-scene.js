@@ -13,6 +13,7 @@ import Loader from '../../core/loader';
 import { SOUNDS_CONFIG } from '../../core/configs/sounds-config';
 import { getCoordinatesFromPosition } from '../../core/helpers/helpers';
 import { LEVEL_TYPE } from './game-field/data/level-config';
+import RaycasterController from './raycaster-controller';
 
 export default class GameScene extends THREE.Group {
   constructor(data) {
@@ -25,6 +26,7 @@ export default class GameScene extends THREE.Group {
     this._gameDebug = null;
     this._gameField = null;
     this._music = null;
+    this._raycasterController = null;
 
     this._isSoundPlayed = false;
 
@@ -43,6 +45,7 @@ export default class GameScene extends THREE.Group {
     this._music.setVolume(volume);
 
     this._gameField.onSoundChanged();
+    this._environment.onSoundChanged();
   }
 
   onStartGame() {
@@ -64,10 +67,12 @@ export default class GameScene extends THREE.Group {
 
   onPointerMove(x, y) {
     this._cameraController.onPointerMove(x, y);
+    this._environment.onPointerMove(x, y);
   }
 
   onPointerDown() {
     this._cameraController.onPointerDown();
+    this._environment.onPointerDown();
   }
 
   onPointerUp() {
@@ -117,6 +122,7 @@ export default class GameScene extends THREE.Group {
   _init() {
     this._initGameDebug();
     this._initEmptySound();
+    this._initRaycaster();
     this._initCameraController();
     this._initGameField();
     this._initEnvironment();
@@ -146,6 +152,11 @@ export default class GameScene extends THREE.Group {
     }
   }
 
+  _initRaycaster() {
+    const camera = this._data.camera;
+    this._raycasterController = new RaycasterController(camera);
+  }
+
   _initCameraController() {
     const camera = this._data.camera;
     const orbitControls = this._data.orbitControls;
@@ -162,7 +173,8 @@ export default class GameScene extends THREE.Group {
   }
 
   _initEnvironment() {
-    const environment = this._environment = new Environment();
+    const audioListener = this._data.audioListener;
+    const environment = this._environment = new Environment(this._raycasterController, audioListener);
     this.add(environment);
   }
 
@@ -197,6 +209,8 @@ export default class GameScene extends THREE.Group {
     this._gameField.events.on('stopBooster', () => this.events.post('stopBooster'));
     this._gameField.events.on('startInvulnerabilityBooster', (msg, duration) => this.events.post('startInvulnerabilityBooster', duration));
     this._gameField.events.on('livesChanged', () => this.events.post('livesChanged'));
+
+    this._environment.events.on('onEnvironmentPumpkinClick', () => this._gameField.onEnvironmentPumpkinClick());
   }
 
   _onRoundUp() {

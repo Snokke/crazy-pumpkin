@@ -30,6 +30,9 @@ const models = [
   'environment.glb',
   'arch.glb',
   'player-grave.glb',
+  'environment-pumpkin.glb',
+  'environment-scarecrow.glb',
+  'environment-post-skull.glb',
   // 'warrior.glb',
   // 'minion.glb',
 ];
@@ -50,6 +53,7 @@ const sounds = [
   'obstacle-fall.mp3',
   'death.mp3',
   'game-over.mp3',
+  'click.mp3',
 ];
 
 const fonts = [

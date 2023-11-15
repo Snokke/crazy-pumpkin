@@ -8,6 +8,7 @@ const SOUNDS_CONFIG = {
   deathSoundVolume: 1,
   obstacleFallSoundVolume: 0.7,
   gameOverSoundVolume: 0.7,
+  clickSoundVolume: 1.3,
 }
 
 export { SOUNDS_CONFIG };

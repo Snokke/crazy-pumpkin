@@ -1,3 +1,4 @@
+import { GHOSTS_COLOR_TYPE } from "../../environment/environment-objects/data/environment-objects-config";
 import { GAME_STATE, MAP_TYPE } from "./game-data";
 
 const GLOBAL_VARIABLES = {
@@ -8,6 +9,7 @@ const GLOBAL_VARIABLES = {
   playerLives: 3,
   activeBooster: null,
   boosterSpawned: false,
+  ghostsColorType: GHOSTS_COLOR_TYPE.White,
   maps: {
     [MAP_TYPE.Consumable]: [],
     [MAP_TYPE.Obstacle]: [],

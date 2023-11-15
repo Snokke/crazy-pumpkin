@@ -4,9 +4,9 @@ import EnemyAbstract from './enemy-abstract';
 import { LEVEL_CONFIG } from '../../data/level-config';
 import { GAME_CONFIG } from '../../data/game-config';
 import { ENEMY_STATE, ENEMY_TYPE } from '../data/enemy-data';
-import { isEqualsPositions, lerp, randomBetween } from '../../../../../core/helpers/helpers';
+import { isEqualsPositions, lerp, randomBetween, randomFromArray } from '../../../../../core/helpers/helpers';
 import { DIRECTION, GAME_STATE, MAP_TYPE, ROTATION_BY_DIRECTION } from '../../data/game-data';
-import { GHOST_CONFIG, GHOST_MOVEMENT_STATE } from '../data/ghost-config';
+import { GHOSTS_COLOR_BY_TYPE, GHOST_COLOR_CONFIG, GHOST_COLOR_TYPE, GHOST_CONFIG, GHOST_MOVEMENT_STATE } from '../data/ghost-config';
 import { GLOBAL_VARIABLES } from '../../data/global-variables';
 import Loader from '../../../../../core/loader';
 
@@ -24,6 +24,7 @@ export default class Ghost extends EnemyAbstract {
     this._lifeTimer = null;
     this._spawnShowTween = null;
     this._spawnHideTween = null;
+    this._colorChangeTween = null;
 
     this._moveSpeed = 0;
     this._movementState = GHOST_MOVEMENT_STATE.Idle;
@@ -171,6 +172,27 @@ export default class Ghost extends EnemyAbstract {
     }
   }
 
+  setColorType(colorType, instant = false) {
+    const color = GHOST_COLOR_CONFIG[colorType];
+    const startColor = new THREE.Color(this._view.material.color.getHex());
+    this._colorChangeTween?.stop();
+
+    if (instant) {      
+      this._view.material.color.setHex(color);
+    } else {
+      const object = { value: 0 };
+
+      this._colorChangeTween = new TWEEN.Tween(object)
+        .to({ value: 1 }, GHOST_CONFIG.changeColorTime)
+        .easing(TWEEN.Easing.Sinusoidal.Out)
+        .start()
+        .onUpdate(() => {
+          const interpolatedColor = new THREE.Color().lerpColors(startColor, new THREE.Color(color), object.value);
+          this._view.material.color.setHex(interpolatedColor.getHex());
+        });
+    }
+  }
+
   reset() {
     this._currentDirection = null;
     this._movementState = GHOST_MOVEMENT_STATE.Idle;
@@ -313,10 +335,15 @@ export default class Ghost extends EnemyAbstract {
     texture.flipY = false;
     texture.colorSpace = THREE.SRGBColorSpace;
 
+    const colorsTypes = GHOSTS_COLOR_BY_TYPE[GLOBAL_VARIABLES.ghostsColorType];
+    const randomColorType = randomFromArray(colorsTypes);
+    const ghostColor = GHOST_COLOR_CONFIG[randomColorType];
+
     const material = new THREE.MeshPhongMaterial({
       transparent: true,
       opacity: GHOST_CONFIG.activeBodyOpacity,
       map: texture,
+      color: ghostColor,
     });
 
     view.material = material;

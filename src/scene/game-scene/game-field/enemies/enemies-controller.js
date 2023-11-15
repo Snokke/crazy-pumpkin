@@ -4,9 +4,9 @@ import { ENEMY_TYPE } from './data/enemy-data';
 import ENEMY_CLASS from './data/enemy-class';
 import { MessageDispatcher } from 'black-engine';
 import { GAME_STATE } from '../data/game-data';
-import { GHOST_CONFIG } from './data/ghost-config';
+import { GHOSTS_COLOR_BY_TYPE, GHOST_CONFIG } from './data/ghost-config';
 import Delayed from '../../../../core/helpers/delayed-call';
-import { randomBetween } from '../../../../core/helpers/helpers';
+import { randomBetween, randomFromArray } from '../../../../core/helpers/helpers';
 import { GLOBAL_VARIABLES } from '../data/global-variables';
 import { EVIL_PUMPKIN_CONFIG } from './data/evil-pumpkin-config';
 import { ROUND_CONFIG } from '../data/game-config';
@@ -105,6 +105,22 @@ export default class EnemiesController extends THREE.Group {
         this._updateSpeedMultiplier();
         GLOBAL_VARIABLES.activeBooster = null;
       });
+  }
+
+  changeGhostsColor() {
+    const activeGhosts = this._activeEnemies[ENEMY_TYPE.Ghost];
+    const inactiveGhosts = this._enemiesPool[ENEMY_TYPE.Ghost];
+    const allGhosts = [...activeGhosts, ...inactiveGhosts];
+    const ghostColors = GHOSTS_COLOR_BY_TYPE[GLOBAL_VARIABLES.ghostsColorType];
+
+    allGhosts.forEach((ghost) => {
+      if (ghostColors.length === 1) {
+        ghost.setColorType(ghostColors[0]);
+      } else {
+        const randomColor = randomFromArray(ghostColors);
+        ghost.setColorType(randomColor);
+      }
+    });
   }
 
   _updateSpeedMultiplier() {
