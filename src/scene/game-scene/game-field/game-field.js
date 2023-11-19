@@ -446,6 +446,7 @@ export default class GameField extends THREE.Group {
     if (!DEBUG_CONFIG.invulnerability && this._player.isBodyActive()) {
       this._checkGhostCollide();
       this._checkEvilPumpkinCollide();
+      this._checkSkeletonCollide();
     }
 
     const archPositionForHide = ENVIRONMENT_CONFIG.arch.playerPositionsForHide;
@@ -479,6 +480,20 @@ export default class GameField extends THREE.Group {
     const evilPumpkinMap = GLOBAL_VARIABLES.maps[MAP_TYPE.EvilPumpkin];
 
     if (evilPumpkinMap[playerPosition.row][playerPosition.column]) {
+      this._onLoseLive();
+      return;
+    }
+  }
+
+  _checkSkeletonCollide() {
+    if (!this._player.isBodyActive()) {
+      return;
+    }
+    
+    const playerPosition = GLOBAL_VARIABLES.playerPosition;
+    const skeletonMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Skeleton];
+
+    if (skeletonMap[playerPosition.row][playerPosition.column]) {
       this._onLoseLive();
       return;
     }
@@ -533,6 +548,7 @@ export default class GameField extends THREE.Group {
     if (!DEBUG_CONFIG.invulnerability && this._player.isBodyActive()) {
       this._checkGhostCollide();
       this._checkEvilPumpkinCollide();
+      this._checkSkeletonCollide();
     }
   }
 }

@@ -32,6 +32,13 @@ const ROUND_CONFIG = {
       { speedMultiplier: 1.3, count: 4 },
       { speedMultiplier: 1.4, count: 5 },
     ],
+    [ENEMY_TYPE.Skeleton]: [
+      { speedMultiplier: 1 },
+      { speedMultiplier: 1.3 },
+      { speedMultiplier: 1.6 },
+      { speedMultiplier: 1.9 },
+      { speedMultiplier: 2.2 },
+    ],
   }
 }
 

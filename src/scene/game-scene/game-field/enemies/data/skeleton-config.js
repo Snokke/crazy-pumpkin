@@ -1,6 +1,8 @@
 const SKELETON_CONFIG = {
   speedMultiplier: 1,
-  moveSpeed: { min: 0.7, max: 1 },
+  moveSpeed: 0.7,
+  runAnimationTransitionMultiplier: 1.9,
+  chanceToChangeDirection: 0.17,
   turnRate: 300,
   spawnAnimationDuration: 1500,
   spawnTime: { min: 1500, max: 2000 },

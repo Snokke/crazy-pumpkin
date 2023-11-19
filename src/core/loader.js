@@ -33,8 +33,8 @@ const models = [
   'environment-pumpkin.glb',
   'environment-scarecrow.glb',
   'environment-post-skull.glb',
+  'minion.glb',
   // 'warrior.glb',
-  // 'minion.glb',
 ];
 
 const images = [

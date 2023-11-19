@@ -11,6 +11,7 @@ import { GLOBAL_VARIABLES } from '../data/global-variables';
 import { EVIL_PUMPKIN_CONFIG } from './data/evil-pumpkin-config';
 import { ROUND_CONFIG } from '../data/game-config';
 import { CONSUMABLES_CONFIG, CONSUMABLE_TYPE } from '../consumables/data/consumables-config';
+import { SKELETON_CONFIG } from './data/skeleton-config';
 
 export default class EnemiesController extends THREE.Group {
   constructor() {
@@ -39,7 +40,7 @@ export default class EnemiesController extends THREE.Group {
   activateSpawnEnemies() {
     this._ghostSpawn();
     this._spawnFirstEvilPumpkin();
-    // this._spawnSkeleton();
+    this._spawnSkeleton();
   }
 
   stopTweens() {
@@ -62,6 +63,7 @@ export default class EnemiesController extends THREE.Group {
   onRoundChanged() {
     this._updateGhostOnRoundChanged();
     this._updateEvilPumpkinOnRoundChanged();
+    this._updateSkeletonOnRoundChanged();
   }
 
   getActiveEnemiesPositions() {
@@ -85,16 +87,25 @@ export default class EnemiesController extends THREE.Group {
     const boosterConfig = CONSUMABLES_CONFIG[CONSUMABLE_TYPE.BoosterCandyEnemiesSlow];
     GHOST_CONFIG.speedMultiplier = boosterConfig.speedMultiplier;
     EVIL_PUMPKIN_CONFIG.speedMultiplier = boosterConfig.speedMultiplier;
+    SKELETON_CONFIG.speedMultiplier = boosterConfig.speedMultiplier;
 
     this._iterateActiveEnemies((enemy) => {
       if (enemy.getType() === ENEMY_TYPE.EvilPumpkin) {
         enemy.updateJumpTime();
+      }
+
+      if (enemy.getType() === ENEMY_TYPE.Skeleton) {
+        enemy.updateSpeedMultiplier();
       }
     });
 
     this._iteratePoolEnemies((enemy) => {
       if (enemy.getType() === ENEMY_TYPE.EvilPumpkin) {
         enemy.updateJumpTime();
+      }
+
+      if (enemy.getType() === ENEMY_TYPE.Skeleton) {
+        enemy.updateSpeedMultiplier();
       }
     });
 
@@ -127,19 +138,29 @@ export default class EnemiesController extends THREE.Group {
     const round = GLOBAL_VARIABLES.round;
     const ghostRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.Ghost][round];
     const evilPumpkinRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.EvilPumpkin][round];
+    const skeletonRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.Skeleton][round];
 
     GHOST_CONFIG.speedMultiplier = ghostRoundConfig.speedMultiplier;
     EVIL_PUMPKIN_CONFIG.speedMultiplier = evilPumpkinRoundConfig.speedMultiplier;
+    SKELETON_CONFIG.speedMultiplier = skeletonRoundConfig.speedMultiplier;
 
     this._iterateActiveEnemies((enemy) => {
       if (enemy.getType() === ENEMY_TYPE.EvilPumpkin) {
         enemy.updateJumpTime();
+      }
+
+      if (enemy.getType() === ENEMY_TYPE.Skeleton) {
+        enemy.updateSpeedMultiplier();
       }
     });
 
     this._iteratePoolEnemies((enemy) => {
       if (enemy.getType() === ENEMY_TYPE.EvilPumpkin) {
         enemy.updateJumpTime();
+      }
+
+      if (enemy.getType() === ENEMY_TYPE.Skeleton) {
+        enemy.updateSpeedMultiplier();
       }
     });
   }
@@ -172,6 +193,27 @@ export default class EnemiesController extends THREE.Group {
 
     if (GLOBAL_VARIABLES.gameState === GAME_STATE.Gameplay) {
       this._evilPumpkinSpawn();
+    }
+  }
+
+  _updateSkeletonOnRoundChanged() {
+    const round = GLOBAL_VARIABLES.round;
+    const skeletonRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.Skeleton][round];
+
+    if (!GLOBAL_VARIABLES.activeBooster) {
+      SKELETON_CONFIG.speedMultiplier = skeletonRoundConfig.speedMultiplier;
+
+      this._iterateActiveEnemies((enemy) => {
+        if (enemy.getType() === ENEMY_TYPE.Skeleton) {
+          enemy.updateSpeedMultiplier();
+        }
+      });
+  
+      this._iteratePoolEnemies((enemy) => {
+        if (enemy.getType() === ENEMY_TYPE.Skeleton) {
+          enemy.updateSpeedMultiplier();
+        }
+      });
     }
   }
 
@@ -254,6 +296,7 @@ export default class EnemiesController extends THREE.Group {
   _removeAllEnemies() {
     this._removeEnemiesByType(ENEMY_TYPE.Ghost);
     this._removeEnemiesByType(ENEMY_TYPE.EvilPumpkin);
+    this._removeEnemiesByType(ENEMY_TYPE.Skeleton);
     this._resetPoolEnemies();
   }
 
