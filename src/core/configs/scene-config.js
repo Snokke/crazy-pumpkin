@@ -12,7 +12,7 @@ const SCENE_CONFIG = {
     },
   },
   fog: {
-    enabled: false,
+    enabled: true,
     color: 0xffffff,
     desktop: { near: 16, far: 20 },
     mobile: { 
