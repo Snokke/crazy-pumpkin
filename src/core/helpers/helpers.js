@@ -32,8 +32,7 @@ export const lerp = (a, b, t) => {
 
 export const getCoordinatesFromPosition = (position) => {
   const cellSize = GAME_CONFIG.cellSize;
-  const currentLevel = GLOBAL_VARIABLES.currentLevel;
-  const fieldConfig = LEVEL_CONFIG[currentLevel].field;
+  const fieldConfig = GAME_CONFIG.field;
   const x = (-fieldConfig.columns * cellSize * 0.5 + cellSize * 0.5) + position.column * cellSize;
   const z = (-fieldConfig.rows * cellSize * 0.5 + cellSize * 0.5) + position.row * cellSize;
 

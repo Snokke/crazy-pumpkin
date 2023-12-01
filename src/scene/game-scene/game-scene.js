@@ -6,14 +6,14 @@ import SCENE_CONFIG from '../../core/configs/scene-config';
 import DEBUG_CONFIG from '../../core/configs/debug-config';
 import GameField from './game-field/game-field';
 import CameraController from './camera-controller/camera-controller';
-import { GAME_CONFIG, ROUND_CONFIG } from './game-field/data/game-config';
+import { GAME_CONFIG } from './game-field/data/game-config';
 import { GLOBAL_VARIABLES } from './game-field/data/global-variables';
 import Environment from './environment/environment';
 import Loader from '../../core/loader';
 import { SOUNDS_CONFIG } from '../../core/configs/sounds-config';
 import { getCoordinatesFromPosition } from '../../core/helpers/helpers';
-import { LEVEL_TYPE } from './game-field/data/level-config';
 import RaycasterController from './raycaster-controller';
+import { ROUNDS_CONFIG } from './game-field/data/rounds-config';
 
 export default class GameScene extends THREE.Group {
   constructor(data) {
@@ -80,7 +80,7 @@ export default class GameScene extends THREE.Group {
   }
 
   initLevel() {
-    this._gameField.initLevel(LEVEL_TYPE.Level001);
+    this._gameField.initLevel(0);
   }
 
   _blurScene(instant = false) {
@@ -222,8 +222,8 @@ export default class GameScene extends THREE.Group {
   _debugIncreaseRound() {
     GLOBAL_VARIABLES.round++;
 
-    if (GLOBAL_VARIABLES.round > ROUND_CONFIG.maxRound) {
-      GLOBAL_VARIABLES.round = ROUND_CONFIG.maxRound;
+    if (GLOBAL_VARIABLES.round > ROUNDS_CONFIG.maxRound) {
+      GLOBAL_VARIABLES.round = ROUNDS_CONFIG.maxRound;
     }
 
     this.events.post('onRoundChanged');

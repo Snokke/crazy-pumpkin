@@ -10,6 +10,7 @@ import { GLOBAL_VARIABLES } from '../data/global-variables';
 import { SOUNDS_CONFIG } from '../../../../core/configs/sounds-config';
 import Loader from '../../../../core/loader';
 import SCENE_CONFIG from '../../../../core/configs/scene-config';
+import { GAME_CONFIG } from '../data/game-config';
 
 export default class ObstaclesController extends THREE.Group {
   constructor(audioListener) {
@@ -27,8 +28,7 @@ export default class ObstaclesController extends THREE.Group {
   }
 
   createObstacles() {
-    const currentLevel = GLOBAL_VARIABLES.currentLevel;
-    const obstaclesConfig = LEVEL_CONFIG[currentLevel].obstacles;
+    const obstaclesConfig = LEVEL_CONFIG.obstacles;
     this._createObstacles(obstaclesConfig);
     this._createPositionsHelper();
     this._initMap();
@@ -113,7 +113,7 @@ export default class ObstaclesController extends THREE.Group {
 
   _getObstaclesRandomConfig(obstaclesConfig) {
     const count = randomBetween(obstaclesConfig.count.min, obstaclesConfig.count.max);
-    const fieldConfig = LEVEL_CONFIG[GLOBAL_VARIABLES.currentLevel].field;
+    const fieldConfig = GAME_CONFIG.field;
     const randomPositions = [];
     const randomObstaclesConfig = [];
     const types = [

@@ -9,9 +9,9 @@ import Delayed from '../../../../core/helpers/delayed-call';
 import { randomBetween, randomFromArray } from '../../../../core/helpers/helpers';
 import { GLOBAL_VARIABLES } from '../data/global-variables';
 import { EVIL_PUMPKIN_CONFIG } from './data/evil-pumpkin-config';
-import { ROUND_CONFIG } from '../data/game-config';
 import { CONSUMABLES_CONFIG, CONSUMABLE_TYPE } from '../consumables/data/consumables-config';
 import { SKELETON_CONFIG } from './data/skeleton-config';
+import { ROUNDS_CONFIG } from '../data/rounds-config';
 
 export default class EnemiesController extends THREE.Group {
   constructor() {
@@ -136,9 +136,9 @@ export default class EnemiesController extends THREE.Group {
 
   _updateSpeedMultiplier() {
     const round = GLOBAL_VARIABLES.round;
-    const ghostRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.Ghost][round];
-    const evilPumpkinRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.EvilPumpkin][round];
-    const skeletonRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.Skeleton][round];
+    const ghostRoundConfig = ROUNDS_CONFIG.enemies[ENEMY_TYPE.Ghost][round];
+    const evilPumpkinRoundConfig = ROUNDS_CONFIG.enemies[ENEMY_TYPE.EvilPumpkin][round];
+    const skeletonRoundConfig = ROUNDS_CONFIG.enemies[ENEMY_TYPE.Skeleton][round];
 
     GHOST_CONFIG.speedMultiplier = ghostRoundConfig.speedMultiplier;
     EVIL_PUMPKIN_CONFIG.speedMultiplier = evilPumpkinRoundConfig.speedMultiplier;
@@ -167,7 +167,7 @@ export default class EnemiesController extends THREE.Group {
 
   _updateGhostOnRoundChanged() {
     const round = GLOBAL_VARIABLES.round;
-    const ghostRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.Ghost][round];
+    const ghostRoundConfig = ROUNDS_CONFIG.enemies[ENEMY_TYPE.Ghost][round];
 
     if (!GLOBAL_VARIABLES.activeBooster) {
       GHOST_CONFIG.speedMultiplier = ghostRoundConfig.speedMultiplier;
@@ -198,7 +198,7 @@ export default class EnemiesController extends THREE.Group {
 
   _updateSkeletonOnRoundChanged() {
     const round = GLOBAL_VARIABLES.round;
-    const skeletonRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.Skeleton][round];
+    const skeletonRoundConfig = ROUNDS_CONFIG.enemies[ENEMY_TYPE.Skeleton][round];
 
     if (!GLOBAL_VARIABLES.activeBooster) {
       SKELETON_CONFIG.speedMultiplier = skeletonRoundConfig.speedMultiplier;
@@ -219,7 +219,7 @@ export default class EnemiesController extends THREE.Group {
 
   _updateEvilPumpkinSpeedMultiplier() {
     const round = GLOBAL_VARIABLES.round;
-    const evilPumpkinRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.EvilPumpkin][round];
+    const evilPumpkinRoundConfig = ROUNDS_CONFIG.enemies[ENEMY_TYPE.EvilPumpkin][round];
 
     EVIL_PUMPKIN_CONFIG.speedMultiplier = evilPumpkinRoundConfig.speedMultiplier;
 
@@ -259,7 +259,7 @@ export default class EnemiesController extends THREE.Group {
         }
   
         const round = GLOBAL_VARIABLES.round;
-        const ghostRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.Ghost][round];
+        const ghostRoundConfig = ROUNDS_CONFIG.enemies[ENEMY_TYPE.Ghost][round];
         const maxCount = ghostRoundConfig.maxCount;
   
         if (this._activeEnemies[ENEMY_TYPE.Ghost].length < maxCount) {
@@ -272,7 +272,7 @@ export default class EnemiesController extends THREE.Group {
 
   _evilPumpkinSpawn() {
     const round = GLOBAL_VARIABLES.round;
-    const evilPumpkinRoundConfig = ROUND_CONFIG.enemies[ENEMY_TYPE.EvilPumpkin][round];
+    const evilPumpkinRoundConfig = ROUNDS_CONFIG.enemies[ENEMY_TYPE.EvilPumpkin][round];
     const currentCount = this._activeEnemies[ENEMY_TYPE.EvilPumpkin].length;
 
     const spawnCount = evilPumpkinRoundConfig.count - currentCount;

@@ -5,7 +5,7 @@ import { PLAYER_ACTIONS, PLAYER_JUMP_STATE, PLAYER_STATE } from './data/player-d
 import { PLAYER_CONFIG } from './data/player-config';
 import { LEVEL_CONFIG } from '../data/level-config';
 import { DIRECTION, GAME_STATE, ROTATION_BY_DIRECTION } from '../data/game-data';
-import { GAME_CONFIG, ROUND_CONFIG } from '../data/game-config';
+import { GAME_CONFIG } from '../data/game-config';
 import { GLOBAL_VARIABLES } from '../data/global-variables';
 import { getCoordinatesFromPosition } from '../../../../core/helpers/helpers';
 import { CONSUMABLES_CONFIG, CONSUMABLE_TYPE } from '../consumables/data/consumables-config';
@@ -13,6 +13,7 @@ import Loader from '../../../../core/loader';
 import Delayed from '../../../../core/helpers/delayed-call';
 import SCENE_CONFIG from '../../../../core/configs/scene-config';
 import { SOUNDS_CONFIG } from '../../../../core/configs/sounds-config';
+import { ROUNDS_CONFIG } from '../data/rounds-config';
 
 export default class Player extends THREE.Group {
   constructor(audioListener) {
@@ -117,8 +118,7 @@ export default class Player extends THREE.Group {
     this._newPosition = position;
 
     const cellSize = GAME_CONFIG.cellSize;
-    const currentLevel = GLOBAL_VARIABLES.currentLevel;
-    const fieldConfig = LEVEL_CONFIG[currentLevel].field;
+    const fieldConfig = GAME_CONFIG.field;
     this._viewGroup.position.x = (-fieldConfig.columns * cellSize * 0.5 + cellSize * 0.5) + this._currentPosition.column * cellSize;
     this._viewGroup.position.z = (-fieldConfig.rows * cellSize * 0.5 + cellSize * 0.5) + this._currentPosition.row * cellSize;
   }
@@ -138,7 +138,7 @@ export default class Player extends THREE.Group {
     }
 
     const round = GLOBAL_VARIABLES.round;
-    const playerRoundConfig = ROUND_CONFIG.player[round];
+    const playerRoundConfig = ROUNDS_CONFIG.player[round];
 
     PLAYER_CONFIG.speedMultiplier = playerRoundConfig.speedMultiplier;
     this._updateJumpTime();
@@ -270,8 +270,8 @@ export default class Player extends THREE.Group {
       this._innerCylinder.visible = true;
       this._ghostView.visible = false;
 
-      const playerConfig = LEVEL_CONFIG[GLOBAL_VARIABLES.currentLevel].player;
-      this.setPosition(playerConfig.startPosition);
+      const playerConfig = GAME_CONFIG.playerStartPosition;
+      this.setPosition(playerConfig.position);
       this.setDirection(playerConfig.direction);
 
       const playerInvulnerabilityDuration = PLAYER_CONFIG.invulnerabilityAfterDeathDuration;
@@ -367,8 +367,7 @@ export default class Player extends THREE.Group {
 
   _calculateCurrentPosition() {
     const cellSize = GAME_CONFIG.cellSize;
-    const currentLevel = GLOBAL_VARIABLES.currentLevel;
-    const fieldConfig = LEVEL_CONFIG[currentLevel].field;
+    const fieldConfig = GAME_CONFIG.field;
     const row = Math.round((this._viewGroup.position.z + fieldConfig.rows * cellSize * 0.5 - cellSize * 0.5) / cellSize);
     const column = Math.round((this._viewGroup.position.x + fieldConfig.columns * cellSize * 0.5 - cellSize * 0.5) / cellSize);
 

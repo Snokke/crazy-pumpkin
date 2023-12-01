@@ -3,8 +3,9 @@ import GUIHelper from '../../core/helpers/gui-helper/gui-helper';
 import { MessageDispatcher } from 'black-engine';
 import DEBUG_CONFIG from '../../core/configs/debug-config';
 import { SOUNDS_CONFIG } from '../../core/configs/sounds-config';
-import { GAME_CONFIG, ROUND_CONFIG } from './game-field/data/game-config';
+import { GAME_CONFIG } from './game-field/data/game-config';
 import { GLOBAL_VARIABLES } from './game-field/data/global-variables';
+import { ROUNDS_CONFIG } from './game-field/data/rounds-config';
 
 export default class GameDebug extends THREE.Group {
   constructor() {
@@ -20,7 +21,7 @@ export default class GameDebug extends THREE.Group {
   }
 
   onRoundChanged() {
-    this._increaseRoundButton.disabled = GLOBAL_VARIABLES.round === ROUND_CONFIG.maxRound;
+    this._increaseRoundButton.disabled = GLOBAL_VARIABLES.round === ROUNDS_CONFIG.maxRound;
     this._decreaseRoundButton.disabled = GLOBAL_VARIABLES.round === 0;
   }
 

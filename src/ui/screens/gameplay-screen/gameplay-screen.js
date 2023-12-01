@@ -4,9 +4,9 @@ import { GLOBAL_VARIABLES } from "../../../scene/game-scene/game-field/data/glob
 import { CONSUMABLES_CONFIG, CONSUMABLE_TYPE } from "../../../scene/game-scene/game-field/consumables/data/consumables-config";
 import { SCORE_CONFIG } from "../../../scene/game-scene/game-field/data/score-config";
 import ProgressBar from "../../progress-bar";
-import { ROUND_CONFIG } from "../../../scene/game-scene/game-field/data/game-config";
 import SCENE_CONFIG from "../../../core/configs/scene-config";
 import DPad from "./d-pad";
+import { ROUNDS_CONFIG } from "../../../scene/game-scene/game-field/data/rounds-config";
 
 export default class GameplayScreen extends ScreenAbstract {
   constructor() {
@@ -32,7 +32,7 @@ export default class GameplayScreen extends ScreenAbstract {
   show() {
     super.show();
 
-    const duration = ROUND_CONFIG.roundDuration;
+    const duration = ROUNDS_CONFIG.roundDuration;
     this._roundProgressBar.show(0x000000, 160, duration);
 
     this._showNewRound();
@@ -47,8 +47,8 @@ export default class GameplayScreen extends ScreenAbstract {
     const currentRound = GLOBAL_VARIABLES.round;
     this._roundNumberText.text = `${currentRound + 1}`;
 
-    if (currentRound !== ROUND_CONFIG.maxRound) {
-      const duration = ROUND_CONFIG.roundDuration;
+    if (currentRound !== ROUNDS_CONFIG.maxRound) {
+      const duration = ROUNDS_CONFIG.roundDuration;
       this._roundProgressBar.show(0x000000, 160, duration);
     }
 

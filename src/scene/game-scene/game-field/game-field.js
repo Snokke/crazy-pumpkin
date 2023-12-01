@@ -3,11 +3,11 @@ import Player from './player/player';
 import EnemiesController from './enemies/enemies-controller';
 import { BUTTONS_CONFIG, BUTTON_TYPE } from './data/keyboard-config';
 import ObstaclesController from './obstacles/obstacles-controller';
-import { LEVEL_CONFIG, LEVEL_TYPE } from './data/level-config';
+import { LEVEL_CONFIG } from './data/level-config';
 import { PLAYER_ACTIONS, PLAYER_ACTION_TO_DIRECTION, PLAYER_CONVERT_JUMP_IN_PLACE } from './player/data/player-data';
 import ObjectPositionHelper from './helpers/object-position-helper';
 import { GAME_OBJECT_TYPE, GAME_STATE, MAP_TYPE } from './data/game-data';
-import { GAME_CONFIG, ROUND_CONFIG } from './data/game-config';
+import { GAME_CONFIG } from './data/game-config';
 import { MessageDispatcher } from 'black-engine';
 import { SCORE_CONFIG } from './data/score-config';
 import ConsumablesController from './consumables/consumables-controller';
@@ -20,6 +20,7 @@ import DEBUG_CONFIG from '../../../core/configs/debug-config';
 import { SOUNDS_CONFIG } from '../../../core/configs/sounds-config';
 import Loader from '../../../core/loader';
 import Delayed from '../../../core/helpers/delayed-call';
+import { ROUNDS_CONFIG } from './data/rounds-config';
 
 export default class GameField extends THREE.Group {
   constructor(renderer, camera, audioListener) {
@@ -60,12 +61,11 @@ export default class GameField extends THREE.Group {
     // this._bossesController.update(dt);
   }
 
-  initLevel(level) {
+  initLevel(roundNumber) {
     this._resetLevel();
 
     GLOBAL_VARIABLES.gameState = GAME_STATE.Idle;
-    GLOBAL_VARIABLES.currentLevel = level;
-    GLOBAL_VARIABLES.round = 0;
+    GLOBAL_VARIABLES.round = roundNumber;
     this.events.post('roundUp');
     this.events.post('initLevel');
     this.events.post('livesChanged');
@@ -85,7 +85,7 @@ export default class GameField extends THREE.Group {
   }
 
   restartGame() {
-    this.initLevel(LEVEL_TYPE.Level001);
+    this.initLevel(0);
     this.startGame();
   }
 
@@ -133,7 +133,7 @@ export default class GameField extends THREE.Group {
   }
 
   _roundUp() {
-    if (GLOBAL_VARIABLES.round >= ROUND_CONFIG.maxRound) {
+    if (GLOBAL_VARIABLES.round >= ROUNDS_CONFIG.maxRound) {
       return;
     }
     
@@ -142,12 +142,12 @@ export default class GameField extends THREE.Group {
   }
 
   _initPlayerForLevel() {
-    const playerConfig = LEVEL_CONFIG[GLOBAL_VARIABLES.currentLevel].player;
-    this._player.setPosition(playerConfig.startPosition);
+    const playerConfig = GAME_CONFIG.playerStartPosition;
+    this._player.setPosition(playerConfig.position);
     this._player.setDirection(playerConfig.direction);
 
     if (GAME_CONFIG.helpers) {
-      this._playerPositionHelper.setPosition(playerConfig.startPosition);
+      this._playerPositionHelper.setPosition(playerConfig.position);
       this._playerPositionHelper.show();
     }
   }
@@ -184,7 +184,7 @@ export default class GameField extends THREE.Group {
     if (GLOBAL_VARIABLES.gameState === GAME_STATE.Gameplay) {
       this._roundTime += dt * 1000;
 
-      if (this._roundTime > ROUND_CONFIG.roundDuration) {
+      if (this._roundTime > ROUNDS_CONFIG.roundDuration) {
         this._roundTime = 0;
         this._roundUp();
       }
@@ -268,8 +268,7 @@ export default class GameField extends THREE.Group {
   }
 
   _initMaps() {
-    const currentLevel = GLOBAL_VARIABLES.currentLevel;
-    const fieldConfig = LEVEL_CONFIG[currentLevel].field;
+    const fieldConfig = GAME_CONFIG.field;
     const ghostMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Ghost] = [];
     const obstacleMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Obstacle] = [];
     const consumableMap = GLOBAL_VARIABLES.maps[MAP_TYPE.Consumable] = [];
@@ -365,8 +364,7 @@ export default class GameField extends THREE.Group {
   }
 
   _checkPlayerJumpValidity(action) {
-    const currentLevel = GLOBAL_VARIABLES.currentLevel;
-    const fieldConfig = LEVEL_CONFIG[currentLevel].field;
+    const fieldConfig = GAME_CONFIG.field;
     const direction = PLAYER_ACTION_TO_DIRECTION[action];
     const newPosition = this._player.getNewPosition(direction);
 

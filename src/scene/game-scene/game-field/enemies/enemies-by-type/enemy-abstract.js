@@ -58,8 +58,7 @@ export default class EnemyAbstract extends THREE.Group {
     this._currentPosition = position;
 
     const cellSize = GAME_CONFIG.cellSize;
-    const currentLevel = GLOBAL_VARIABLES.currentLevel;
-    const fieldConfig = LEVEL_CONFIG[currentLevel].field;
+    const fieldConfig = GAME_CONFIG.field;
     this._viewGroup.position.x = (-fieldConfig.columns * cellSize * 0.5 + cellSize * 0.5) + this._currentPosition.column * cellSize;
     this._viewGroup.position.z = (-fieldConfig.rows * cellSize * 0.5 + cellSize * 0.5) + this._currentPosition.row * cellSize;
   }
@@ -70,8 +69,7 @@ export default class EnemyAbstract extends THREE.Group {
 
   getPositionFromView() {
     const cellSize = GAME_CONFIG.cellSize;
-    const currentLevel = GLOBAL_VARIABLES.currentLevel;
-    const fieldConfig = LEVEL_CONFIG[currentLevel].field;
+    const fieldConfig = GAME_CONFIG.field;
     const position = {
       row: Math.round((this._viewGroup.position.z + fieldConfig.rows * cellSize * 0.5 - cellSize * 0.5) / cellSize),
       column: Math.round((this._viewGroup.position.x + fieldConfig.columns * cellSize * 0.5 - cellSize * 0.5) / cellSize),

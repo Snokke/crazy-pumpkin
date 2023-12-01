@@ -38,8 +38,7 @@ export default class Ghost extends EnemyAbstract {
     }
 
     const cellSize = GAME_CONFIG.cellSize;
-    const currentLevel = GLOBAL_VARIABLES.currentLevel;
-    const fieldConfig = LEVEL_CONFIG[currentLevel].field;
+    const fieldConfig = GAME_CONFIG.field;
 
     const speed = this._moveSpeed * dt * GHOST_CONFIG.speedMultiplier;
 
@@ -141,8 +140,7 @@ export default class Ghost extends EnemyAbstract {
 
   setSpawnPosition() {
     const randomSide = Math.round(Math.random() * 3);
-    const currentLevel = GLOBAL_VARIABLES.currentLevel;
-    const fieldConfig = LEVEL_CONFIG[currentLevel].field;
+    const fieldConfig = GAME_CONFIG.field;
 
     let position = null;
 

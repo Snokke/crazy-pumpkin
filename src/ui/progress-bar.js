@@ -1,8 +1,8 @@
 import { DisplayObject, Graphics } from "black-engine";
 import TWEEN from 'three/addons/libs/tween.module.js';
-import { ROUND_CONFIG } from "../scene/game-scene/game-field/data/game-config";
 import { GLOBAL_VARIABLES } from "../scene/game-scene/game-field/data/global-variables";
 import { GAME_STATE } from "../scene/game-scene/game-field/data/game-data";
+import { ROUNDS_CONFIG } from "../scene/game-scene/game-field/data/rounds-config";
 
 export default class ProgressBar extends DisplayObject {
   constructor(useTween = true) {
@@ -32,7 +32,7 @@ export default class ProgressBar extends DisplayObject {
         const percent = 1 - this._roundTime / this._duration;
         this._updateProgressBar(percent, this._color, this._width);
   
-        if (this._roundTime > ROUND_CONFIG.roundDuration) {
+        if (this._roundTime > ROUNDS_CONFIG.roundDuration) {
           this._updateActive = false;
           this._roundTime = 0;
           this.visible = false;

@@ -3,6 +3,7 @@ import { GAME_STATE, MAP_TYPE } from "./game-data";
 
 const GLOBAL_VARIABLES = {
   currentLevel: null,
+  currentRound: null,
   gameState: GAME_STATE.Idle,
   round: 0,
   playerPosition: { row: 0, column: 0 },

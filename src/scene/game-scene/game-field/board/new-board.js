@@ -28,16 +28,14 @@ export default class NewBoard extends THREE.Group {
   }
 
   _getCellIndex(position) {
-    const currentLevel = GLOBAL_VARIABLES.currentLevel;
-    const fieldConfig = LEVEL_CONFIG[currentLevel].field;
+    const fieldConfig = GAME_CONFIG.field;
     const cellSize = GAME_CONFIG.cellSize;
 
     return Math.floor(position.column / cellSize) + Math.floor(position.row / cellSize) * fieldConfig.columns;
   }
 
   _circularWaveFromCell(position) {
-    const currentLevel = GLOBAL_VARIABLES.currentLevel;
-    const fieldConfig = LEVEL_CONFIG[currentLevel].field;
+    const fieldConfig = GAME_CONFIG.field;
     const cellSize = GAME_CONFIG.cellSize;
     const maxDistance = cellSize * 2;
 
@@ -58,8 +56,7 @@ export default class NewBoard extends THREE.Group {
   }
 
   _riseCell(position, height, delay = 0) {
-    const currentLevel = GLOBAL_VARIABLES.currentLevel;
-    const fieldConfig = LEVEL_CONFIG[currentLevel].field;
+    const fieldConfig = GAME_CONFIG.field;
     const cellSize = GAME_CONFIG.cellSize;
     const cellIndex = Math.floor(position.column / cellSize) + Math.floor(position.row / cellSize) * fieldConfig.columns;
 
@@ -99,8 +96,7 @@ export default class NewBoard extends THREE.Group {
   _initCellsTweens() {
     this._cellsTweens = [];
 
-    const currentLevel = GLOBAL_VARIABLES.currentLevel;
-    const fieldConfig = LEVEL_CONFIG[currentLevel].field;
+    const fieldConfig = GAME_CONFIG.field;
 
     for (let i = 0; i < fieldConfig.rows; i += 1) {
       this._cellsTweens[i] = [];
@@ -122,8 +118,7 @@ export default class NewBoard extends THREE.Group {
   }
 
   _initField() {
-    const currentLevel = GLOBAL_VARIABLES.currentLevel;
-    const fieldConfig = LEVEL_CONFIG[currentLevel].field;
+    const fieldConfig = GAME_CONFIG.field;
     const cellSize = GAME_CONFIG.cellSize;
     const cellsAmount = fieldConfig.columns * fieldConfig.rows;
 
