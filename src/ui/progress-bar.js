@@ -31,8 +31,9 @@ export default class ProgressBar extends DisplayObject {
 
         const percent = 1 - this._roundTime / this._duration;
         this._updateProgressBar(percent, this._color, this._width);
+        const currentRound = GLOBAL_VARIABLES.round;
   
-        if (this._roundTime > ROUNDS_CONFIG.roundDuration) {
+        if (this._roundTime > ROUNDS_CONFIG[currentRound].duration) {
           this._updateActive = false;
           this._roundTime = 0;
           this.visible = false;

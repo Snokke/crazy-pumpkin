@@ -3,13 +3,11 @@ import Player from './player/player';
 import EnemiesController from './enemies/enemies-controller';
 import { BUTTONS_CONFIG, BUTTON_TYPE } from './data/keyboard-config';
 import ObstaclesController from './obstacles/obstacles-controller';
-import { LEVEL_CONFIG } from './data/level-config';
 import { PLAYER_ACTIONS, PLAYER_ACTION_TO_DIRECTION, PLAYER_CONVERT_JUMP_IN_PLACE } from './player/data/player-data';
 import ObjectPositionHelper from './helpers/object-position-helper';
 import { GAME_OBJECT_TYPE, GAME_STATE, MAP_TYPE } from './data/game-data';
 import { GAME_CONFIG } from './data/game-config';
 import { MessageDispatcher } from 'black-engine';
-import { SCORE_CONFIG } from './data/score-config';
 import ConsumablesController from './consumables/consumables-controller';
 import { GLOBAL_VARIABLES } from './data/global-variables';
 import { vector3ToBlackPosition } from '../../../core/helpers/helpers';
@@ -21,6 +19,7 @@ import { SOUNDS_CONFIG } from '../../../core/configs/sounds-config';
 import Loader from '../../../core/loader';
 import Delayed from '../../../core/helpers/delayed-call';
 import { ROUNDS_CONFIG } from './data/rounds-config';
+import { ROUNDS_CONFIG_CONSUMABLES_SCORE_ID } from './data/rounds-data';
 
 export default class GameField extends THREE.Group {
   constructor(renderer, camera, audioListener) {
@@ -133,7 +132,7 @@ export default class GameField extends THREE.Group {
   }
 
   _roundUp() {
-    if (GLOBAL_VARIABLES.round >= ROUNDS_CONFIG.maxRound) {
+    if (GLOBAL_VARIABLES.round >= ROUNDS_CONFIG.length - 1) {
       return;
     }
     
@@ -174,7 +173,7 @@ export default class GameField extends THREE.Group {
       if (this._gameTime - this._previousGameTime > 1) {
         this._previousGameTime = this._gameTime;
         const round = GLOBAL_VARIABLES.round;
-        const score = SCORE_CONFIG.perSecond[round];
+        const score = ROUNDS_CONFIG[round].score.perSecond;
         this._addScore(score);
       }
     }
@@ -183,8 +182,9 @@ export default class GameField extends THREE.Group {
   _updateRoundTime(dt) {
     if (GLOBAL_VARIABLES.gameState === GAME_STATE.Gameplay) {
       this._roundTime += dt * 1000;
+      const currentRound = GLOBAL_VARIABLES.round;
 
-      if (this._roundTime > ROUNDS_CONFIG.roundDuration) {
+      if (this._roundTime > ROUNDS_CONFIG[currentRound].duration) {
         this._roundTime = 0;
         this._roundUp();
       }
@@ -505,7 +505,8 @@ export default class GameField extends THREE.Group {
     if (consumable) {
       const consumableType = consumable.getType();
       const round = GLOBAL_VARIABLES.round;
-      const score = SCORE_CONFIG.consumables[consumableType][round];
+      const consumableScoreId = ROUNDS_CONFIG_CONSUMABLES_SCORE_ID[consumableType];
+      const score = ROUNDS_CONFIG[round].score.consumables[consumableScoreId];
 
       const coordinates = consumable.getCoordinates();
       const consumablePosition = new THREE.Vector3(coordinates.x, 0.7, coordinates.z);

@@ -1,7 +1,5 @@
 import { Black, Vector } from "black-engine";
 import { GAME_CONFIG } from "../../scene/game-scene/game-field/data/game-config";
-import { GLOBAL_VARIABLES } from "../../scene/game-scene/game-field/data/global-variables";
-import { LEVEL_CONFIG } from "../../scene/game-scene/game-field/data/level-config";
 import SCENE_CONFIG from "../configs/scene-config";
 
 export const deepCopyArray = (array) => {

@@ -24,7 +24,7 @@ const CONSUMABLES_CONFIG = {
     particlesColor: 0x00aa00,
     progressBarWidth: 200,
     duration: 18000,
-    speedMultiplier: 1.8,
+    speedMultiplier: 2.2,
   },
   [CONSUMABLE_TYPE.BoosterCandyPlayerInvulnerability]: {
     lifeTime: { min: 20000, max: 25000 },

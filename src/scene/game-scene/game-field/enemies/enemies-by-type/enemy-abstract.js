@@ -2,11 +2,9 @@
 import * as THREE from 'three';
 import { ENEMY_STATE } from '../data/enemy-data';
 import { GAME_CONFIG } from '../../data/game-config';
-import { LEVEL_CONFIG } from '../../data/level-config';
 import ObjectPositionHelper from '../../helpers/object-position-helper';
 import { GAME_OBJECT_TYPE, ROTATION_BY_DIRECTION } from '../../data/game-data';
 import { MessageDispatcher } from 'black-engine';
-import { GLOBAL_VARIABLES } from '../../data/global-variables';
 
 export default class EnemyAbstract extends THREE.Group {
   constructor() {

@@ -1,8 +1,6 @@
 import * as THREE from "three";
 import { GAME_CONFIG } from "../data/game-config";
 import { OBJECT_POSITION_HELPER_CONFIG } from "./object-position-helper-config";
-import { LEVEL_CONFIG } from "../data/level-config";
-import { GLOBAL_VARIABLES } from "../data/global-variables";
 
 export default class ObjectPositionHelper extends THREE.Group {
   constructor(type) {

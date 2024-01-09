@@ -2,11 +2,11 @@ import { Black, DisplayObject, Ease, TextField, Tween } from "black-engine";
 import ScreenAbstract from "../screen-abstract";
 import { GLOBAL_VARIABLES } from "../../../scene/game-scene/game-field/data/global-variables";
 import { CONSUMABLES_CONFIG, CONSUMABLE_TYPE } from "../../../scene/game-scene/game-field/consumables/data/consumables-config";
-import { SCORE_CONFIG } from "../../../scene/game-scene/game-field/data/score-config";
 import ProgressBar from "../../progress-bar";
 import SCENE_CONFIG from "../../../core/configs/scene-config";
 import DPad from "./d-pad";
 import { ROUNDS_CONFIG } from "../../../scene/game-scene/game-field/data/rounds-config";
+import { ROUNDS_CONFIG_CONSUMABLES_SCORE_ID } from "../../../scene/game-scene/game-field/data/rounds-data";
 
 export default class GameplayScreen extends ScreenAbstract {
   constructor() {
@@ -32,7 +32,8 @@ export default class GameplayScreen extends ScreenAbstract {
   show() {
     super.show();
 
-    const duration = ROUNDS_CONFIG.roundDuration;
+    const currentRound = GLOBAL_VARIABLES.round;
+    const duration = ROUNDS_CONFIG[currentRound].duration;
     this._roundProgressBar.show(0x000000, 160, duration);
 
     this._showNewRound();
@@ -47,8 +48,9 @@ export default class GameplayScreen extends ScreenAbstract {
     const currentRound = GLOBAL_VARIABLES.round;
     this._roundNumberText.text = `${currentRound + 1}`;
 
-    if (currentRound !== ROUNDS_CONFIG.maxRound) {
-      const duration = ROUNDS_CONFIG.roundDuration;
+    if (currentRound !== ROUNDS_CONFIG.length - 1) {
+      const currentRound = GLOBAL_VARIABLES.round;
+      const duration = ROUNDS_CONFIG[currentRound].duration;
       this._roundProgressBar.show(0x000000, 160, duration);
     }
 
@@ -67,7 +69,8 @@ export default class GameplayScreen extends ScreenAbstract {
     if (consumableType === CONSUMABLE_TYPE.SmallCandy || consumableType === CONSUMABLE_TYPE.BigCandy) {
       this._collectedScore.textColor = 0x000000;
       const round = GLOBAL_VARIABLES.round;
-      const score = SCORE_CONFIG.consumables[consumableType][round];
+      const consumableScoreId = ROUNDS_CONFIG_CONSUMABLES_SCORE_ID[consumableType];
+      const score = ROUNDS_CONFIG[round].score.consumables[consumableScoreId];
       text = `+${score}`;
     }
 

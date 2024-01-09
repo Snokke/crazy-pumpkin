@@ -2,8 +2,6 @@ import * as THREE from 'three';
 import TWEEN from 'three/addons/libs/tween.module.js';
 import { OBSTACLE_CONFIG } from './data/obstacles-config';
 import { GAME_CONFIG } from '../data/game-config';
-import { LEVEL_CONFIG } from '../data/level-config';
-import { GLOBAL_VARIABLES } from '../data/global-variables';
 import Loader from '../../../../core/loader';
 import Materials from '../../../../core/materials';
 import { randomFromArray } from '../../../../core/helpers/helpers';

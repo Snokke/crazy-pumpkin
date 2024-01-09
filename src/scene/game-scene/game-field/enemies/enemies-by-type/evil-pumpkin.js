@@ -7,7 +7,6 @@ import { ENEMY_STATE, ENEMY_TYPE } from '../data/enemy-data';
 import { DIRECTION, GAME_STATE, MAP_TYPE, ROTATION_BY_DIRECTION } from '../../data/game-data';
 import { GLOBAL_VARIABLES } from '../../data/global-variables';
 import { getCoordinatesFromPosition, randomFromArray } from '../../../../../core/helpers/helpers';
-import { LEVEL_CONFIG } from '../../data/level-config';
 import Loader from '../../../../../core/loader';
 
 export default class EvilPumpkin extends EnemyAbstract {
@@ -87,6 +86,7 @@ export default class EvilPumpkin extends EnemyAbstract {
     this._previousMovementState = EVIL_PUMPKIN_MOVEMENT_STATE.Idle;
     this.setBodyActivity(false);
     this.stopTweens();
+    this._innerCylinder.visible = false;
 
     const evilPumpkinMap = GLOBAL_VARIABLES.maps[MAP_TYPE.EvilPumpkin];
     evilPumpkinMap[this._currentPosition.row][this._currentPosition.column] = null;

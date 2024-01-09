@@ -5,13 +5,13 @@ import ENEMY_CLASS from './data/enemy-class';
 import { MessageDispatcher } from 'black-engine';
 import { GAME_STATE } from '../data/game-data';
 import { GHOSTS_COLOR_BY_TYPE, GHOST_CONFIG } from './data/ghost-config';
-import Delayed from '../../../../core/helpers/delayed-call';
 import { randomBetween, randomFromArray } from '../../../../core/helpers/helpers';
 import { GLOBAL_VARIABLES } from '../data/global-variables';
 import { EVIL_PUMPKIN_CONFIG } from './data/evil-pumpkin-config';
 import { CONSUMABLES_CONFIG, CONSUMABLE_TYPE } from '../consumables/data/consumables-config';
 import { SKELETON_CONFIG } from './data/skeleton-config';
 import { ROUNDS_CONFIG } from '../data/rounds-config';
+import { ROUNDS_CONFIG_ENEMIES_ID, SPEED_MULTIPLIERS } from '../data/rounds-data';
 
 export default class EnemiesController extends THREE.Group {
   constructor() {
@@ -39,8 +39,9 @@ export default class EnemiesController extends THREE.Group {
 
   activateSpawnEnemies() {
     this._ghostSpawn();
-    this._spawnFirstEvilPumpkin();
-    this._spawnSkeleton();
+    this._evilPumpkinSpawn();
+    this._skeletonSpawn();
+    // this._spawnSkeleton();
   }
 
   stopTweens() {
@@ -135,14 +136,19 @@ export default class EnemiesController extends THREE.Group {
   }
 
   _updateSpeedMultiplier() {
-    const round = GLOBAL_VARIABLES.round;
-    const ghostRoundConfig = ROUNDS_CONFIG.enemies[ENEMY_TYPE.Ghost][round];
-    const evilPumpkinRoundConfig = ROUNDS_CONFIG.enemies[ENEMY_TYPE.EvilPumpkin][round];
-    const skeletonRoundConfig = ROUNDS_CONFIG.enemies[ENEMY_TYPE.Skeleton][round];
+    let ghostMultiplier = 1;
+    let evilPumpkinMultiplier = 1;
+    let skeletonMultiplier = 1;
 
-    GHOST_CONFIG.speedMultiplier = ghostRoundConfig.speedMultiplier;
-    EVIL_PUMPKIN_CONFIG.speedMultiplier = evilPumpkinRoundConfig.speedMultiplier;
-    SKELETON_CONFIG.speedMultiplier = skeletonRoundConfig.speedMultiplier;
+    for (let i = 0; i < GLOBAL_VARIABLES.round; i++) {
+      ghostMultiplier *= SPEED_MULTIPLIERS.enemies[ENEMY_TYPE.Ghost].multiplier;
+      evilPumpkinMultiplier *= SPEED_MULTIPLIERS.enemies[ENEMY_TYPE.EvilPumpkin].multiplier;
+      skeletonMultiplier *= SPEED_MULTIPLIERS.enemies[ENEMY_TYPE.Skeleton].multiplier;
+    }
+    
+    GHOST_CONFIG.speedMultiplier = Math.min(ghostMultiplier, SPEED_MULTIPLIERS.enemies[ENEMY_TYPE.Ghost].max);
+    EVIL_PUMPKIN_CONFIG.speedMultiplier = Math.min(evilPumpkinMultiplier, SPEED_MULTIPLIERS.enemies[ENEMY_TYPE.EvilPumpkin].max);
+    SKELETON_CONFIG.speedMultiplier = Math.min(skeletonMultiplier, SPEED_MULTIPLIERS.enemies[ENEMY_TYPE.Skeleton].max);
 
     this._iterateActiveEnemies((enemy) => {
       if (enemy.getType() === ENEMY_TYPE.EvilPumpkin) {
@@ -167,14 +173,21 @@ export default class EnemiesController extends THREE.Group {
 
   _updateGhostOnRoundChanged() {
     const round = GLOBAL_VARIABLES.round;
-    const ghostRoundConfig = ROUNDS_CONFIG.enemies[ENEMY_TYPE.Ghost][round];
+    const roundConfig = ROUNDS_CONFIG[round];
 
-    if (!GLOBAL_VARIABLES.activeBooster) {
-      GHOST_CONFIG.speedMultiplier = ghostRoundConfig.speedMultiplier;
+    let ghostMultiplier = 1;
+
+    for (let i = 0; i < GLOBAL_VARIABLES.round; i++) {
+      ghostMultiplier *= SPEED_MULTIPLIERS.enemies[ENEMY_TYPE.Ghost].multiplier;
+    }
+    
+    if (GLOBAL_VARIABLES.activeBooster !== CONSUMABLE_TYPE.BoosterCandyEnemiesSlow) {
+      GHOST_CONFIG.speedMultiplier = Math.min(ghostMultiplier, SPEED_MULTIPLIERS.enemies[ENEMY_TYPE.Ghost].max);
     }
 
     const currentGhostCount = this._activeEnemies[ENEMY_TYPE.Ghost].length;
-    const spawnCount = ghostRoundConfig.maxCount - currentGhostCount;
+    const ghostId = ROUNDS_CONFIG_ENEMIES_ID[ENEMY_TYPE.Ghost];
+    const spawnCount = roundConfig.enemies[ghostId] - currentGhostCount;
 
     if (spawnCount < 0) {
       const removeCount = Math.abs(spawnCount);
@@ -187,7 +200,7 @@ export default class EnemiesController extends THREE.Group {
   }
 
   _updateEvilPumpkinOnRoundChanged() {
-    if (!GLOBAL_VARIABLES.activeBooster) {
+    if (GLOBAL_VARIABLES.activeBooster !== CONSUMABLE_TYPE.BoosterCandyEnemiesSlow) {
       this._updateEvilPumpkinSpeedMultiplier();
     }
 
@@ -197,11 +210,14 @@ export default class EnemiesController extends THREE.Group {
   }
 
   _updateSkeletonOnRoundChanged() {
-    const round = GLOBAL_VARIABLES.round;
-    const skeletonRoundConfig = ROUNDS_CONFIG.enemies[ENEMY_TYPE.Skeleton][round];
+    if (GLOBAL_VARIABLES.activeBooster !== CONSUMABLE_TYPE.BoosterCandyEnemiesSlow) {
+      let skeletonMultiplier = 1;
 
-    if (!GLOBAL_VARIABLES.activeBooster) {
-      SKELETON_CONFIG.speedMultiplier = skeletonRoundConfig.speedMultiplier;
+      for (let i = 0; i < GLOBAL_VARIABLES.round; i++) {
+        skeletonMultiplier *= SPEED_MULTIPLIERS.enemies[ENEMY_TYPE.Skeleton].multiplier;
+      }
+      
+      SKELETON_CONFIG.speedMultiplier = Math.min(skeletonMultiplier, SPEED_MULTIPLIERS.enemies[ENEMY_TYPE.Skeleton].max);
 
       this._iterateActiveEnemies((enemy) => {
         if (enemy.getType() === ENEMY_TYPE.Skeleton) {
@@ -215,13 +231,20 @@ export default class EnemiesController extends THREE.Group {
         }
       });
     }
+
+    if (GLOBAL_VARIABLES.gameState === GAME_STATE.Gameplay) {
+      this._skeletonSpawn();
+    }
   }
 
   _updateEvilPumpkinSpeedMultiplier() {
-    const round = GLOBAL_VARIABLES.round;
-    const evilPumpkinRoundConfig = ROUNDS_CONFIG.enemies[ENEMY_TYPE.EvilPumpkin][round];
+    let evilPumpkinMultiplier = 1;
 
-    EVIL_PUMPKIN_CONFIG.speedMultiplier = evilPumpkinRoundConfig.speedMultiplier;
+    for (let i = 0; i < GLOBAL_VARIABLES.round; i++) {
+      evilPumpkinMultiplier *= SPEED_MULTIPLIERS.enemies[ENEMY_TYPE.EvilPumpkin].multiplier;
+    }
+    
+    EVIL_PUMPKIN_CONFIG.speedMultiplier = Math.min(evilPumpkinMultiplier, SPEED_MULTIPLIERS.enemies[ENEMY_TYPE.EvilPumpkin].max);
 
     this._iterateActiveEnemies((enemy) => {
       if (enemy.getType() === ENEMY_TYPE.EvilPumpkin) {
@@ -233,13 +256,6 @@ export default class EnemiesController extends THREE.Group {
       if (enemy.getType() === ENEMY_TYPE.EvilPumpkin) {
         enemy.updateJumpTime();
       }
-    });
-  }
-
-  _spawnFirstEvilPumpkin() {
-    Delayed.call(2000, () => {
-      this._spawnEnemy(ENEMY_TYPE.EvilPumpkin);
-      this._evilPumpkinSpawn();
     });
   }
 
@@ -259,8 +275,9 @@ export default class EnemiesController extends THREE.Group {
         }
   
         const round = GLOBAL_VARIABLES.round;
-        const ghostRoundConfig = ROUNDS_CONFIG.enemies[ENEMY_TYPE.Ghost][round];
-        const maxCount = ghostRoundConfig.maxCount;
+        const roundConfig = ROUNDS_CONFIG[round];
+        const ghostId = ROUNDS_CONFIG_ENEMIES_ID[ENEMY_TYPE.Ghost];
+        const maxCount = roundConfig.enemies[ghostId];
   
         if (this._activeEnemies[ENEMY_TYPE.Ghost].length < maxCount) {
           this._spawnEnemy(ENEMY_TYPE.Ghost);
@@ -272,10 +289,11 @@ export default class EnemiesController extends THREE.Group {
 
   _evilPumpkinSpawn() {
     const round = GLOBAL_VARIABLES.round;
-    const evilPumpkinRoundConfig = ROUNDS_CONFIG.enemies[ENEMY_TYPE.EvilPumpkin][round];
+    const roundConfig = ROUNDS_CONFIG[round];
     const currentCount = this._activeEnemies[ENEMY_TYPE.EvilPumpkin].length;
 
-    const spawnCount = evilPumpkinRoundConfig.count - currentCount;
+    const evilPumpkinId = ROUNDS_CONFIG_ENEMIES_ID[ENEMY_TYPE.EvilPumpkin];
+    const spawnCount = roundConfig.enemies[evilPumpkinId] - currentCount;
 
     if (spawnCount < 0) {
       const removeCount = Math.abs(spawnCount);
@@ -290,6 +308,30 @@ export default class EnemiesController extends THREE.Group {
 
     for (let i = 0; i < spawnCount; i++) {
       this._spawnEnemy(ENEMY_TYPE.EvilPumpkin);
+    }
+  }
+
+  _skeletonSpawn() {
+    const round = GLOBAL_VARIABLES.round;
+    const roundConfig = ROUNDS_CONFIG[round];
+    const currentCount = this._activeEnemies[ENEMY_TYPE.Skeleton].length;
+
+    const skeletonId = ROUNDS_CONFIG_ENEMIES_ID[ENEMY_TYPE.Skeleton];
+    const spawnCount = roundConfig.enemies[skeletonId] - currentCount;
+
+    if (spawnCount < 0) {
+      const removeCount = Math.abs(spawnCount);
+
+      for (let i = 0; i < removeCount; i++) {
+        const enemy = this._activeEnemies[ENEMY_TYPE.Skeleton][i];
+        enemy.kill();
+      }
+
+      return;
+    }
+
+    for (let i = 0; i < spawnCount; i++) {
+      this._spawnEnemy(ENEMY_TYPE.Skeleton);
     }
   }
 

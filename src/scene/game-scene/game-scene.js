@@ -222,8 +222,8 @@ export default class GameScene extends THREE.Group {
   _debugIncreaseRound() {
     GLOBAL_VARIABLES.round++;
 
-    if (GLOBAL_VARIABLES.round > ROUNDS_CONFIG.maxRound) {
-      GLOBAL_VARIABLES.round = ROUNDS_CONFIG.maxRound;
+    if (GLOBAL_VARIABLES.round > ROUNDS_CONFIG.length - 1) {
+      GLOBAL_VARIABLES.round = ROUNDS_CONFIG.length - 1;
     }
 
     this.events.post('onRoundChanged');

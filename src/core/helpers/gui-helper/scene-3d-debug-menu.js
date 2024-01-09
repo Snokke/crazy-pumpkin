@@ -1,4 +1,3 @@
-import * as THREE from 'three';
 import { Black } from 'black-engine';
 import DEBUG_CONFIG from "../../configs/debug-config";
 import RendererStats from 'three-webgl-stats';

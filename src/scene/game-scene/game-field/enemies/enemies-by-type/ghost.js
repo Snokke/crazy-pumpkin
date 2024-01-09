@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import TWEEN from 'three/addons/libs/tween.module.js';
 import EnemyAbstract from './enemy-abstract';
-import { LEVEL_CONFIG } from '../../data/level-config';
 import { GAME_CONFIG } from '../../data/game-config';
 import { ENEMY_STATE, ENEMY_TYPE } from '../data/enemy-data';
 import { isEqualsPositions, lerp, randomBetween, randomFromArray } from '../../../../../core/helpers/helpers';

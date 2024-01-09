@@ -3,9 +3,9 @@ const DEBUG_CONFIG = {
   rendererStats: false,
   orbitControls: false,
   axesHelper: false,
-  startFromGameplay: true,
+  startFromGameplay: false,
   invulnerability: false,
-  showControlPanel: true,
+  showControlPanel: false,
 };
 
 export default DEBUG_CONFIG;

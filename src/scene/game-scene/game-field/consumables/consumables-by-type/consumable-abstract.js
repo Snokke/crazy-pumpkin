@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import TWEEN from 'three/addons/libs/tween.module.js';
 import { GAME_CONFIG } from '../../data/game-config';
-import { LEVEL_CONFIG } from '../../data/level-config';
 import { GLOBAL_VARIABLES } from '../../data/global-variables';
 import { MessageDispatcher } from 'black-engine';
 import { MAP_TYPE } from '../../data/game-data';

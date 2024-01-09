@@ -3,7 +3,6 @@ import TWEEN from 'three/addons/libs/tween.module.js';
 import { MessageDispatcher } from 'black-engine';
 import { PLAYER_ACTIONS, PLAYER_JUMP_STATE, PLAYER_STATE } from './data/player-data';
 import { PLAYER_CONFIG } from './data/player-config';
-import { LEVEL_CONFIG } from '../data/level-config';
 import { DIRECTION, GAME_STATE, ROTATION_BY_DIRECTION } from '../data/game-data';
 import { GAME_CONFIG } from '../data/game-config';
 import { GLOBAL_VARIABLES } from '../data/global-variables';
@@ -13,7 +12,7 @@ import Loader from '../../../../core/loader';
 import Delayed from '../../../../core/helpers/delayed-call';
 import SCENE_CONFIG from '../../../../core/configs/scene-config';
 import { SOUNDS_CONFIG } from '../../../../core/configs/sounds-config';
-import { ROUNDS_CONFIG } from '../data/rounds-config';
+import { SPEED_MULTIPLIERS } from '../data/rounds-data';
 
 export default class Player extends THREE.Group {
   constructor(audioListener) {
@@ -137,10 +136,13 @@ export default class Player extends THREE.Group {
       return;
     }
 
-    const round = GLOBAL_VARIABLES.round;
-    const playerRoundConfig = ROUNDS_CONFIG.player[round];
+    let resultMultiplier = 1;
 
-    PLAYER_CONFIG.speedMultiplier = playerRoundConfig.speedMultiplier;
+    for (let i = 0; i < GLOBAL_VARIABLES.round; i++) {
+      resultMultiplier *= SPEED_MULTIPLIERS.player.multiplier;
+    }
+    
+    PLAYER_CONFIG.speedMultiplier = Math.min(resultMultiplier, SPEED_MULTIPLIERS.player.max);
     this._updateJumpTime();
   }
 

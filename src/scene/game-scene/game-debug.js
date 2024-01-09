@@ -21,7 +21,7 @@ export default class GameDebug extends THREE.Group {
   }
 
   onRoundChanged() {
-    this._increaseRoundButton.disabled = GLOBAL_VARIABLES.round === ROUNDS_CONFIG.maxRound;
+    this._increaseRoundButton.disabled = GLOBAL_VARIABLES.round === ROUNDS_CONFIG.length - 1;
     this._decreaseRoundButton.disabled = GLOBAL_VARIABLES.round === 0;
   }
 
