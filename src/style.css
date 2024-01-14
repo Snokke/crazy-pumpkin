@@ -86,3 +86,10 @@ div { -webkit-user-select: none !important; }
   opacity: 1;
   transition: opacity 0.3s ease-in-out;
 }
+
+.g-signin2
+{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+}

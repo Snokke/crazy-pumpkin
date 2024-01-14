@@ -1,24 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=0">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="icon" type="image/png" href="favicon/favicon.ico">
-    <title>Crazy Pumpkin</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=0">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="google-signin-client_id" content="291331590559-g1o0cv5vmn15c4b6src0e8a5gugbd2e4.apps.googleusercontent.com">
+  <link rel="icon" type="image/png" href="favicon/favicon.ico">
+  <title>Crazy Pumpkin</title>
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
 </head>
+
 <body>
   <canvas class="webgl"></canvas>
   <div id="container"></div>
   <div class="loading-percent"></div>
 
-  <div class="credits">Made by <u><a href="https://www.andriibabintsev.com/" target="_blank" style="color: #000000; text-decoration: none;">Andrii Babintsev</a></u> | <u><a href="https://github.com/Snokke/crazy-pumpkin" target="_blank" style="color: #000000; text-decoration: none;">Source code</a></u>
+  <div class="credits">Made by <u><a href="https://www.andriibabintsev.com/" target="_blank"
+        style="color: #000000; text-decoration: none;">Andrii Babintsev</a></u> | <u><a
+        href="https://github.com/Snokke/crazy-pumpkin" target="_blank"
+        style="color: #000000; text-decoration: none;">Source code</a></u></div>
+
+        
+  <div class="g-signin2" data-onsuccess="onSignIn"></div>
+  
 
   <script>
-    window.onload = function() { window.focus(); }
+    window.onload = function () { window.focus(); }
   </script>
 
   <script type="module" src="./src/main.js"></script>
 </body>
+
 </html>
