@@ -25,6 +25,11 @@ document.addEventListener('onLoad', () => {
 });
 
 
+window.handleCredentialResponse = (response) => {
+  console.log(response);
+
+}
+
 function onSignIn(googleUser) {
   // Get user profile information
   var profile = googleUser.getBasicProfile();

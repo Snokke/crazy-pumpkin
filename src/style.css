@@ -87,9 +87,11 @@ div { -webkit-user-select: none !important; }
   transition: opacity 0.3s ease-in-out;
 }
 
-.g-signin2
+.g_id_signin
 {
   position: absolute;
-  top: 50%;
   left: 50%;
+  top: 50%;
+  margin-left: -100px;
+  margin-top: -25px;
 }
