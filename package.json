@@ -20,6 +20,7 @@
     "black-engine": "^0.5.16",
     "gapi": "^0.0.3",
     "ismobilejs": "^1.1.1",
+    "jose": "^5.2.0",
     "query-string": "^8.1.0",
     "three": "^0.157.0",
     "tweakpane": "^3.1.7",
