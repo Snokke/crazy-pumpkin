@@ -21,12 +21,20 @@
         href="https://github.com/Snokke/crazy-pumpkin" target="_blank"
         style="color: #000000; text-decoration: none;">Source code</a></u></div>
 
-  <div id="g_id_onload" data-client_id="291331590559-g1o0cv5vmn15c4b6src0e8a5gugbd2e4.apps.googleusercontent.com" data-callback="handleCredentialResponse">
+  <div id="g_id_onload" data-client_id="291331590559-g1o0cv5vmn15c4b6src0e8a5gugbd2e4.apps.googleusercontent.com" data-callback="checkWhenScriptLoaded">
   </div>
   <div class="g_id_signin" data-type="standard"></div>
 
   <script>
     window.onload = function () { window.focus(); }
+
+    window.checkWhenScriptLoaded = function (response) {
+      if (window.handleCredentialResponse) {
+        window.handleCredentialResponse(response);
+      } else {
+        setTimeout(checkWhenScriptLoaded, 100);
+      }
+    }
   </script>
 
   <script type="module" src="./src/auth.js"></script>

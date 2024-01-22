@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { AssetManager, GameObject, MessageDispatcher } from 'black-engine';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader';
+import SaveManager from './save-manager';
 
 const textures = [
   'ghost_basecolor.jpg',
@@ -76,6 +77,12 @@ export default class Loader extends GameObject {
     this._blackManager = new AssetManager();
 
     this._soundsCountLoaded = 0;
+
+    const dataVersion = SaveManager.getInstance().versionData;
+
+    if (dataVersion !== SaveManager.getInstance().saveVersion) {
+      SaveManager.getInstance().clearAll();
+    }
 
     this._loadBlackAssets();
   }
